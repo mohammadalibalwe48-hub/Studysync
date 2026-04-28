@@ -87,4 +87,17 @@ flutter build apk --release
 - Curriculum data lives in `lib/core/constants/curriculum.dart`. Once Supabase
   is wired up, this file will be used as a fallback / seed.
 - No platform folders (`android/`, `ios/`, …) are committed — generate them
-  locally with `flutter create .` before running on a device.
+  locally before running on a device. Use:
+
+  ```bash
+  bash tool/setup_android.sh
+  ```
+
+  This wraps `flutter create --platforms=android --project-name studysync_syria
+  --org com.studysync .` and also adds
+  `<uses-permission android:name="android.permission.INTERNET"/>` to
+  `android/app/src/main/AndroidManifest.xml`. Without that permission a
+  `flutter build apk --release` produces an APK that cannot make any
+  network calls (Supabase requests fail with "Failed host lookup
+  ... errno = 7"), because `flutter create` only adds INTERNET to the
+  debug/profile manifests.
