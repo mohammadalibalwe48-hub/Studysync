@@ -85,9 +85,9 @@ class ProfileScreen extends StatelessWidget {
                 value: 'Physics, Chemistry',
               ),
               const _InfoTile(
-                icon: Icons.cloud_off_outlined,
+                icon: Icons.cloud_done_outlined,
                 label: 'Sync',
-                value: 'Offline — backend coming soon',
+                value: 'Synced with Supabase',
               ),
               const Spacer(),
               AppButton(

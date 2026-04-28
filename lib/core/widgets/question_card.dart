@@ -3,19 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:studysync_syria/core/models/question.dart';
 
 /// A self-contained practice question with selectable options and a
-/// reveal-solution toggle. State is local to this widget — answers are not
-/// persisted in the frontend-only version.
+/// reveal-solution toggle. The widget reports the user's first answer to
+/// the parent through [onAnswered] so it can be persisted.
 class QuestionCard extends StatefulWidget {
   const QuestionCard({
     super.key,
     required this.question,
     required this.questionNumber,
     required this.accentColor,
+    this.onAnswered,
   });
 
   final Question question;
   final int questionNumber;
   final Color accentColor;
+
+  /// Called the first time the user picks an option for this question.
+  /// Subsequent taps that change the selection do not re-fire.
+  final void Function(int selectedIndex, bool isCorrect)? onAnswered;
 
   @override
   State<QuestionCard> createState() => _QuestionCardState();
@@ -24,6 +29,17 @@ class QuestionCard extends StatefulWidget {
 class _QuestionCardState extends State<QuestionCard> {
   int? _selectedIndex;
   bool _showSolution = false;
+  bool _reported = false;
+
+  void _handleSelect(int i) {
+    setState(() => _selectedIndex = i);
+    if (_reported) return;
+    _reported = true;
+    final void Function(int, bool)? cb = widget.onAnswered;
+    if (cb != null) {
+      cb(i, i == widget.question.correctOptionIndex);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +110,7 @@ class _QuestionCardState extends State<QuestionCard> {
               padding: const EdgeInsets.only(bottom: 8),
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
-                onTap: () => setState(() => _selectedIndex = i),
+                onTap: () => _handleSelect(i),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,

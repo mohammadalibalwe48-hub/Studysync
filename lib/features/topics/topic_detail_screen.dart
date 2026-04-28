@@ -4,17 +4,103 @@ import 'package:go_router/go_router.dart';
 import 'package:studysync_syria/core/constants/curriculum.dart';
 import 'package:studysync_syria/core/models/subject.dart';
 import 'package:studysync_syria/core/models/topic.dart';
+import 'package:studysync_syria/core/supabase/queries.dart';
 import 'package:studysync_syria/core/widgets/question_card.dart';
 import 'package:studysync_syria/features/topics/lesson_view.dart';
 
-class TopicDetailScreen extends StatelessWidget {
+class TopicDetailScreen extends StatefulWidget {
   const TopicDetailScreen({super.key, required this.topicId});
 
   final String topicId;
 
   @override
+  State<TopicDetailScreen> createState() => _TopicDetailScreenState();
+}
+
+class _TopicDetailScreenState extends State<TopicDetailScreen> {
+  final DateTime _startedAt = DateTime.now();
+  final Set<String> _answeredQuestionIds = <String>{};
+  int _correctAnswers = 0;
+  int _totalAnswers = 0;
+  String? _lastError;
+
+  Topic? _topic;
+  Subject? _subject;
+
+  @override
+  void initState() {
+    super.initState();
+    _topic = Curriculum.topicById(widget.topicId);
+    if (_topic != null) {
+      _subject = Curriculum.subjectById(_topic!.subjectId);
+    }
+  }
+
+  @override
+  void dispose() {
+    _maybeRecordSession();
+    super.dispose();
+  }
+
+  Future<void> _maybeRecordSession() async {
+    if (_totalAnswers == 0) return;
+    final Topic? topic = _topic;
+    if (topic == null) return;
+    final int minutes =
+        DateTime.now().difference(_startedAt).inSeconds ~/ 60;
+    try {
+      await StudySyncQueries.createStudySession(
+        subjectId: topic.subjectId,
+        topicId: topic.id,
+        durationMinutes: minutes < 1 ? 1 : minutes,
+      );
+    } catch (_) {
+      // Best-effort: don't surface errors during dispose.
+    }
+  }
+
+  Future<void> _onQuestionAnswered({
+    required Topic topic,
+    required String questionId,
+    required int selectedIndex,
+    required bool isCorrect,
+  }) async {
+    if (!_answeredQuestionIds.add(questionId)) {
+      // Already counted; just save the new attempt and move on.
+    } else {
+      _totalAnswers += 1;
+      if (isCorrect) _correctAnswers += 1;
+    }
+
+    final bool topicCompleted =
+        _answeredQuestionIds.length >= topic.questions.length;
+
+    try {
+      await StudySyncQueries.saveQuestionAttempt(
+        questionId: questionId,
+        selectedOptionIndex: selectedIndex,
+        isCorrect: isCorrect,
+        subjectId: topic.subjectId,
+        topicId: topic.id,
+      );
+      await StudySyncQueries.upsertStudentProgress(
+        subjectId: topic.subjectId,
+        topicId: topic.id,
+        completed: topicCompleted,
+        correctAnswers: _correctAnswers,
+        totalAnswers: _totalAnswers,
+      );
+      if (!mounted) return;
+      setState(() => _lastError = null);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _lastError = e.toString());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final Topic? topic = Curriculum.topicById(topicId);
+    final Topic? topic = _topic;
     if (topic == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Topic not found')),
@@ -22,7 +108,7 @@ class TopicDetailScreen extends StatelessWidget {
       );
     }
 
-    final Subject? subject = Curriculum.subjectById(topic.subjectId);
+    final Subject? subject = _subject;
     final Color accent = subject?.color ?? Theme.of(context).colorScheme.primary;
 
     return Scaffold(
@@ -57,9 +143,32 @@ class TopicDetailScreen extends StatelessWidget {
                   question: topic.questions[i],
                   questionNumber: i + 1,
                   accentColor: accent,
+                  onAnswered: (int selectedIndex, bool isCorrect) {
+                    _onQuestionAnswered(
+                      topic: topic,
+                      questionId: topic.questions[i].id,
+                      selectedIndex: selectedIndex,
+                      isCorrect: isCorrect,
+                    );
+                  },
                 ),
               );
             }),
+            if (_lastError != null) ...<Widget>[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red.withOpacity(0.4)),
+                ),
+                child: Text(
+                  'Could not save your answer: $_lastError',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
           ],
         ),
       ),
