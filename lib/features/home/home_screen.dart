@@ -2,20 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:studysync_syria/core/constants/curriculum.dart';
-import 'package:studysync_syria/core/models/student_progress.dart';
 import 'package:studysync_syria/core/models/subject.dart';
+import 'package:studysync_syria/core/supabase/queries.dart';
 import 'package:studysync_syria/core/widgets/streak_badge.dart';
 import 'package:studysync_syria/core/widgets/subject_card.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int? _streakDays;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStreak();
+  }
+
+  Future<void> _loadStreak() async {
+    try {
+      final ProgressSummary summary =
+          await StudySyncQueries.fetchProgressSummary();
+      if (!mounted) return;
+      setState(() => _streakDays = summary.streakDays);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _streakDays = 0);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final String email =
         AuthService.instance.currentUserEmail ?? 'student@studysync.sy';
-    final StudentProgress p = StudentProgress.placeholder;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,56 +58,59 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      const Text(
-                        'Welcome back,',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        email,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+        child: RefreshIndicator(
+          onRefresh: _loadStreak,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Text(
+                          'Welcome back,',
+                          style: TextStyle(fontSize: 14),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                        const SizedBox(height: 2),
+                        Text(
+                          email,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  StreakBadge(days: _streakDays ?? 0),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Choose a subject',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 12),
+              ...Curriculum.subjects.map(
+                (Subject s) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: SubjectCard(
+                    subject: s,
+                    onTap: () => context.go('/subjects/${s.id}'),
                   ),
                 ),
-                StreakBadge(days: p.streakDays),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Choose a subject',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 12),
-            ...Curriculum.subjects.map(
-              (Subject s) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: SubjectCard(
-                  subject: s,
-                  onTap: () => context.go('/subjects/${s.id}'),
-                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            _QuickLinkRow(
-              onProgress: () => context.go('/progress'),
-              onProfile: () => context.go('/profile'),
-            ),
-          ],
+              const SizedBox(height: 12),
+              _QuickLinkRow(
+                onProgress: () => context.go('/progress'),
+                onProfile: () => context.go('/profile'),
+              ),
+            ],
+          ),
         ),
       ),
     );
