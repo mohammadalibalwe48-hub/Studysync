@@ -131,15 +131,27 @@ def patch_groovy(text: str) -> str:
         )
     text = text.replace(bt_anchor, GROOVY_SIGNING_BLOCK + bt_anchor, 1)
 
-    debug_line = "signingConfig signingConfigs.debug"
-    release_line = "signingConfig signingConfigs.release"
-    if debug_line in text:
-        text = text.replace(debug_line, release_line, 1)
-    elif release_line not in text:
-        raise SystemExit(
-            "patch_android_signing: could not find the release signingConfig "
-            "line to rewrite; aborting."
-        )
+    # Modern Flutter (3.24+) generates `signingConfig = signingConfigs.debug`
+    # in Groovy build.gradle. Older Flutter generates the call-style
+    # `signingConfig signingConfigs.debug`. Handle both forms, and verify
+    # the rewrite via an idempotent post-check.
+    replacements = [
+        ("signingConfig = signingConfigs.debug",
+         "signingConfig = signingConfigs.release"),
+        ("signingConfig signingConfigs.debug",
+         "signingConfig signingConfigs.release"),
+    ]
+    for old, new in replacements:
+        if old in text:
+            text = text.replace(old, new, 1)
+            break
+    else:
+        if ("signingConfig = signingConfigs.release" not in text
+                and "signingConfig signingConfigs.release" not in text):
+            raise SystemExit(
+                "patch_android_signing: could not find the release "
+                "signingConfig line to rewrite; aborting."
+            )
 
     return text
 
