@@ -1,44 +1,101 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
 
-/// Temporary, in-memory auth service used by the frontend-only version.
+import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:studysync_syria/core/supabase/supabase_client.dart';
+
+/// Auth service backed by Supabase Auth.
 ///
-/// The public API (login, signup, signOut, currentUser, isAuthenticated)
-/// mirrors what a real Supabase-backed implementation will expose, so
-/// switching backends later only requires changing this file.
+/// Public surface:
+/// - [login] / [signIn] — sign in with email + password.
+/// - [signup] / [signUp] — create an account with email + password.
+/// - [signOut]
+/// - [currentUser]
+/// - [currentUserEmail]
+/// - [isAuthenticated]
+/// - [authStateChanges] — stream of [AuthState] from Supabase.
+///
+/// The service is a [ChangeNotifier] so widgets (and the [GoRouter]
+/// `refreshListenable`) rebuild when auth state changes. Supabase persists
+/// the session locally, so on cold start `currentUser` may already be
+/// populated.
 class AuthService extends ChangeNotifier {
-  AuthService._internal();
+  AuthService._internal() {
+    _subscription =
+        SupabaseService.auth.onAuthStateChange.listen(_handleAuthChange);
+  }
 
   static final AuthService instance = AuthService._internal();
 
-  String? _email;
+  StreamSubscription<AuthState>? _subscription;
 
-  /// The currently signed-in user's email, or null if signed out.
-  String? get currentUserEmail => _email;
+  void _handleAuthChange(AuthState _) {
+    notifyListeners();
+  }
 
-  bool get isAuthenticated => _email != null;
+  /// The currently signed-in Supabase user, or null.
+  User? get currentUser => SupabaseService.auth.currentUser;
 
-  /// Pretends to authenticate the user.
+  /// Convenience: the current user's email, or null when signed out.
+  String? get currentUserEmail => currentUser?.email;
+
+  /// True if there is a live Supabase session.
+  bool get isAuthenticated => SupabaseService.auth.currentSession != null;
+
+  /// Stream of auth changes, useful for screens that want to react to
+  /// sign-in / sign-out events.
+  Stream<AuthState> get authStateChanges =>
+      SupabaseService.auth.onAuthStateChange;
+
+  /// Signs in with email + password.
   ///
   /// Returns null on success, or a human-readable error message on failure.
   Future<String?> login({
+    required String email,
+    required String password,
+  }) =>
+      signIn(email: email, password: password);
+
+  Future<String?> signIn({
     required String email,
     required String password,
   }) async {
     final String? validationError = _validateCredentials(email, password);
     if (validationError != null) return validationError;
 
-    // Simulate network latency.
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-
-    _email = email.trim();
-    notifyListeners();
-    return null;
+    try {
+      final AuthResponse response = await SupabaseService.auth
+          .signInWithPassword(email: email.trim(), password: password);
+      if (response.user == null) {
+        return 'Sign in failed. Please try again.';
+      }
+      // ChangeNotifier will fire via onAuthStateChange too, but notify now
+      // so consumers awaiting this future see the new state immediately.
+      notifyListeners();
+      return null;
+    } on AuthException catch (e) {
+      return _humanizeAuthError(e);
+    } catch (_) {
+      return 'Could not reach the server. Check your connection.';
+    }
   }
 
-  /// Pretends to register a new user account.
+  /// Creates an account with email + password.
   ///
   /// Returns null on success, or a human-readable error message on failure.
   Future<String?> signup({
+    required String email,
+    required String password,
+    required String confirmPassword,
+  }) =>
+      signUp(
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword,
+      );
+
+  Future<String?> signUp({
     required String email,
     required String password,
     required String confirmPassword,
@@ -50,17 +107,30 @@ class AuthService extends ChangeNotifier {
       return 'Passwords do not match.';
     }
 
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-
-    _email = email.trim();
-    notifyListeners();
-    return null;
+    try {
+      final AuthResponse response = await SupabaseService.auth.signUp(
+        email: email.trim(),
+        password: password,
+      );
+      if (response.user == null) {
+        return 'Sign up failed. Please try again.';
+      }
+      notifyListeners();
+      return null;
+    } on AuthException catch (e) {
+      return _humanizeAuthError(e);
+    } catch (_) {
+      return 'Could not reach the server. Check your connection.';
+    }
   }
 
   /// Signs the current user out.
   Future<void> signOut() async {
-    _email = null;
-    notifyListeners();
+    try {
+      await SupabaseService.auth.signOut();
+    } finally {
+      notifyListeners();
+    }
   }
 
   String? _validateCredentials(String email, String password) {
@@ -74,5 +144,27 @@ class AuthService extends ChangeNotifier {
       return 'Password must be at least 6 characters.';
     }
     return null;
+  }
+
+  String _humanizeAuthError(AuthException e) {
+    final String message = e.message.toLowerCase();
+    if (message.contains('invalid login') ||
+        message.contains('invalid credentials')) {
+      return 'Incorrect email or password.';
+    }
+    if (message.contains('already registered') ||
+        message.contains('user already')) {
+      return 'An account with this email already exists.';
+    }
+    if (message.contains('email not confirmed')) {
+      return 'Please confirm your email before signing in.';
+    }
+    return e.message;
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 }
