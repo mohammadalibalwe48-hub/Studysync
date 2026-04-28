@@ -1,0 +1,24 @@
+name: studysync_syria
+description: StudySync Syria — a Flutter study app for Syrian 12th grade students preparing for physics and chemistry university entrance exams.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  go_router: ^14.0.0
+  fl_chart: ^0.68.0
+  flutter_dotenv: ^5.1.0
+  shared_preferences: ^2.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
