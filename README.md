@@ -101,3 +101,56 @@ flutter build apk --release
   network calls (Supabase requests fail with "Failed host lookup
   ... errno = 7"), because `flutter create` only adds INTERNET to the
   debug/profile manifests.
+
+  The setup script also runs `tool/patch_android_signing.py`, which
+  rewrites `android/app/build.gradle.kts` to use a release signing config
+  loaded from `android/key.properties` instead of the debug keystore.
+
+## Release signing (for publishing to Play Store / sideloading updates)
+
+`flutter create` configures the `release` build to re-use the **debug**
+keystore, which is a shared key bundled with the Android SDK. Release builds
+signed that way are rejected by Play Store and can never be updated reliably.
+This repo's `tool/setup_android.sh` patches the generated Gradle config to
+sign with a real upload keystore loaded from `android/key.properties`
+(gitignored).
+
+To set this up the first time:
+
+1. Generate the keystore once (any machine with a JDK):
+
+   ```bash
+   keytool -genkey -v -keystore ~/upload-keystore.jks \
+     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+   ```
+
+   Back up the resulting `.jks` file and the passwords in two places (e.g.
+   a password manager and a private cloud folder). **If you lose them you
+   can never publish updates to your app on Play Store.**
+
+2. Copy `tool/key.properties.example` to `android/key.properties` and fill
+   in the real values:
+
+   ```
+   storePassword=...
+   keyPassword=...
+   keyAlias=upload
+   storeFile=/absolute/path/to/upload-keystore.jks
+   ```
+
+   `android/key.properties` and `*.jks` are gitignored — never commit them.
+
+3. Build:
+
+   ```bash
+   flutter build appbundle --release   # for Play Store
+   flutter build apk --release         # for direct sideload
+   ```
+
+   Output: `build/app/outputs/bundle/release/app-release.aab` and
+   `build/app/outputs/flutter-apk/app-release.apk`.
+
+If `android/key.properties` is missing the `release` build still completes
+(with `storeFile = null`) so `flutter run` works for development; only
+`flutter build apk --release` / `flutter build appbundle` actually need
+the real keystore.

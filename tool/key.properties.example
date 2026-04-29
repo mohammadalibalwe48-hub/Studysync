@@ -1,0 +1,18 @@
+# Copy this file to `android/key.properties` (NOT committed) after running
+# `bash tool/setup_android.sh`, then fill in the real values for your upload
+# keystore. `android/key.properties` is read by `android/app/build.gradle.kts`
+# (patched by `tool/patch_android_signing.py`) to sign release APKs/AABs.
+#
+# Generate the keystore once with:
+#
+#   keytool -genkey -v -keystore ~/upload-keystore.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+# Back up the .jks file and these passwords somewhere safe (e.g. a password
+# manager). Losing them means you can never publish updates to the same app
+# on Play Store again.
+
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=upload
+storeFile=/absolute/path/to/upload-keystore.jks
