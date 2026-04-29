@@ -71,7 +71,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Join StudySync Syria and start preparing for your exams.',
+                  'Join Educational Steps Platform and start preparing for your exams.',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.black.withOpacity(0.6),

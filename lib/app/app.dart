@@ -17,7 +17,7 @@ class _StudySyncAppState extends State<StudySyncApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'StudySync Syria',
+      title: 'Educational Steps Platform',
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
       theme: _buildTheme(),
