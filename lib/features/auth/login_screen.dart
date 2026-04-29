@@ -53,6 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -62,19 +64,38 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ListView(
               children: <Widget>[
                 const SizedBox(height: 24),
-                const Text(
-                  'Welcome back',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Sign in to keep studying for your physics and chemistry exams.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black.withOpacity(0.6),
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: scheme.primary.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.school_outlined,
+                    color: scheme.primary,
+                    size: 28,
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
+                const Text(
+                  'Welcome back',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Sign in to continue to Educational Steps.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
@@ -111,10 +132,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: scheme.error),
                   ),
                 ],
-                const SizedBox(height: 22),
+                const SizedBox(height: 24),
                 AppButton(
                   label: 'Sign in',
                   isLoading: _isLoading,
@@ -124,7 +145,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    const Text('No account yet? '),
+                    const Text(
+                      'No account yet? ',
+                      style: TextStyle(color: Color(0xFF6B7280)),
+                    ),
                     TextButton(
                       onPressed: () => context.go('/signup'),
                       child: const Text('Create one'),

@@ -15,6 +15,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     final String email =
         AuthService.instance.currentUserEmail ?? 'student@studysync.sy';
 
@@ -33,21 +34,26 @@ class ProfileScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.black.withOpacity(0.08),
-                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.black.withOpacity(0.06)),
                 ),
                 child: Row(
                   children: <Widget>[
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.primaryContainer,
-                      child: const Icon(Icons.person, size: 30),
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: scheme.primary.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        Icons.person_outline,
+                        color: scheme.primary,
+                        size: 28,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -56,14 +62,19 @@ class ProfileScreen extends StatelessWidget {
                         children: <Widget>[
                           const Text(
                             'Signed in as',
-                            style: TextStyle(fontSize: 12),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF6B7280),
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
                             email,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -73,22 +84,6 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 18),
-              const _InfoTile(
-                icon: Icons.school_outlined,
-                label: 'Grade',
-                value: '12th grade — Scientific track',
-              ),
-              const _InfoTile(
-                icon: Icons.menu_book_outlined,
-                label: 'Subjects',
-                value: 'Physics, Chemistry',
-              ),
-              const _InfoTile(
-                icon: Icons.cloud_done_outlined,
-                label: 'Sync',
-                value: 'Synced with Supabase',
-              ),
               const Spacer(),
               AppButton(
                 label: 'Sign out',
@@ -97,58 +92,6 @@ class ProfileScreen extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoTile extends StatelessWidget {
-  const _InfoTile({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.black.withOpacity(0.08)),
-        ),
-        child: Row(
-          children: <Widget>[
-            Icon(icon, size: 22),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black.withOpacity(0.6),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    value,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );

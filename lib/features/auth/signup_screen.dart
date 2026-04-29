@@ -56,28 +56,55 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/login'),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Form(
             key: _formKey,
             child: ListView(
               children: <Widget>[
-                const SizedBox(height: 24),
-                const Text(
-                  'Create your account',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Join Educational Steps Platform and start preparing for your exams.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black.withOpacity(0.6),
+                const SizedBox(height: 8),
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: scheme.primary.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.person_add_alt,
+                    color: scheme.primary,
+                    size: 28,
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
+                const Text(
+                  'Create your account',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Join Educational Steps to get started.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
@@ -133,10 +160,10 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: scheme.error),
                   ),
                 ],
-                const SizedBox(height: 22),
+                const SizedBox(height: 24),
                 AppButton(
                   label: 'Create account',
                   isLoading: _isLoading,
@@ -146,7 +173,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    const Text('Already have an account? '),
+                    const Text(
+                      'Already have an account? ',
+                      style: TextStyle(color: Color(0xFF6B7280)),
+                    ),
                     TextButton(
                       onPressed: () => context.go('/login'),
                       child: const Text('Sign in'),

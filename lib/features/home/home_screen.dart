@@ -1,188 +1,180 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:studysync_syria/core/constants/curriculum.dart';
-import 'package:studysync_syria/core/models/subject.dart';
-import 'package:studysync_syria/core/supabase/queries.dart';
-import 'package:studysync_syria/core/widgets/streak_badge.dart';
-import 'package:studysync_syria/core/widgets/subject_card.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int? _streakDays;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStreak();
-  }
-
-  Future<void> _loadStreak() async {
-    try {
-      final ProgressSummary summary =
-          await StudySyncQueries.fetchProgressSummary();
-      if (!mounted) return;
-      setState(() => _streakDays = summary.streakDays);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _streakDays = 0);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     final String email =
         AuthService.instance.currentUserEmail ?? 'student@studysync.sy';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Educational Steps Platform'),
+        title: const Text('Educational Steps'),
         actions: <Widget>[
-          IconButton(
-            tooltip: 'Progress',
-            icon: const Icon(Icons.insert_chart_outlined),
-            onPressed: () => context.go('/progress'),
-          ),
           IconButton(
             tooltip: 'Profile',
             icon: const Icon(Icons.person_outline),
             onPressed: () => context.go('/profile'),
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadStreak,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        const Text(
-                          'Welcome back,',
-                          style: TextStyle(fontSize: 14),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          email,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  StreakBadge(days: _streakDays ?? 0),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Choose a subject',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 12),
-              ...Curriculum.subjects.map(
-                (Subject s) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: SubjectCard(
-                    subject: s,
-                    onTap: () => context.go('/subjects/${s.id}'),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              _QuickLinkRow(
-                onProgress: () => context.go('/progress'),
-                onProfile: () => context.go('/profile'),
-              ),
-            ],
-          ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          children: <Widget>[
+            _HeroCard(email: email, scheme: scheme),
+            const SizedBox(height: 20),
+            const _ComingSoonCard(),
+          ],
         ),
       ),
     );
   }
 }
 
-class _QuickLinkRow extends StatelessWidget {
-  const _QuickLinkRow({required this.onProgress, required this.onProfile});
+class _HeroCard extends StatelessWidget {
+  const _HeroCard({required this.email, required this.scheme});
 
-  final VoidCallback onProgress;
-  final VoidCallback onProfile;
+  final String email;
+  final ColorScheme scheme;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: _QuickLinkCard(
-            icon: Icons.insert_chart_outlined,
-            label: 'Progress',
-            onTap: onProgress,
-          ),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(22, 24, 22, 26),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[
+            scheme.primary,
+            Color.lerp(scheme.primary, Colors.black, 0.18) ?? scheme.primary,
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _QuickLinkCard(
-            icon: Icons.person_outline,
-            label: 'Profile',
-            onTap: onProfile,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.school_outlined,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Educational Steps',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 22),
+          const Text(
+            'Welcome back',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            email,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.2,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Your learning space is being rebuilt. New content and study '
+            'tools are on the way.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 14,
+              height: 1.45,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _QuickLinkCard extends StatelessWidget {
-  const _QuickLinkCard({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+class _ComingSoonCard extends StatelessWidget {
+  const _ComingSoonCard();
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black.withOpacity(0.08)),
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black.withOpacity(0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: scheme.primary.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.auto_awesome_outlined,
+              color: scheme.primary,
+              size: 22,
+            ),
           ),
-          child: Column(
-            children: <Widget>[
-              Icon(icon, size: 26),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ],
+          const SizedBox(height: 14),
+          const Text(
+            'More features coming soon',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827),
+            ),
           ),
-        ),
+          const SizedBox(height: 6),
+          const Text(
+            'We\'re polishing the next version of the platform. '
+            'Lessons, practice, and progress tracking will return shortly.',
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.5,
+              color: Color(0xFF4B5563),
+            ),
+          ),
+        ],
       ),
     );
   }

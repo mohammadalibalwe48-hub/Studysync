@@ -4,31 +4,28 @@
 "Educational Steps Platform". Internal class names and imports keep the
 historical name for stability.)
 
-A Flutter mobile study app for Syrian 12th grade students preparing for physics
-and chemistry university entrance exams.
+A Flutter mobile study app for Syrian 12th grade students preparing for
+university entrance exams.
 
-This repo currently contains the **frontend-only scaffold**. The Supabase
-backend will be added later — for now, auth and data are local/static so the
-UI flows can be developed and reviewed independently.
+This repo currently contains a **minimal auth shell** with a refreshed
+design. Lessons, subjects, topics, questions, and progress tracking have
+been removed for now and will be reintroduced in a future iteration.
 
-## Features (frontend scaffold)
+## Features
 
-- Login & signup screens with form validation
-- Temporary in-memory auth (`AuthService`) ready to be swapped for Supabase
-- Home screen with streak badge and Physics / Chemistry subject cards
-- Topic list per subject with static curriculum data
-- Topic detail screen with lesson content + practice questions and worked
-  solutions
-- Progress screen with placeholder stats and an `fl_chart` bar chart
+- Login & signup screens (Supabase Auth)
+- `AuthService` backed by Supabase, exposed as a `ChangeNotifier`
+- Home screen with a welcome hero and "more features coming soon" placeholder
 - Profile screen with sign-out
+- Auth-aware `GoRouter` redirect
 
 ## Tech stack
 
 - Flutter (Material 3, Android-first)
 - Dart (strongly typed, no `dynamic`)
 - [`go_router`](https://pub.dev/packages/go_router) for navigation
-- [`fl_chart`](https://pub.dev/packages/fl_chart) for the progress chart
-- `flutter_dotenv`, `shared_preferences` (declared, not yet used)
+- [`supabase_flutter`](https://pub.dev/packages/supabase_flutter) for auth
+- `flutter_dotenv`, `shared_preferences`
 
 ## Project layout
 
@@ -40,29 +37,21 @@ lib/
     router.dart     # GoRouter routes & auth-aware redirect
   features/
     auth/           # login, signup, AuthService
-    home/           # home_screen
-    subjects/       # topic_list_screen
-    topics/         # topic_detail_screen, lesson_view
-    progress/       # progress_screen (fl_chart placeholder)
+    home/           # home_screen (welcome + coming-soon placeholder)
     profile/        # profile_screen + sign out
   core/
-    models/         # subject, topic, question, student_progress, study_session
-    constants/      # curriculum.dart (static lessons + questions)
-    widgets/        # app_button, subject_card, topic_card, question_card,
-                    # progress_bar, streak_badge
+    supabase/       # supabase_client.dart
+    widgets/        # app_button.dart
 ```
 
 ## Routes
 
-| Path                    | Screen                |
-| ----------------------- | --------------------- |
-| `/login`                | Login                 |
-| `/signup`               | Signup                |
-| `/home`                 | Home                  |
-| `/subjects/:subjectId`  | Topic list (per subject) |
-| `/topics/:topicId`      | Topic detail (lesson + questions) |
-| `/progress`             | Progress dashboard    |
-| `/profile`              | Profile / sign out    |
+| Path        | Screen                |
+| ----------- | --------------------- |
+| `/login`    | Login                 |
+| `/signup`   | Signup                |
+| `/home`     | Home                  |
+| `/profile`  | Profile / sign out    |
 
 The router redirects unauthenticated users to `/login` and authenticated users
 away from the auth screens, using `AuthService.instance` as the
@@ -84,12 +73,10 @@ flutter build apk --release
 
 ## Notes
 
-- `AuthService` is intentionally minimal and in-memory. Its public surface
+- `AuthService` is backed by Supabase Auth. Its public surface
   (`login`, `signup`, `signOut`, `currentUserEmail`, `isAuthenticated`,
-  `ChangeNotifier`) mirrors what a Supabase-backed implementation will expose,
-  so swapping it out later only changes one file.
-- Curriculum data lives in `lib/core/constants/curriculum.dart`. Once Supabase
-  is wired up, this file will be used as a fallback / seed.
+  `ChangeNotifier`) is consumed directly by the auth screens and the
+  `GoRouter` `refreshListenable`.
 - No platform folders (`android/`, `ios/`, …) are committed — generate them
   locally before running on a device. Use:
 
