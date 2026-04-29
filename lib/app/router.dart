@@ -6,9 +6,6 @@ import 'package:studysync_syria/features/auth/login_screen.dart';
 import 'package:studysync_syria/features/auth/signup_screen.dart';
 import 'package:studysync_syria/features/home/home_screen.dart';
 import 'package:studysync_syria/features/profile/profile_screen.dart';
-import 'package:studysync_syria/features/progress/progress_screen.dart';
-import 'package:studysync_syria/features/subjects/topic_list_screen.dart';
-import 'package:studysync_syria/features/topics/topic_detail_screen.dart';
 
 /// Builds the [GoRouter] used by the app.
 ///
@@ -46,25 +43,6 @@ GoRouter buildRouter() {
         path: '/home',
         builder: (BuildContext context, GoRouterState state) =>
             const HomeScreen(),
-      ),
-      GoRoute(
-        path: '/subjects/:subjectId',
-        builder: (BuildContext context, GoRouterState state) {
-          final String subjectId = state.pathParameters['subjectId'] ?? '';
-          return TopicListScreen(subjectId: subjectId);
-        },
-      ),
-      GoRoute(
-        path: '/topics/:topicId',
-        builder: (BuildContext context, GoRouterState state) {
-          final String topicId = state.pathParameters['topicId'] ?? '';
-          return TopicDetailScreen(topicId: topicId);
-        },
-      ),
-      GoRoute(
-        path: '/progress',
-        builder: (BuildContext context, GoRouterState state) =>
-            const ProgressScreen(),
       ),
       GoRoute(
         path: '/profile',

@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:studysync_syria/app/router.dart';
 
-/// Root widget for StudySync Syria.
+/// Root widget for the Educational Steps Platform app.
 class StudySyncApp extends StatefulWidget {
   const StudySyncApp({super.key});
 
@@ -25,53 +25,92 @@ class _StudySyncAppState extends State<StudySyncApp> {
   }
 
   ThemeData _buildTheme() {
-    const Color seed = Color(0xFF2563EB);
+    const Color seed = Color(0xFF4F46E5);
+    const Color background = Color(0xFFF5F6FB);
+    const Color surface = Colors.white;
+
     final ColorScheme scheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: Brightness.light,
+      surface: surface,
     );
+
+    final TextTheme baseText = ThemeData.light().textTheme;
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: const Color(0xFFF7F8FA),
+      scaffoldBackgroundColor: background,
+      textTheme: baseText.copyWith(
+        displayMedium: baseText.displayMedium?.copyWith(
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+        headlineMedium: baseText.headlineMedium?.copyWith(
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.3,
+        ),
+        titleLarge: baseText.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+        bodyMedium: baseText.bodyMedium?.copyWith(
+          color: const Color(0xFF4B5563),
+          height: 1.4,
+        ),
+      ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFFF7F8FA),
-        foregroundColor: Colors.black87,
+        backgroundColor: background,
+        foregroundColor: Color(0xFF111827),
         elevation: 0,
         centerTitle: false,
+        scrolledUnderElevation: 0,
         titleTextStyle: TextStyle(
-          color: Colors.black87,
+          color: Color(0xFF111827),
           fontSize: 18,
           fontWeight: FontWeight.w700,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: surface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black.withOpacity(0.12)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.black.withOpacity(0.12)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: seed, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 14,
+          horizontal: 16,
+          vertical: 16,
+        ),
+        labelStyle: const TextStyle(
+          color: Color(0xFF6B7280),
+          fontWeight: FontWeight.w500,
         ),
       ),
       cardTheme: CardThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
         elevation: 0,
-        color: Colors.white,
+        color: surface,
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
