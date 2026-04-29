@@ -5,6 +5,7 @@ import 'package:studysync_syria/core/constants/curriculum.dart';
 import 'package:studysync_syria/core/models/subject.dart';
 import 'package:studysync_syria/core/models/topic.dart';
 import 'package:studysync_syria/core/supabase/queries.dart';
+import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/question_card.dart';
 import 'package:studysync_syria/features/topics/lesson_view.dart';
 
@@ -103,8 +104,21 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     final Topic? topic = _topic;
     if (topic == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Topic not found')),
-        body: const Center(child: Text('We could not find that topic.')),
+        appBar: AppBar(
+          title: const Text('Topic not found'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go('/home'),
+          ),
+        ),
+        body: const SafeArea(
+          child: EmptyState(
+            icon: Icons.search_off_rounded,
+            title: 'Topic not found',
+            description:
+                'We could not find that topic. It may have been removed.',
+          ),
+        ),
       );
     }
 
@@ -131,29 +145,40 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
           children: <Widget>[
             LessonView(topic: topic, accentColor: accent),
             const SizedBox(height: 18),
-            const Text(
-              'Practice questions',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 10),
-            ...List<Widget>.generate(topic.questions.length, (int i) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: QuestionCard(
-                  question: topic.questions[i],
-                  questionNumber: i + 1,
-                  accentColor: accent,
-                  onAnswered: (int selectedIndex, bool isCorrect) {
-                    _onQuestionAnswered(
-                      topic: topic,
-                      questionId: topic.questions[i].id,
-                      selectedIndex: selectedIndex,
-                      isCorrect: isCorrect,
-                    );
-                  },
-                ),
-              );
-            }),
+            if (topic.questions.isEmpty)
+              const EmptyState(
+                compact: true,
+                icon: Icons.quiz_outlined,
+                title: 'No practice questions',
+                description:
+                    'Practice questions for this topic have not been added '
+                    'yet.',
+              )
+            else ...<Widget>[
+              const Text(
+                'Practice questions',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              ...List<Widget>.generate(topic.questions.length, (int i) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: QuestionCard(
+                    question: topic.questions[i],
+                    questionNumber: i + 1,
+                    accentColor: accent,
+                    onAnswered: (int selectedIndex, bool isCorrect) {
+                      _onQuestionAnswered(
+                        topic: topic,
+                        questionId: topic.questions[i].id,
+                        selectedIndex: selectedIndex,
+                        isCorrect: isCorrect,
+                      );
+                    },
+                  ),
+                );
+              }),
+            ],
             if (_lastError != null) ...<Widget>[
               const SizedBox(height: 8),
               Container(

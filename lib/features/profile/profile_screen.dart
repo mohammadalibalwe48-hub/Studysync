@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:studysync_syria/core/widgets/app_button.dart';
+import 'package:studysync_syria/app/theme.dart';
+import 'package:studysync_syria/core/widgets/main_scaffold.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -15,140 +16,175 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String email =
-        AuthService.instance.currentUserEmail ?? 'student@studysync.sy';
+    final String? email = AuthService.instance.currentUserEmail;
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final AppPalette palette = AppPalette.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'),
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.black.withOpacity(0.08),
+    return MainScaffold(
+      tab: MainTab.profile,
+      appBar: AppBar(title: const Text('Profile')),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        children: <Widget>[
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  scheme.primary,
+                  Color.lerp(scheme.primary, AppTheme.accent, 0.55) ??
+                      scheme.primary,
+                ],
+              ),
+            ),
+            child: Row(
+              children: <Widget>[
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person_rounded,
+                    size: 32,
+                    color: Colors.white,
                   ),
                 ),
-                child: Row(
-                  children: <Widget>[
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.primaryContainer,
-                      child: const Icon(Icons.person, size: 30),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          const Text(
-                            'Signed in as',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            email,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'Signed in as',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.85),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        email ?? 'Not signed in',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 18),
-              const _InfoTile(
-                icon: Icons.school_outlined,
-                label: 'Grade',
-                value: '12th grade — Scientific track',
-              ),
-              const _InfoTile(
-                icon: Icons.menu_book_outlined,
-                label: 'Subjects',
-                value: 'Physics, Chemistry',
-              ),
-              const _InfoTile(
-                icon: Icons.cloud_done_outlined,
-                label: 'Sync',
-                value: 'Synced with Supabase',
-              ),
-              const Spacer(),
-              AppButton(
-                label: 'Sign out',
-                icon: Icons.logout,
-                onPressed: () => _signOut(context),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          const SizedBox(height: 22),
+          Text(
+            'Account',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 10),
+          _ActionTile(
+            icon: Icons.logout_rounded,
+            label: 'Sign out',
+            description: 'End the current session.',
+            danger: true,
+            onTap: () => _signOut(context),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: Text(
+              'Educational Steps Platform',
+              style: TextStyle(
+                fontSize: 12,
+                color: palette.muted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _InfoTile extends StatelessWidget {
-  const _InfoTile({
+class _ActionTile extends StatelessWidget {
+  const _ActionTile({
     required this.icon,
     required this.label,
-    required this.value,
+    required this.description,
+    required this.onTap,
+    this.danger = false,
   });
 
   final IconData icon;
   final String label;
-  final String value;
+  final String description;
+  final VoidCallback onTap;
+  final bool danger;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.black.withOpacity(0.08)),
-        ),
-        child: Row(
-          children: <Widget>[
-            Icon(icon, size: 22),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black.withOpacity(0.6),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    value,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ],
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final AppPalette palette = AppPalette.of(context);
+    final Color tone = danger ? scheme.error : scheme.primary;
+
+    return Material(
+      color: palette.card,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: palette.outline),
+          ),
+          child: Row(
+            children: <Widget>[
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: tone.withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: tone, size: 20),
               ),
-            ),
-          ],
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: danger ? scheme.error : scheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: TextStyle(fontSize: 12, color: palette.muted),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: palette.muted,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,11 +1,13 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
+import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/constants/curriculum.dart';
+import 'package:studysync_syria/core/models/subject.dart';
 import 'package:studysync_syria/core/supabase/queries.dart';
+import 'package:studysync_syria/core/widgets/empty_state.dart';
+import 'package:studysync_syria/core/widgets/main_scaffold.dart';
 import 'package:studysync_syria/core/widgets/progress_bar.dart';
-import 'package:studysync_syria/core/widgets/streak_badge.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -53,15 +55,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your progress'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'),
-        ),
-      ),
-      body: SafeArea(child: _buildBody(context)),
+    return MainScaffold(
+      tab: MainTab.progress,
+      appBar: AppBar(title: const Text('Your progress')),
+      child: _buildBody(context),
     );
   }
 
@@ -76,16 +73,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
           padding: const EdgeInsets.all(20),
           children: <Widget>[
             const SizedBox(height: 80),
-            const Icon(Icons.error_outline, size: 40, color: Colors.red),
-            const SizedBox(height: 12),
-            Text(
-              'Could not load your progress.\n$_error',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.red),
-            ),
-            const SizedBox(height: 12),
-            Center(
-              child: TextButton.icon(
+            EmptyState(
+              icon: Icons.error_outline,
+              title: 'Could not load your progress',
+              description: _error ?? '',
+              action: TextButton.icon(
                 onPressed: _load,
                 icon: const Icon(Icons.refresh),
                 label: const Text('Retry'),
@@ -99,16 +91,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final ProgressSummary summary = _summary ?? ProgressSummary.empty;
     final List<StudySessionRow> sessions =
         _sessions ?? const <StudySessionRow>[];
-
-    final double physics =
-        summary.completionBySubject[Curriculum.physics.id] ?? 0;
-    final double chemistry =
-        summary.completionBySubject[Curriculum.chemistry.id] ?? 0;
+    const List<Subject> subjects = Curriculum.subjects;
 
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: <Widget>[
           Row(
             children: <Widget>[
@@ -126,7 +114,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   label: 'Accuracy',
                   value: '${(summary.correctAnswerRate * 100).round()}%',
                   icon: Icons.trending_up,
-                  color: Colors.teal,
+                  color: AppPalette.of(context).accent,
                 ),
               ),
             ],
@@ -134,35 +122,43 @@ class _ProgressScreenState extends State<ProgressScreen> {
           const SizedBox(height: 12),
           Row(
             children: <Widget>[
-              StreakBadge(days: summary.streakDays),
+              _StreakPill(days: summary.streakDays),
               const SizedBox(width: 10),
               _MinutesPill(minutes: summary.studyMinutes),
               const Spacer(),
               Text(
                 'Last 7 days',
-                style: TextStyle(color: Colors.black.withOpacity(0.6)),
+                style: TextStyle(
+                  color: AppPalette.of(context).muted,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 18),
           _ChartCard(weeklyMinutes: _weeklyMinutes(sessions)),
           const SizedBox(height: 18),
-          const Text(
+          Text(
             'Progress by subject',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
-          LabeledProgressBar(
-            label: Curriculum.physics.name,
-            value: physics,
-            color: Curriculum.physics.color,
-          ),
-          const SizedBox(height: 14),
-          LabeledProgressBar(
-            label: Curriculum.chemistry.name,
-            value: chemistry,
-            color: Curriculum.chemistry.color,
-          ),
+          if (subjects.isEmpty)
+            _SubjectsEmptyCard()
+          else
+            ...List<Widget>.generate(subjects.length, (int i) {
+              final Subject s = subjects[i];
+              final double value =
+                  summary.completionBySubject[s.id] ?? 0;
+              return Padding(
+                padding: EdgeInsets.only(top: i == 0 ? 0 : 14),
+                child: LabeledProgressBar(
+                  label: s.name,
+                  value: value,
+                  color: s.color,
+                ),
+              );
+            }),
         ],
       ),
     );
@@ -201,26 +197,71 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withOpacity(0.08)),
+        color: palette.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: palette.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(icon, color: color),
-          const SizedBox(height: 8),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(color: Colors.black.withOpacity(0.6)),
+            style: TextStyle(color: palette.muted),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StreakPill extends StatelessWidget {
+  const _StreakPill({required this.days});
+
+  final int days;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: palette.warm.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            Icons.local_fire_department_rounded,
+            color: palette.warm,
+            size: 18,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$days day streak',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: palette.warm,
+            ),
           ),
         ],
       ),
@@ -235,23 +276,23 @@ class _MinutesPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF2FF),
+        color: scheme.primary.withOpacity(0.12),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFC2D8FF)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const Icon(Icons.schedule, size: 18, color: Color(0xFF1E40AF)),
+          Icon(Icons.schedule, size: 18, color: scheme.primary),
           const SizedBox(width: 6),
           Text(
             '$minutes min total',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1E40AF),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: scheme.primary,
             ),
           ),
         ],
@@ -267,6 +308,8 @@ class _ChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     final List<String> labels = _last7DayLabels();
     final double maxObserved = weeklyMinutes.fold<double>(
       0,
@@ -275,18 +318,18 @@ class _ChartCard extends StatelessWidget {
     final double maxY = maxObserved < 30 ? 30 : (maxObserved * 1.2);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withOpacity(0.08)),
+        color: palette.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: palette.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Text(
+          Text(
             'Study minutes — last 7 days',
-            style: TextStyle(fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -321,7 +364,11 @@ class _ChartCard extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
                             labels[i],
-                            style: const TextStyle(fontSize: 12),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: palette.muted,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         );
                       },
@@ -337,7 +384,14 @@ class _ChartCard extends StatelessWidget {
                           toY: weeklyMinutes[i],
                           width: 14,
                           borderRadius: BorderRadius.circular(6),
-                          color: Theme.of(context).colorScheme.primary,
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: <Color>[
+                              scheme.primary.withOpacity(0.6),
+                              scheme.primary,
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -368,5 +422,28 @@ class _ChartCard extends StatelessWidget {
       labels.add(dayLetters[d.weekday - 1]);
     }
     return labels;
+  }
+}
+
+class _SubjectsEmptyCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      decoration: BoxDecoration(
+        color: palette.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: palette.outline),
+      ),
+      child: const EmptyState(
+        compact: true,
+        icon: Icons.bar_chart_rounded,
+        title: 'No subject progress yet',
+        description:
+            'Per-subject progress will show up here once you start studying.',
+      ),
+    );
   }
 }

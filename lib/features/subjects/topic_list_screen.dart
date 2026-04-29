@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:studysync_syria/core/constants/curriculum.dart';
 import 'package:studysync_syria/core/models/subject.dart';
 import 'package:studysync_syria/core/models/topic.dart';
+import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/topic_card.dart';
 
 class TopicListScreen extends StatelessWidget {
@@ -18,33 +19,54 @@ class TopicListScreen extends StatelessWidget {
 
     if (subject == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Subject not found')),
-        body: const Center(child: Text('We could not find that subject.')),
+        appBar: AppBar(
+          title: const Text('Subject not found'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go('/home'),
+          ),
+        ),
+        body: const SafeArea(
+          child: EmptyState(
+            icon: Icons.search_off_rounded,
+            title: 'Subject not found',
+            description:
+                'We could not find that subject. It may have been removed.',
+          ),
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${subject.name} Topics'),
+        title: Text(subject.name),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/home'),
         ),
       ),
       body: SafeArea(
-        child: ListView.separated(
-          padding: const EdgeInsets.all(20),
-          itemCount: topics.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (BuildContext context, int i) {
-            final Topic t = topics[i];
-            return TopicCard(
-              topic: t,
-              accentColor: subject.color,
-              onTap: () => context.go('/topics/${t.id}'),
-            );
-          },
-        ),
+        child: topics.isEmpty
+            ? const EmptyState(
+                icon: Icons.menu_book_outlined,
+                title: 'No topics yet',
+                description:
+                    'Topics for this subject will appear here once they are '
+                    'published.',
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                itemCount: topics.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (BuildContext context, int i) {
+                  final Topic t = topics[i];
+                  return TopicCard(
+                    topic: t,
+                    accentColor: subject.color,
+                    onTap: () => context.go('/topics/${t.id}'),
+                  );
+                },
+              ),
       ),
     );
   }
