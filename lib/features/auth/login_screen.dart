@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/widgets/app_button.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
 
@@ -53,6 +54,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final AppPalette palette = AppPalette.of(context);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -61,18 +65,39 @@ class _LoginScreenState extends State<LoginScreen> {
             key: _formKey,
             child: ListView(
               children: <Widget>[
+                const SizedBox(height: 40),
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: <Color>[
+                        scheme.primary,
+                        Color.lerp(
+                              scheme.primary,
+                              AppTheme.accent,
+                              0.55,
+                            ) ??
+                            scheme.primary,
+                      ],
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.school_rounded,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Welcome back',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Sign in to keep studying for your physics and chemistry exams.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black.withOpacity(0.6),
-                  ),
+                  'Sign in to continue learning.',
+                  style: TextStyle(fontSize: 14, color: palette.muted),
                 ),
                 const SizedBox(height: 28),
                 TextFormField(
@@ -111,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: scheme.error),
                   ),
                 ],
                 const SizedBox(height: 22),
@@ -124,7 +149,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    const Text('No account yet? '),
+                    Text(
+                      'No account yet? ',
+                      style: TextStyle(color: palette.muted),
+                    ),
                     TextButton(
                       onPressed: () => context.go('/signup'),
                       child: const Text('Create one'),
