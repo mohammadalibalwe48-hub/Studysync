@@ -1,4 +1,8 @@
-# StudySync Syria
+# Educational Steps Platform
+
+(Internal package name: `studysync_syria` — the on-device app name is
+"Educational Steps Platform". Internal class names and imports keep the
+historical name for stability.)
 
 A Flutter mobile study app for Syrian 12th grade students preparing for physics
 and chemistry university entrance exams.

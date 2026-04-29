@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('StudySync Syria'),
+        title: const Text('Educational Steps Platform'),
         actions: <Widget>[
           IconButton(
             tooltip: 'Progress',

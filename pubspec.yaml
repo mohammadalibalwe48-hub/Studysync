@@ -20,8 +20,19 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
   assets:
     - .env
+
+# Generated launcher icons. Run `dart run flutter_launcher_icons` after
+# `bash tool/setup_android.sh` to (re)generate the Android mipmap PNGs from
+# `assets/icon/app_icon.png`. `tool/setup_android.sh` invokes this for you.
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: false
