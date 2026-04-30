@@ -99,15 +99,39 @@ class _AssignmentBuilderScreenState extends State<AssignmentBuilderScreen> {
       _error = null;
     });
     try {
-      // Strip empty trailing options before sending.
-      final List<DraftQuestion> cleaned = _questions.map((DraftQuestion q) {
-        final List<String> opts = q.options
-            .map((String o) => o.trim())
-            .where((String o) => o.isNotEmpty)
+      // Strip empty options before sending and re-map `correctIndex`
+      // to the correct option's NEW position in the filtered list.
+      // Bounds-checking alone is insufficient: if a teacher leaves an
+      // option blank BEFORE the correct one, every later index shifts
+      // down by one and a naive `correct >= opts.length ? 0 : correct`
+      // will silently store the wrong answer.
+      final List<DraftQuestion> cleaned =
+          _questions.map((DraftQuestion q) {
+        final List<String> trimmed =
+            q.options.map((String o) => o.trim()).toList();
+        final int origCorrect =
+            (q.correctIndex >= 0 && q.correctIndex < trimmed.length)
+                ? q.correctIndex
+                : 0;
+        // Build (text, wasCorrect) pairs, drop empties, then find the
+        // new index of the entry that was originally correct. This
+        // tolerates duplicate option texts because we mark by position
+        // rather than searching by string.
+        final List<MapEntry<String, bool>> pairs = <MapEntry<String, bool>>[
+          for (int i = 0; i < trimmed.length; i++)
+            MapEntry<String, bool>(trimmed[i], i == origCorrect),
+        ];
+        final List<MapEntry<String, bool>> kept = pairs
+            .where((MapEntry<String, bool> e) => e.key.isNotEmpty)
             .toList();
-        // Re-map correctIndex if trailing empties were removed.
-        int correct = q.correctIndex;
-        if (correct >= opts.length) correct = 0;
+        final List<String> opts = kept
+            .map((MapEntry<String, bool> e) => e.key)
+            .toList();
+        int correct = kept.indexWhere(
+            (MapEntry<String, bool> e) => e.value);
+        // If the correct option itself was blank (validation should
+        // catch this) fall back to the first kept option.
+        if (correct < 0) correct = 0;
         return DraftQuestion(
           prompt: q.prompt.trim(),
           options: opts,
@@ -281,8 +305,18 @@ class _AssignmentBuilderScreenState extends State<AssignmentBuilderScreen> {
                       const SizedBox(height: 6),
                       for (int i = 0; i < _questions.length; i++)
                         Padding(
+                          // Key by the DraftQuestion identity so Flutter
+                          // matches each `_QuestionEditorState` to its
+                          // actual question instance. Without this, the
+                          // `late final` controllers initialised from
+                          // `widget.question` get reused for the wrong
+                          // question after a non-last question is
+                          // deleted (state corruption — same class of
+                          // bug as the exam-card key fix in #12).
+                          key: ObjectKey(_questions[i]),
                           padding: const EdgeInsets.only(bottom: 14),
                           child: _QuestionEditor(
+                            key: ObjectKey(_questions[i]),
                             index: i,
                             question: _questions[i],
                             palette: palette,
@@ -350,6 +384,7 @@ class _AssignmentBuilderScreenState extends State<AssignmentBuilderScreen> {
 
 class _QuestionEditor extends StatefulWidget {
   const _QuestionEditor({
+    super.key,
     required this.index,
     required this.question,
     required this.palette,
