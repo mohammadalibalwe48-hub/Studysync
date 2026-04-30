@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:studysync_syria/app/theme.dart';
+import 'package:studysync_syria/core/widgets/ambient_background.dart';
+import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/app_button.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
 
@@ -19,6 +21,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
   String? _errorMessage;
 
   @override
@@ -57,134 +61,282 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-    final AppPalette palette = AppPalette.of(context);
-
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: <Widget>[
-                const SizedBox(height: 40),
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    gradient: LinearGradient(
-                      colors: <Color>[
-                        scheme.primary,
-                        Color.lerp(
-                              scheme.primary,
-                              AppTheme.accent,
-                              0.55,
-                            ) ??
-                            scheme.primary,
+      backgroundColor: Colors.transparent,
+      body: AmbientBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: <Widget>[
+                  const SizedBox(height: 24),
+                  const FadeSlideIn(child: _SignupHero()),
+                  const SizedBox(height: 28),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 80),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          'Create your account',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.displayMedium,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Sign up to start learning.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppPalette.of(context).muted,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    color: Colors.white,
-                    size: 32,
+                  const SizedBox(height: 28),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 160),
+                    child: _SignupField(
+                      label: 'Email',
+                      child: TextFormField(
+                        controller: _emailCtrl,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.mail_outline_rounded),
+                          hintText: 'student@example.com',
+                        ),
+                        validator: (String? v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Please enter your email.';
+                          }
+                          final RegExp re =
+                              RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                          if (!re.hasMatch(v.trim())) {
+                            return 'Please enter a valid email address.';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Create your account',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Sign up to start learning.',
-                  style: TextStyle(fontSize: 14, color: palette.muted),
-                ),
-                const SizedBox(height: 28),
-                TextFormField(
-                  controller: _emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  validator: (String? v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return 'Please enter your email.';
-                    }
-                    final RegExp re =
-                        RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                    if (!re.hasMatch(v.trim())) {
-                      return 'Please enter a valid email address.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _passwordCtrl,
-                  obscureText: true,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  validator: (String? v) {
-                    if (v == null || v.isEmpty) {
-                      return 'Please enter a password.';
-                    }
-                    if (v.length < 6) {
-                      return 'Password must be at least 6 characters.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _confirmCtrl,
-                  obscureText: true,
-                  textInputAction: TextInputAction.done,
-                  decoration:
-                      const InputDecoration(labelText: 'Confirm password'),
-                  validator: (String? v) {
-                    if (v == null || v.isEmpty) {
-                      return 'Please confirm your password.';
-                    }
-                    if (v != _passwordCtrl.text) {
-                      return 'Passwords do not match.';
-                    }
-                    return null;
-                  },
-                  onFieldSubmitted: (_) => _handleSignup(),
-                ),
-                if (_errorMessage != null) ...<Widget>[
-                  const SizedBox(height: 12),
-                  Text(
-                    _errorMessage!,
-                    style: TextStyle(color: scheme.error),
+                  const SizedBox(height: 18),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 220),
+                    child: _SignupField(
+                      label: 'Password',
+                      child: TextFormField(
+                        controller: _passwordCtrl,
+                        obscureText: _obscurePassword,
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          suffixIcon: IconButton(
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
+                          ),
+                          hintText: 'At least 6 characters',
+                        ),
+                        validator: (String? v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Please enter a password.';
+                          }
+                          if (v.length < 6) {
+                            return 'Password must be at least 6 characters.';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 280),
+                    child: _SignupField(
+                      label: 'Confirm password',
+                      child: TextFormField(
+                        controller: _confirmCtrl,
+                        obscureText: _obscureConfirm,
+                        textInputAction: TextInputAction.done,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          suffixIcon: IconButton(
+                            onPressed: () => setState(
+                              () => _obscureConfirm = !_obscureConfirm,
+                            ),
+                            icon: Icon(
+                              _obscureConfirm
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
+                          ),
+                          hintText: 'Re-enter your password',
+                        ),
+                        validator: (String? v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Please confirm your password.';
+                          }
+                          if (v != _passwordCtrl.text) {
+                            return 'Passwords do not match.';
+                          }
+                          return null;
+                        },
+                        onFieldSubmitted: (_) => _handleSignup(),
+                      ),
+                    ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: _errorMessage != null
+                        ? Padding(
+                            key: ValueKey<String>(_errorMessage!),
+                            padding: const EdgeInsets.only(top: 12),
+                            child: _SignupError(message: _errorMessage!),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  const SizedBox(height: 22),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 340),
+                    child: AppButton(
+                      label: 'Create account',
+                      icon: Icons.arrow_forward_rounded,
+                      isLoading: _isLoading,
+                      onPressed: _handleSignup,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  FadeSlideIn(
+                    delay: const Duration(milliseconds: 380),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          'Already have an account? ',
+                          style: TextStyle(
+                            color: AppPalette.of(context).muted,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/login'),
+                          child: const Text('Sign in'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-                const SizedBox(height: 22),
-                AppButton(
-                  label: 'Create account',
-                  isLoading: _isLoading,
-                  onPressed: _handleSignup,
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'Already have an account? ',
-                      style: TextStyle(color: palette.muted),
-                    ),
-                    TextButton(
-                      onPressed: () => context.go('/login'),
-                      child: const Text('Sign in'),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SignupHero extends StatelessWidget {
+  const _SignupHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return Center(
+      child: GlowPulse(
+        color: palette.accent,
+        minOpacity: 0.10,
+        maxOpacity: 0.28,
+        blur: 36,
+        child: Container(
+          width: 84,
+          height: 84,
+          decoration: BoxDecoration(
+            gradient: palette.goldGradient,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: palette.accent.withOpacity(0.25),
+                blurRadius: 30,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.school_rounded,
+            color: Colors.white,
+            size: 40,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SignupField extends StatelessWidget {
+  const _SignupField({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.0,
+              color: palette.muted,
+            ),
+          ),
+        ),
+        child,
+      ],
+    );
+  }
+}
+
+class _SignupError extends StatelessWidget {
+  const _SignupError({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: scheme.errorContainer.withOpacity(0.55),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: scheme.error.withOpacity(0.30)),
+      ),
+      child: Row(
+        children: <Widget>[
+          Icon(Icons.error_outline_rounded, size: 18, color: scheme.error),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(color: scheme.error, fontSize: 13),
+            ),
+          ),
+        ],
       ),
     );
   }

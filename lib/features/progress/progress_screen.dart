@@ -5,6 +5,7 @@ import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/constants/curriculum.dart';
 import 'package:studysync_syria/core/models/subject.dart';
 import 'package:studysync_syria/core/supabase/queries.dart';
+import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/main_scaffold.dart';
 import 'package:studysync_syria/core/widgets/progress_bar.dart';
@@ -57,7 +58,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
   Widget build(BuildContext context) {
     return MainScaffold(
       tab: MainTab.progress,
-      appBar: AppBar(title: const Text('Your progress')),
       child: _buildBody(context),
     );
   }
@@ -92,73 +92,122 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final List<StudySessionRow> sessions =
         _sessions ?? const <StudySessionRow>[];
     const List<Subject> subjects = Curriculum.subjects;
+    final AppPalette palette = AppPalette.of(context);
 
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: _StatCard(
-                  label: 'Completion',
-                  value: '${(summary.completionPercent * 100).round()}%',
-                  icon: Icons.check_circle_outline,
-                  color: Theme.of(context).colorScheme.primary,
+          const FadeSlideIn(
+            child: _ScreenHeading(
+              title: 'Your progress',
+              subtitle: 'Track minutes, accuracy and streaks at a glance.',
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Bento grid: 2-column stat cards.
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 80),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: _StatCard(
+                    label: 'Completion',
+                    value: (summary.completionPercent * 100).round(),
+                    suffix: '%',
+                    icon: Icons.check_circle_outline_rounded,
+                    color: palette.accent,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  label: 'Accuracy',
-                  value: '${(summary.correctAnswerRate * 100).round()}%',
-                  icon: Icons.trending_up,
-                  color: AppPalette.of(context).accent,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    label: 'Accuracy',
+                    value: (summary.correctAnswerRate * 100).round(),
+                    suffix: '%',
+                    icon: Icons.gps_fixed_rounded,
+                    color: palette.warm,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: <Widget>[
-              _StreakPill(days: summary.streakDays),
-              const SizedBox(width: 10),
-              _MinutesPill(minutes: summary.studyMinutes),
-              const Spacer(),
-              Text(
-                'Last 7 days',
-                style: TextStyle(
-                  color: AppPalette.of(context).muted,
-                  fontWeight: FontWeight.w600,
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 140),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: _StatCard(
+                    label: 'Streak',
+                    value: summary.streakDays,
+                    suffix: ' day${summary.streakDays == 1 ? '' : 's'}',
+                    icon: Icons.local_fire_department_rounded,
+                    color: palette.warm,
+                    highlight: true,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    label: 'Minutes',
+                    value: summary.studyMinutes,
+                    suffix: ' min',
+                    icon: Icons.schedule_rounded,
+                    color: palette.info,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 18),
-          _ChartCard(weeklyMinutes: _weeklyMinutes(sessions)),
-          const SizedBox(height: 18),
-          Text(
-            'Progress by subject',
-            style: Theme.of(context).textTheme.titleLarge,
+          const SizedBox(height: 22),
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 200),
+            child: _ChartCard(weeklyMinutes: _weeklyMinutes(sessions)),
+          ),
+          const SizedBox(height: 22),
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 260),
+            child: Text(
+              'Progress by subject',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
           ),
           const SizedBox(height: 12),
           if (subjects.isEmpty)
-            _SubjectsEmptyCard()
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 320),
+              child: _SubjectsEmptyCard(),
+            )
           else
-            ...List<Widget>.generate(subjects.length, (int i) {
-              final Subject s = subjects[i];
-              final double value =
-                  summary.completionBySubject[s.id] ?? 0;
-              return Padding(
-                padding: EdgeInsets.only(top: i == 0 ? 0 : 14),
-                child: LabeledProgressBar(
-                  label: s.name,
-                  value: value,
-                  color: s.color,
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 320),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: palette.card,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: palette.outline, width: 0.6),
+                  boxShadow: palette.cardShadow,
                 ),
-              );
-            }),
+                child: Column(
+                  children: <Widget>[
+                    for (int i = 0; i < subjects.length; i++)
+                      Padding(
+                        padding: EdgeInsets.only(top: i == 0 ? 0 : 18),
+                        child: LabeledProgressBar(
+                          label: subjects[i].name,
+                          value: summary.completionBySubject[subjects[i].id] ?? 0,
+                          color: subjects[i].color,
+                          duration:
+                              Duration(milliseconds: 900 + i * 120),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -182,18 +231,48 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 }
 
+class _ScreenHeading extends StatelessWidget {
+  const _ScreenHeading({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(title, style: Theme.of(context).textTheme.displayMedium),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: TextStyle(fontSize: 13.5, color: palette.muted, height: 1.5),
+        ),
+      ],
+    );
+  }
+}
+
 class _StatCard extends StatelessWidget {
   const _StatCard({
     required this.label,
     required this.value,
+    required this.suffix,
     required this.icon,
     required this.color,
+    this.highlight = false,
   });
 
   final String label;
-  final String value;
+  final int value;
+  final String suffix;
   final IconData icon;
   final Color color;
+
+  /// When `true`, draws an outer color glow to call attention (used for
+  /// the streak counter).
+  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
@@ -202,65 +281,70 @@ class _StatCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: palette.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: palette.outline),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: palette.outline, width: 0.6),
+        boxShadow: <BoxShadow>[
+          ...palette.cardShadow,
+          if (highlight)
+            BoxShadow(
+              color: color.withOpacity(0.18),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
-            width: 36,
-            height: 36,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.14),
-              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: <Color>[
+                  color.withOpacity(0.20),
+                  color.withOpacity(0.06),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
+            alignment: Alignment.center,
             child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+          const SizedBox(height: 14),
+          CountUp(
+            value: value,
+            builder: (BuildContext context, int v) {
+              return RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.6,
+                    color: AppTheme.onBackground,
+                  ),
+                  children: <InlineSpan>[
+                    TextSpan(text: '$v'),
+                    TextSpan(
+                      text: suffix,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(color: palette.muted),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StreakPill extends StatelessWidget {
-  const _StreakPill({required this.days});
-
-  final int days;
-
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: palette.warm.withOpacity(0.14),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(
-            Icons.local_fire_department_rounded,
-            color: palette.warm,
-            size: 18,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            '$days day streak',
             style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: palette.warm,
+              color: palette.muted,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.4,
             ),
           ),
         ],
@@ -269,134 +353,163 @@ class _StreakPill extends StatelessWidget {
   }
 }
 
-class _MinutesPill extends StatelessWidget {
-  const _MinutesPill({required this.minutes});
-
-  final int minutes;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: scheme.primary.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(Icons.schedule, size: 18, color: scheme.primary),
-          const SizedBox(width: 6),
-          Text(
-            '$minutes min total',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: scheme.primary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChartCard extends StatelessWidget {
+class _ChartCard extends StatefulWidget {
   const _ChartCard({required this.weeklyMinutes});
 
   final List<double> weeklyMinutes;
 
   @override
+  State<_ChartCard> createState() => _ChartCardState();
+}
+
+class _ChartCardState extends State<_ChartCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+  late Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
+    _anim = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _c.forward());
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final AppPalette palette = AppPalette.of(context);
-    final ColorScheme scheme = Theme.of(context).colorScheme;
     final List<String> labels = _last7DayLabels();
-    final double maxObserved = weeklyMinutes.fold<double>(
+    final double maxObserved = widget.weeklyMinutes.fold<double>(
       0,
       (double a, double b) => a > b ? a : b,
     );
     final double maxY = maxObserved < 30 ? 30 : (maxObserved * 1.2);
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: palette.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: palette.outline),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: palette.outline, width: 0.6),
+        boxShadow: palette.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            'Study minutes — last 7 days',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 180,
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: maxY,
-                barTouchData: BarTouchData(enabled: false),
-                gridData: const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 26,
-                      getTitlesWidget: (double value, TitleMeta meta) {
-                        final int i = value.toInt();
-                        if (i < 0 || i >= labels.length) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            labels[i],
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: palette.muted,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  'Study minutes',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: palette.champagne,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Last 7 days',
+                  style: TextStyle(
+                    color: palette.muted,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                    letterSpacing: 0.4,
                   ),
                 ),
-                barGroups: <BarChartGroupData>[
-                  for (int i = 0; i < weeklyMinutes.length; i++)
-                    BarChartGroupData(
-                      x: i,
-                      barRods: <BarChartRodData>[
-                        BarChartRodData(
-                          toY: weeklyMinutes[i],
-                          width: 14,
-                          borderRadius: BorderRadius.circular(6),
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: <Color>[
-                              scheme.primary.withOpacity(0.6),
-                              scheme.primary,
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
               ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 180,
+            child: AnimatedBuilder(
+              animation: _anim,
+              builder: (BuildContext context, _) {
+                final double t = _anim.value;
+                return BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: maxY,
+                    barTouchData: BarTouchData(enabled: false),
+                    gridData: const FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(
+                      leftTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 26,
+                          getTitlesWidget:
+                              (double value, TitleMeta meta) {
+                            final int i = value.toInt();
+                            if (i < 0 || i >= labels.length) {
+                              return const SizedBox.shrink();
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                labels[i],
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: palette.muted,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    barGroups: <BarChartGroupData>[
+                      for (int i = 0; i < widget.weeklyMinutes.length; i++)
+                        BarChartGroupData(
+                          x: i,
+                          barRods: <BarChartRodData>[
+                            BarChartRodData(
+                              toY: widget.weeklyMinutes[i] * t,
+                              width: 16,
+                              borderRadius: BorderRadius.circular(8),
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: <Color>[
+                                  palette.warm.withOpacity(0.85),
+                                  palette.accent,
+                                ],
+                              ),
+                              backDrawRodData: BackgroundBarChartRodData(
+                                show: true,
+                                toY: maxY,
+                                color: palette.champagne,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -418,7 +531,6 @@ class _ChartCard extends StatelessWidget {
     final List<String> labels = <String>[];
     for (int i = 6; i >= 0; i--) {
       final DateTime d = today.subtract(Duration(days: i));
-      // DateTime.weekday: Mon=1..Sun=7
       labels.add(dayLetters[d.weekday - 1]);
     }
     return labels;
@@ -434,8 +546,9 @@ class _SubjectsEmptyCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
       decoration: BoxDecoration(
         color: palette.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: palette.outline),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: palette.outline, width: 0.6),
+        boxShadow: palette.cardShadow,
       ),
       child: const EmptyState(
         compact: true,
