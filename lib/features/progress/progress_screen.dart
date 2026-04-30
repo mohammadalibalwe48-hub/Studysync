@@ -75,12 +75,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
             const SizedBox(height: 80),
             EmptyState(
               icon: Icons.error_outline,
-              title: 'Could not load your progress',
+              title: 'تعذّر تحميل تقدّمك',
               description: _error ?? '',
               action: TextButton.icon(
                 onPressed: _load,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                label: const Text('إعادة المحاولة'),
               ),
             ),
           ],
@@ -101,8 +101,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
         children: <Widget>[
           const FadeSlideIn(
             child: _ScreenHeading(
-              title: 'Your progress',
-              subtitle: 'Track minutes, accuracy and streaks at a glance.',
+              title: 'تقدّمك',
+              subtitle:
+                  'تابع دقائق الدراسة ونسبة الصح والأيام المتتالية في لمحة واحدة.',
             ),
           ),
           const SizedBox(height: 20),
@@ -113,7 +114,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               children: <Widget>[
                 Expanded(
                   child: _StatCard(
-                    label: 'Completion',
+                    label: 'الإنجاز',
                     value: (summary.completionPercent * 100).round(),
                     suffix: '%',
                     icon: Icons.check_circle_outline_rounded,
@@ -123,7 +124,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
-                    label: 'Accuracy',
+                    label: 'نسبة الصح',
                     value: (summary.correctAnswerRate * 100).round(),
                     suffix: '%',
                     icon: Icons.gps_fixed_rounded,
@@ -140,9 +141,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
               children: <Widget>[
                 Expanded(
                   child: _StatCard(
-                    label: 'Streak',
+                    label: 'أيام الدراسة',
                     value: summary.streakDays,
-                    suffix: ' day${summary.streakDays == 1 ? '' : 's'}',
+                    suffix: ' يوم',
                     icon: Icons.local_fire_department_rounded,
                     color: palette.warm,
                     highlight: true,
@@ -151,9 +152,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
-                    label: 'Minutes',
+                    label: 'دقائق الدراسة',
                     value: summary.studyMinutes,
-                    suffix: ' min',
+                    suffix: ' د',
                     icon: Icons.schedule_rounded,
                     color: palette.info,
                   ),
@@ -170,7 +171,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           FadeSlideIn(
             delay: const Duration(milliseconds: 260),
             child: Text(
-              'Progress by subject',
+              'التقدّم حسب المادة',
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
@@ -409,7 +410,7 @@ class _ChartCardState extends State<_ChartCard>
             children: <Widget>[
               Expanded(
                 child: Text(
-                  'Study minutes',
+                  'دقائق الدراسة',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
@@ -421,7 +422,7 @@ class _ChartCardState extends State<_ChartCard>
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'Last 7 days',
+                  'آخر 7 أيام',
                   style: TextStyle(
                     color: palette.muted,
                     fontWeight: FontWeight.w700,
@@ -518,14 +519,16 @@ class _ChartCardState extends State<_ChartCard>
   }
 
   static List<String> _last7DayLabels() {
+    // حروف أولى بالعربية: اثنين، ثلاثاء، أربعاء، خميس، جمعة، سبت،
+    // أحد.
     const List<String> dayLetters = <String>[
-      'M',
-      'T',
-      'W',
-      'T',
-      'F',
-      'S',
-      'S',
+      'إ',
+      'ث',
+      'أ',
+      'خ',
+      'ج',
+      'س',
+      'ح',
     ];
     final DateTime today = DateTime.now();
     final List<String> labels = <String>[];
@@ -553,9 +556,9 @@ class _SubjectsEmptyCard extends StatelessWidget {
       child: const EmptyState(
         compact: true,
         icon: Icons.bar_chart_rounded,
-        title: 'No subject progress yet',
+        title: 'لا يوجد تقدّم بعد',
         description:
-            'Per-subject progress will show up here once you start studying.',
+            'سيظهر تقدمك في كل مادة هنا بمجرد أن تبدأ الدراسة.',
       ),
     );
   }
