@@ -91,7 +91,7 @@ class ProfileScreen extends StatelessWidget {
                     shaderCallback: (Rect bounds) =>
                         palette.goldGradient.createShader(bounds),
                     child: const Text(
-                      'فيزياء وكيمياء بكالوريا سوريا',
+                      'Educational Steps Platform',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
@@ -102,7 +102,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'رفيق دراستك للبكالوريا السورية.',
+                    'Crafted with care, golden by design.',
                     style: TextStyle(
                       fontSize: 11,
                       color: palette.muted,
