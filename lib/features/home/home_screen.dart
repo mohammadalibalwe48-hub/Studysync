@@ -10,6 +10,7 @@ import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/main_scaffold.dart';
 import 'package:studysync_syria/core/widgets/subject_card.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
+import 'package:studysync_syria/features/classes/join_class_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -137,6 +138,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 320),
+              child: _JoinClassTile(
+                onTap: () async {
+                  final String? joined = await showDialog<String>(
+                    context: context,
+                    builder: (_) => const JoinClassDialog(),
+                  );
+                  if (joined == null || !context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('تم الانضمام إلى $joined')),
+                  );
+                },
               ),
             ),
           ],
@@ -491,6 +508,65 @@ class _ActionTile extends StatelessWidget {
                 height: 1.4,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _JoinClassTile extends StatelessWidget {
+  const _JoinClassTile({required this.onTap});
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: palette.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: palette.outline, width: 0.6),
+          boxShadow: palette.cardShadow,
+        ),
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: palette.goldGradient,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(Icons.vpn_key_rounded,
+                  color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    'الانضمام إلى صف معلّم',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    'أدخل رمز الانضمام لمتابعة معلّمك لتقدّمك.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: palette.muted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_left_rounded, size: 20),
           ],
         ),
       ),
