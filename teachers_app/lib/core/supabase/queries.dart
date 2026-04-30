@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:studysync_syria_teachers/core/supabase/supabase_client.dart';
+import 'package:studysync_syria_teachers/features/assignments/assignment_models.dart';
 
 /// One row from `public.classes` enriched with the count of joined
 /// students.
@@ -411,6 +412,142 @@ class TeacherQueries {
       return total;
     } on PostgrestException catch (e) {
       throw Exception('تعذّر تحميل دقائق الدراسة: ${e.message}');
+    }
+  }
+
+  // ───────────────────────── assignments ─────────────────────────
+
+  static Future<List<Assignment>> fetchAssignmentsForClass({
+    required String classId,
+  }) async {
+    _requireUserId();
+    try {
+      final List<Map<String, dynamic>> rows = await _db
+          .from('assignments')
+          .select()
+          .eq('class_id', classId)
+          .order('created_at', ascending: false);
+      return rows.map(Assignment.fromMap).toList(growable: false);
+    } on PostgrestException catch (e) {
+      throw Exception('تعذّر تحميل الواجبات: ${e.message}');
+    }
+  }
+
+  static Future<Assignment> createAssignment({
+    required String classId,
+    required String title,
+    String? description,
+    String? subjectId,
+    DateTime? dueAt,
+    required List<DraftQuestion> questions,
+  }) async {
+    final String teacherId = _requireUserId();
+    if (title.trim().isEmpty) {
+      throw ArgumentError('title required');
+    }
+    if (questions.isEmpty) {
+      throw Exception('يجب إضافة سؤال واحد على الأقل.');
+    }
+    try {
+      final Map<String, dynamic> row = await _db
+          .from('assignments')
+          .insert(<String, dynamic>{
+            'class_id': classId,
+            'teacher_id': teacherId,
+            'title': title.trim(),
+            'description': (description ?? '').trim().isEmpty
+                ? null
+                : description!.trim(),
+            'subject_id': subjectId,
+            'due_at': dueAt?.toUtc().toIso8601String(),
+          })
+          .select()
+          .single();
+
+      final Assignment assignment = Assignment.fromMap(row);
+
+      final List<Map<String, dynamic>> questionRows = <Map<String, dynamic>>[
+        for (int i = 0; i < questions.length; i++)
+          questions[i].toInsertRow(assignmentId: assignment.id, position: i),
+      ];
+      await _db.from('assignment_questions').insert(questionRows);
+      return assignment;
+    } on PostgrestException catch (e) {
+      throw Exception('تعذّر إنشاء الواجب: ${e.message}');
+    }
+  }
+
+  static Future<void> deleteAssignment({required String assignmentId}) async {
+    _requireUserId();
+    try {
+      await _db.from('assignments').delete().eq('id', assignmentId);
+    } on PostgrestException catch (e) {
+      throw Exception('تعذّر حذف الواجب: ${e.message}');
+    }
+  }
+
+  static Future<List<AssignmentQuestion>> fetchAssignmentQuestions({
+    required String assignmentId,
+  }) async {
+    _requireUserId();
+    try {
+      final List<Map<String, dynamic>> rows = await _db
+          .from('assignment_questions')
+          .select()
+          .eq('assignment_id', assignmentId)
+          .order('position', ascending: true);
+      return rows
+          .map(AssignmentQuestion.fromMap)
+          .toList(growable: false);
+    } on PostgrestException catch (e) {
+      throw Exception('تعذّر تحميل الأسئلة: ${e.message}');
+    }
+  }
+
+  static Future<List<AssignmentSubmissionSummary>> fetchAssignmentSubmissions({
+    required String assignmentId,
+  }) async {
+    _requireUserId();
+    try {
+      final List<Map<String, dynamic>> rows = await _db
+          .from('assignment_submissions')
+          .select('student_id, score, total, submitted_at')
+          .eq('assignment_id', assignmentId)
+          .order('submitted_at', ascending: false);
+      if (rows.isEmpty) {
+        return const <AssignmentSubmissionSummary>[];
+      }
+
+      final List<String> studentIds = rows
+          .map((Map<String, dynamic> r) => r['student_id'] as String)
+          .toSet()
+          .toList();
+      final List<Map<String, dynamic>> profileRows = await _db
+          .from('profiles')
+          .select('user_id, full_name')
+          .inFilter('user_id', studentIds);
+      final Map<String, String?> nameById = <String, String?>{
+        for (final Map<String, dynamic> p in profileRows)
+          p['user_id'] as String: p['full_name'] as String?,
+      };
+
+      return rows.map((Map<String, dynamic> r) {
+        final String sid = r['student_id'] as String;
+        final String? raw = nameById[sid];
+        return AssignmentSubmissionSummary(
+          studentId: sid,
+          studentName: (raw == null || raw.trim().isEmpty)
+              ? 'طالب'
+              : raw.trim(),
+          score: (r['score'] as int?) ?? 0,
+          total: (r['total'] as int?) ?? 0,
+          submittedAt:
+              DateTime.tryParse(r['submitted_at']?.toString() ?? '') ??
+                  DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+        );
+      }).toList(growable: false);
+    } on PostgrestException catch (e) {
+      throw Exception('تعذّر تحميل التسليمات: ${e.message}');
     }
   }
 

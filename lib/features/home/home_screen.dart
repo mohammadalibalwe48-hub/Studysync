@@ -156,6 +156,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
+            const SizedBox(height: 14),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 360),
+              child: _AssignmentsTile(
+                onTap: () => context.push('/assignments'),
+              ),
+            ),
           ],
         ),
       ),
@@ -558,6 +565,65 @@ class _JoinClassTile extends StatelessWidget {
                   ),
                   Text(
                     'أدخل رمز الانضمام لمتابعة معلّمك لتقدّمك.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: palette.muted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_left_rounded, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AssignmentsTile extends StatelessWidget {
+  const _AssignmentsTile({required this.onTap});
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: palette.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: palette.outline, width: 0.6),
+          boxShadow: palette.cardShadow,
+        ),
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: palette.goldGradient,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(Icons.assignment_outlined,
+                  color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    'الواجبات',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    'الواجبات التي أنشأها معلّمك للصف.',
                     style: TextStyle(
                       fontSize: 12,
                       color: palette.muted,
