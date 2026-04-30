@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:studysync_syria/features/assignments/assignment_models.dart';
+import 'package:studysync_syria/features/assignments/assignments_list_screen.dart';
+import 'package:studysync_syria/features/assignments/take_assignment_screen.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
 import 'package:studysync_syria/features/auth/login_screen.dart';
 import 'package:studysync_syria/features/auth/signup_screen.dart';
@@ -72,6 +75,27 @@ GoRouter buildRouter() {
         path: '/exam-questions',
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _slidePage(state, const ExamQuestionsScreen()),
+      ),
+      GoRoute(
+        path: '/assignments',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const StudentAssignmentsScreen()),
+      ),
+      GoRoute(
+        path: '/assignments/:assignmentId',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final StudentAssignment? a =
+              state.extra is StudentAssignment
+                  ? state.extra as StudentAssignment
+                  : null;
+          if (a == null) {
+            // Direct deep-link without payload: bounce back to list.
+            return _slidePage(
+                state, const StudentAssignmentsScreen());
+          }
+          return _slidePage(
+              state, TakeAssignmentScreen(assignment: a));
+        },
       ),
       GoRoute(
         path: '/progress',

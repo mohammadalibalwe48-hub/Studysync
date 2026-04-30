@@ -86,6 +86,59 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                 title: widget.className,
                 onBack: () => context.go('/classes'),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => context.push(
+                    '/classes/${widget.classId}/assignments',
+                    extra: <String, dynamic>{'name': widget.className},
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: palette.card,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: palette.outline),
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            gradient: palette.goldGradient,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.assignment_outlined,
+                              color: Colors.white, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                'الواجبات',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                'إنشاء وتقييم الواجبات لهذا الصف',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_left_rounded),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: _refresh,

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:studysync_syria_teachers/features/assignments/assignment_builder_screen.dart';
+import 'package:studysync_syria_teachers/features/assignments/assignment_submissions_screen.dart';
+import 'package:studysync_syria_teachers/features/assignments/assignments_list_screen.dart';
 import 'package:studysync_syria_teachers/features/auth/auth_service.dart';
 import 'package:studysync_syria_teachers/features/auth/login_screen.dart';
 import 'package:studysync_syria_teachers/features/auth/signup_screen.dart';
@@ -62,6 +65,54 @@ GoRouter buildRouter() {
             StudentDetailScreen(
               studentId: studentId,
               displayName: displayName,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/classes/:classId/assignments',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final String classId = state.pathParameters['classId']!;
+          final String className =
+              (state.extra as Map<String, dynamic>?)?['name'] as String? ??
+                  'الصف';
+          return _slidePage(
+            state,
+            AssignmentsListScreen(
+              classId: classId,
+              className: className,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/classes/:classId/assignments/new',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final String classId = state.pathParameters['classId']!;
+          final String className = (state.extra
+                  as Map<String, dynamic>?)?['className'] as String? ??
+              'الصف';
+          return _slidePage(
+            state,
+            AssignmentBuilderScreen(
+              classId: classId,
+              className: className,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/assignments/:assignmentId/submissions',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final String aId = state.pathParameters['assignmentId']!;
+          final String title =
+              (state.extra as Map<String, dynamic>?)?['title'] as String? ??
+                  'الواجب';
+          return _slidePage(
+            state,
+            AssignmentSubmissionsScreen(
+              assignmentId: aId,
+              title: title,
             ),
           );
         },
