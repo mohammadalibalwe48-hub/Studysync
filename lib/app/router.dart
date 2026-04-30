@@ -34,43 +34,101 @@ GoRouter buildRouter() {
     routes: <RouteBase>[
       GoRoute(
         path: '/login',
-        builder: (BuildContext context, GoRouterState state) =>
-            const LoginScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fadePage(state, const LoginScreen()),
       ),
       GoRoute(
         path: '/signup',
-        builder: (BuildContext context, GoRouterState state) =>
-            const SignupScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fadePage(state, const SignupScreen()),
       ),
       GoRoute(
         path: '/home',
-        builder: (BuildContext context, GoRouterState state) =>
-            const HomeScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fadePage(state, const HomeScreen()),
       ),
       GoRoute(
         path: '/subjects/:subjectId',
-        builder: (BuildContext context, GoRouterState state) {
+        pageBuilder: (BuildContext context, GoRouterState state) {
           final String subjectId = state.pathParameters['subjectId'] ?? '';
-          return TopicListScreen(subjectId: subjectId);
+          return _slidePage(state, TopicListScreen(subjectId: subjectId));
         },
       ),
       GoRoute(
         path: '/topics/:topicId',
-        builder: (BuildContext context, GoRouterState state) {
+        pageBuilder: (BuildContext context, GoRouterState state) {
           final String topicId = state.pathParameters['topicId'] ?? '';
-          return TopicDetailScreen(topicId: topicId);
+          return _slidePage(state, TopicDetailScreen(topicId: topicId));
         },
       ),
       GoRoute(
         path: '/progress',
-        builder: (BuildContext context, GoRouterState state) =>
-            const ProgressScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fadePage(state, const ProgressScreen()),
       ),
       GoRoute(
         path: '/profile',
-        builder: (BuildContext context, GoRouterState state) =>
-            const ProfileScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fadePage(state, const ProfileScreen()),
       ),
     ],
+  );
+}
+
+/// Cross-fade with a tiny upward slide. Used for "tab" level routes
+/// where there is no spatial relationship between source and target.
+CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 380),
+    reverseTransitionDuration: const Duration(milliseconds: 280),
+    transitionsBuilder:
+        (BuildContext context, Animation<double> animation, _, Widget child) {
+      final Animation<double> curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.04),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
+/// Right-to-left slide used for "drill-in" routes (subject → topics →
+/// topic detail) where the user perceives forward motion.
+CustomTransitionPage<void> _slidePage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 360),
+    reverseTransitionDuration: const Duration(milliseconds: 280),
+    transitionsBuilder:
+        (BuildContext context, Animation<double> animation, _, Widget child) {
+      final Animation<double> curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.06, 0),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
   );
 }

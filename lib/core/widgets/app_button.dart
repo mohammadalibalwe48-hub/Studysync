@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// A primary filled button used across the app.
+import 'package:studysync_syria/app/theme.dart';
+import 'package:studysync_syria/core/widgets/animations.dart';
+
+/// A primary gradient-gold call-to-action button used across the app.
 ///
-/// Wraps [FilledButton] so we can keep visual style consistent
-/// and add a built-in loading state.
+/// The button has:
+/// - Radiant gold → rich amber linear gradient.
+/// - Deep charcoal label for premium legibility.
+/// - Soft amber glow shadow that grows on press.
+/// - Press-scale haptic-feel via [PressableScale].
+/// - Built-in loading state.
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
@@ -11,50 +18,132 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.icon,
+    this.height = 56,
+    this.borderRadius = 14,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
   final IconData? icon;
+  final double height;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    final bool disabled = isLoading || onPressed == null;
     final VoidCallback? handler = isLoading ? null : onPressed;
+    final Color labelColor =
+        disabled ? AppTheme.onBackground.withOpacity(0.5) : AppTheme.onBackground;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: FilledButton(
-        onPressed: handler,
-        style: FilledButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+    return PressableScale(
+      onTap: handler,
+      pressedScale: 0.97,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 180),
+        opacity: disabled ? 0.55 : 1.0,
+        child: Container(
+          width: double.infinity,
+          height: height,
+          decoration: BoxDecoration(
+            gradient: palette.goldGradient,
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: palette.accent.withOpacity(disabled ? 0.10 : 0.30),
+                blurRadius: 28,
+                offset: const Offset(0, 12),
+              ),
+            ],
           ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+          alignment: Alignment.center,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            child: isLoading
+                ? const SizedBox(
+                    key: ValueKey<String>('loading'),
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppTheme.onBackground,
+                      ),
+                    ),
+                  )
+                : Row(
+                    key: const ValueKey<String>('label'),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: labelColor,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      if (icon != null) ...<Widget>[
+                        const SizedBox(width: 8),
+                        Icon(icon, size: 20, color: labelColor),
+                      ],
+                    ],
+                  ),
           ),
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.4,
-                  color: Colors.white,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  if (icon != null) ...<Widget>[
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(label),
-                ],
+      ),
+    );
+  }
+}
+
+/// Ghost / secondary button style — soft champagne fill with a hairline
+/// gold-tone border, gold label.
+class GhostButton extends StatelessWidget {
+  const GhostButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return PressableScale(
+      onTap: onPressed,
+      pressedScale: 0.97,
+      child: Container(
+        width: double.infinity,
+        height: 52,
+        decoration: BoxDecoration(
+          color: palette.champagne,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: palette.gold.withOpacity(0.55), width: 1.2),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            if (icon != null) ...<Widget>[
+              Icon(icon, size: 18, color: palette.accent),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: palette.accent,
               ),
+            ),
+          ],
+        ),
       ),
     );
   }

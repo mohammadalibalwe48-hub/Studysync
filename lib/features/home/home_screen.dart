@@ -5,6 +5,7 @@ import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/constants/curriculum.dart';
 import 'package:studysync_syria/core/models/subject.dart';
 import 'package:studysync_syria/core/supabase/queries.dart';
+import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/main_scaffold.dart';
 import 'package:studysync_syria/core/widgets/subject_card.dart';
@@ -50,30 +51,45 @@ class _HomeScreenState extends State<HomeScreen> {
       child: RefreshIndicator(
         onRefresh: _loadStreak,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: <Widget>[
-            _HeroCard(
-              greeting: 'Welcome back,',
-              name: displayName,
-              streakDays: _streakDays ?? 0,
-            ),
-            const SizedBox(height: 24),
-            _SectionHeader(title: 'Subjects', subtitle: subjects.isEmpty
-                ? 'Once subjects are added, they will appear here.'
-                : 'Pick a subject to keep studying.'),
-            const SizedBox(height: 12),
-            if (subjects.isEmpty)
-              const _SubjectsEmptyState()
-            else
-              ...subjects.map(
-                (Subject s) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: SubjectCard(
-                    subject: s,
-                    onTap: () => context.go('/subjects/${s.id}'),
-                  ),
-                ),
+            FadeSlideIn(
+              child: _HeroCard(
+                greeting: _greetingFor(DateTime.now()),
+                name: displayName,
+                streakDays: _streakDays ?? 0,
               ),
+            ),
+            const SizedBox(height: 28),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 80),
+              child: _SectionHeader(
+                title: 'Subjects',
+                subtitle: subjects.isEmpty
+                    ? 'Your learning paths will appear here.'
+                    : 'Pick a subject to keep studying.',
+              ),
+            ),
+            const SizedBox(height: 14),
+            if (subjects.isEmpty)
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 160),
+                child: _SubjectsEmptyState(onRefresh: _loadStreak),
+              )
+            else
+              ...List<Widget>.generate(subjects.length, (int i) {
+                final Subject s = subjects[i];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: FadeSlideIn(
+                    delay: Duration(milliseconds: 140 + i * 80),
+                    child: SubjectCard(
+                      subject: s,
+                      onTap: () => context.go('/subjects/${s.id}'),
+                    ),
+                  ),
+                );
+              }),
           ],
         ),
       ),
@@ -85,6 +101,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final String raw = at <= 0 ? email : email.substring(0, at);
     if (raw.isEmpty) return 'Student';
     return raw[0].toUpperCase() + raw.substring(1);
+  }
+
+  static String _greetingFor(DateTime now) {
+    final int h = now.hour;
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
   }
 }
 
@@ -101,95 +124,182 @@ class _HeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final AppPalette palette = AppPalette.of(context);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            scheme.primary,
-            Color.lerp(scheme.primary, AppTheme.accent, 0.55) ?? scheme.primary,
+        borderRadius: BorderRadius.circular(28),
+        color: AppTheme.surfaceContainerHigh,
+        border: Border.all(color: Colors.white.withOpacity(0.6), width: 0.6),
+        boxShadow: palette.cardShadow,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
+          children: <Widget>[
+            // Soft golden ambient gradient.
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: <Color>[
+                      palette.gold.withOpacity(0.22),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Decorative diffuse glow.
+            Positioned(
+              right: -40,
+              bottom: -40,
+              child: IgnorePointer(
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: <Color>[
+                        palette.warm.withOpacity(0.30),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  greeting,
+                  style: TextStyle(
+                    color: palette.muted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Welcome back,',
+                  style: TextStyle(
+                    color: AppTheme.onBackground.withOpacity(0.74),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: AppTheme.onBackground,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: <Widget>[
+                    _StreakHeroPill(days: streakDays),
+                    const SizedBox(width: 10),
+                    const _KeepGoingHeroPill(),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: scheme.primary.withOpacity(0.25),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            greeting,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.85),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.4,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 18),
-          Row(
-            children: <Widget>[
-              _HeroPill(
-                icon: Icons.local_fire_department_rounded,
-                label: '$streakDays day streak',
-              ),
-              const SizedBox(width: 10),
-              const _HeroPill(
-                icon: Icons.school_outlined,
-                label: 'Keep going',
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
 }
 
-class _HeroPill extends StatelessWidget {
-  const _HeroPill({required this.icon, required this.label});
+class _StreakHeroPill extends StatelessWidget {
+  const _StreakHeroPill({required this.days});
 
-  final IconData icon;
-  final String label;
+  final int days;
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return GlowPulse(
+      color: palette.accent,
+      minOpacity: 0.10,
+      maxOpacity: 0.26,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.65),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: Colors.white.withOpacity(0.7), width: 0.6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              Icons.local_fire_department_rounded,
+              size: 16,
+              color: palette.warm,
+            ),
+            const SizedBox(width: 6),
+            CountUp(
+              value: days,
+              builder: (BuildContext context, int v) {
+                return Text(
+                  '$v day streak',
+                  style: const TextStyle(
+                    color: AppTheme.onBackground,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.4,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _KeepGoingHeroPill extends StatelessWidget {
+  const _KeepGoingHeroPill();
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
+        gradient: LinearGradient(
+          colors: <Color>[
+            palette.gold.withOpacity(0.30),
+            palette.warm.withOpacity(0.20),
+          ],
+        ),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withOpacity(0.6), width: 0.6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 16, color: Colors.white),
+          Icon(Icons.auto_awesome_rounded, size: 16, color: palette.accent),
           const SizedBox(width: 6),
           Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
+            'Keep going',
+            style: TextStyle(
+              color: palette.accent,
               fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.4,
             ),
           ),
         ],
@@ -214,10 +324,10 @@ class _SectionHeader extends StatelessWidget {
           title,
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
           subtitle,
-          style: TextStyle(fontSize: 13, color: palette.muted),
+          style: TextStyle(fontSize: 13, color: palette.muted, height: 1.5),
         ),
       ],
     );
@@ -225,7 +335,9 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _SubjectsEmptyState extends StatelessWidget {
-  const _SubjectsEmptyState();
+  const _SubjectsEmptyState({required this.onRefresh});
+
+  final Future<void> Function() onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -235,15 +347,21 @@ class _SubjectsEmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
       decoration: BoxDecoration(
         color: palette.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: palette.outline),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: palette.outline, width: 0.6),
+        boxShadow: palette.cardShadow,
       ),
-      child: const EmptyState(
+      child: EmptyState(
         compact: true,
         icon: Icons.menu_book_outlined,
         title: 'No subjects yet',
         description:
-            'Subjects will show up here once they are added by your teacher.',
+            'Your teacher will add subjects for you to begin your journey.',
+        action: TextButton.icon(
+          onPressed: () => onRefresh(),
+          icon: const Icon(Icons.refresh_rounded, size: 18),
+          label: const Text('Refresh'),
+        ),
       ),
     );
   }

@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:studysync_syria/core/widgets/ambient_background.dart';
+import 'package:studysync_syria/core/widgets/glass_app_bar.dart';
+import 'package:studysync_syria/core/widgets/glass_bottom_nav.dart';
+
 /// One of the bottom-nav destinations in the main app shell.
 enum MainTab { home, progress, profile }
 
 /// Shared scaffold used by [HomeScreen], [ProgressScreen] and
-/// [ProfileScreen] so the bottom navigation looks identical and the
-/// active tab indicator stays in sync.
+/// [ProfileScreen] so the floating glass top bar and bottom navigation
+/// look identical across tabs and the active tab indicator stays in
+/// sync. Adds the ambient golden-hour background behind every screen.
 class MainScaffold extends StatelessWidget {
   const MainScaffold({
     super.key,
@@ -14,67 +19,106 @@ class MainScaffold extends StatelessWidget {
     required this.child,
     this.appBar,
     this.padding = EdgeInsets.zero,
+    this.showTopBar = true,
   });
 
   final MainTab tab;
   final Widget child;
+
+  /// Optional override for the top bar. Defaults to the standard glass
+  /// brand bar with avatar.
   final PreferredSizeWidget? appBar;
   final EdgeInsetsGeometry padding;
 
+  /// Whether to render the top-app bar overlay. Set to `false` for
+  /// screens that prefer their own scrolled header.
+  final bool showTopBar;
+
   @override
   Widget build(BuildContext context) {
+    final PreferredSizeWidget? topBar = appBar ??
+        (showTopBar
+            ? GlassAppBar(
+                leading: const GlassAppBarBrand(),
+                actions: <Widget>[
+                  GlassAppBarAvatar(
+                    onTap: () => context.go('/profile'),
+                  ),
+                ],
+              )
+            : null);
+
     return Scaffold(
-      appBar: appBar,
-      body: SafeArea(
-        bottom: false,
-        child: Padding(padding: padding, child: child),
+      backgroundColor: Colors.transparent,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      body: AmbientBackground(
+        child: SafeArea(
+          top: false,
+          bottom: false,
+          child: Stack(
+            children: <Widget>[
+              Positioned.fill(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: topBar?.preferredSize.height ?? 0,
+                    bottom: 96,
+                  ),
+                  child: Padding(padding: padding, child: child),
+                ),
+              ),
+              if (topBar != null)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: topBar,
+                ),
+            ],
+          ),
+        ),
       ),
-      bottomNavigationBar: _MainNavBar(active: tab),
-    );
-  }
-}
-
-class _MainNavBar extends StatelessWidget {
-  const _MainNavBar({required this.active});
-
-  final MainTab active;
-
-  @override
-  Widget build(BuildContext context) {
-    return NavigationBar(
-      selectedIndex: active.index,
-      onDestinationSelected: (int i) {
-        final MainTab next = MainTab.values[i];
-        if (next == active) return;
-        switch (next) {
-          case MainTab.home:
-            context.go('/home');
-            break;
-          case MainTab.progress:
-            context.go('/progress');
-            break;
-          case MainTab.profile:
-            context.go('/profile');
-            break;
-        }
-      },
-      destinations: const <NavigationDestination>[
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: 'Home',
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: GlassBottomNav(
+            currentIndex: tab.index,
+            onTap: (int i) {
+              final MainTab next = MainTab.values[i];
+              if (next == tab) return;
+              switch (next) {
+                case MainTab.home:
+                  context.go('/home');
+                  break;
+                case MainTab.progress:
+                  context.go('/progress');
+                  break;
+                case MainTab.profile:
+                  context.go('/profile');
+                  break;
+              }
+            },
+            items: const <GlassNavItem>[
+              GlassNavItem(
+                icon: Icons.home_outlined,
+                activeIcon: Icons.home_rounded,
+                label: 'Home',
+              ),
+              GlassNavItem(
+                icon: Icons.insights_outlined,
+                activeIcon: Icons.insights_rounded,
+                label: 'Progress',
+              ),
+              GlassNavItem(
+                icon: Icons.person_outline,
+                activeIcon: Icons.person_rounded,
+                label: 'Profile',
+              ),
+            ],
+          ),
         ),
-        NavigationDestination(
-          icon: Icon(Icons.insert_chart_outlined),
-          selectedIcon: Icon(Icons.insert_chart_rounded),
-          label: 'Progress',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person_rounded),
-          label: 'Profile',
-        ),
-      ],
+      ),
     );
   }
 }
