@@ -9,6 +9,7 @@ import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/main_scaffold.dart';
 import 'package:studysync_syria/core/widgets/subject_card.dart';
+import 'package:studysync_syria/features/announcements/announcement_queries.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
 import 'package:studysync_syria/features/classes/join_class_dialog.dart';
 
@@ -22,11 +23,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int? _streakDays;
   ProgressSummary? _summary;
+  int _unreadAnnouncements = 0;
 
   @override
   void initState() {
     super.initState();
     _loadProgress();
+    _loadUnread();
   }
 
   Future<void> _loadProgress() async {
@@ -47,6 +50,19 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _loadUnread() async {
+    final int count = await AnnouncementQueries.fetchUnreadCount();
+    if (!mounted) return;
+    setState(() => _unreadAnnouncements = count);
+  }
+
+  Future<void> _refreshAll() async {
+    await Future.wait<void>(<Future<void>>[
+      _loadProgress(),
+      _loadUnread(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final String? rawEmail = AuthService.instance.currentUserEmail;
@@ -57,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return MainScaffold(
       tab: MainTab.home,
       child: RefreshIndicator(
-        onRefresh: _loadProgress,
+        onRefresh: _refreshAll,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: <Widget>[
@@ -161,6 +177,18 @@ class _HomeScreenState extends State<HomeScreen> {
               delay: const Duration(milliseconds: 360),
               child: _AssignmentsTile(
                 onTap: () => context.push('/assignments'),
+              ),
+            ),
+            const SizedBox(height: 14),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 420),
+              child: _AnnouncementsTile(
+                unreadCount: _unreadAnnouncements,
+                onTap: () async {
+                  await context.push('/announcements');
+                  if (!mounted) return;
+                  await _loadUnread();
+                },
               ),
             ),
           ],
@@ -633,6 +661,95 @@ class _AssignmentsTile extends StatelessWidget {
               ),
             ),
             const Icon(Icons.chevron_left_rounded, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnnouncementsTile extends StatelessWidget {
+  const _AnnouncementsTile({
+    required this.unreadCount,
+    required this.onTap,
+  });
+
+  final int unreadCount;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: palette.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: palette.outline, width: 0.6),
+          boxShadow: palette.cardShadow,
+        ),
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: scheme.primary.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.campaign_outlined,
+                color: scheme.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    'الإعلانات',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    'إعلانات معلّميك لكل الصفوف.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: palette.muted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (unreadCount > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: scheme.primary,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '$unreadCount جديد',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              )
+            else
+              const Icon(Icons.chevron_left_rounded, size: 20),
           ],
         ),
       ),

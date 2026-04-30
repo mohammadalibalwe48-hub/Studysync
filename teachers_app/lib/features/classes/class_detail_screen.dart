@@ -88,54 +88,27 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
+                child: _ClassActionTile(
+                  palette: palette,
+                  icon: Icons.assignment_outlined,
+                  title: 'الواجبات',
+                  description: 'إنشاء وتقييم الواجبات لهذا الصف',
                   onTap: () => context.push(
                     '/classes/${widget.classId}/assignments',
                     extra: <String, dynamic>{'name': widget.className},
                   ),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: palette.card,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: palette.outline),
-                    ),
-                    child: Row(
-                      children: <Widget>[
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            gradient: palette.goldGradient,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          alignment: Alignment.center,
-                          child: const Icon(Icons.assignment_outlined,
-                              color: Colors.white, size: 20),
-                        ),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                'الواجبات',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              Text(
-                                'إنشاء وتقييم الواجبات لهذا الصف',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_left_rounded),
-                      ],
-                    ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                child: _ClassActionTile(
+                  palette: palette,
+                  icon: Icons.campaign_outlined,
+                  title: 'الإعلانات',
+                  description: 'نشر وإدارة إعلانات هذا الصف',
+                  onTap: () => context.push(
+                    '/classes/${widget.classId}/announcements',
+                    extra: <String, dynamic>{'name': widget.className},
                   ),
                 ),
               ),
@@ -394,6 +367,72 @@ class _StudentTile extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ClassActionTile extends StatelessWidget {
+  const _ClassActionTile({
+    required this.palette,
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.onTap,
+  });
+
+  final AppPalette palette;
+  final IconData icon;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: palette.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: palette.outline),
+        ),
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                gradient: palette.goldGradient,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    description,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_left_rounded),
           ],
         ),
       ),
