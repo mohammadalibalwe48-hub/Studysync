@@ -48,11 +48,16 @@ class _JoinClassDialogState extends State<JoinClassDialog> {
     }
 
     try {
-      final List<Map<String, dynamic>> rows = await db
-          .from('classes')
-          .select('id, name')
-          .eq('join_code', code)
-          .limit(1);
+      // Look up the class via a SECURITY DEFINER RPC so students cannot
+      // SELECT all rows in `public.classes` (which would leak every
+      // join code). The function returns only (id, name) of the matching
+      // class — see supabase/migrations/0003_classes_lookup_rpc.sql.
+      final dynamic raw = await db.rpc<dynamic>(
+        'lookup_class_by_code',
+        params: <String, dynamic>{'code': code},
+      );
+      final List<dynamic> rows =
+          raw is List ? raw : const <dynamic>[];
       if (rows.isEmpty) {
         setState(() {
           _busy = false;
@@ -61,13 +66,18 @@ class _JoinClassDialogState extends State<JoinClassDialog> {
         return;
       }
 
-      final String classId = rows.first['id'] as String;
-      final String className = rows.first['name'] as String;
+      final Map<String, dynamic> row =
+          Map<String, dynamic>.from(rows.first as Map);
+      final String classId = row['id'] as String;
+      final String className = row['name'] as String;
 
+      // ignoreDuplicates: true → INSERT … ON CONFLICT DO NOTHING, which
+      // does not require an UPDATE RLS policy. Without this, re-joining a
+      // class the student is already in fails with an RLS denial.
       await db.from('class_members').upsert(<String, dynamic>{
         'class_id': classId,
         'student_id': user.id,
-      }, onConflict: 'class_id,student_id');
+      }, onConflict: 'class_id,student_id', ignoreDuplicates: true);
 
       if (!mounted) return;
       Navigator.of(context).pop(className);
