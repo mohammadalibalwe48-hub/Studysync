@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:studysync_syria/features/announcements/announcements_inbox_screen.dart';
 import 'package:studysync_syria/features/assignments/assignment_models.dart';
 import 'package:studysync_syria/features/assignments/assignments_list_screen.dart';
 import 'package:studysync_syria/features/assignments/take_assignment_screen.dart';
@@ -82,6 +83,11 @@ GoRouter buildRouter() {
         path: '/assignments',
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _slidePage(state, const StudentAssignmentsScreen()),
+      ),
+      GoRoute(
+        path: '/announcements',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const AnnouncementsInboxScreen()),
       ),
       GoRoute(
         path: '/assignments/:assignmentId',

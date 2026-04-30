@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:studysync_syria_teachers/features/announcements/announcement_reads_screen.dart';
+import 'package:studysync_syria_teachers/features/announcements/announcements_screen.dart';
 import 'package:studysync_syria_teachers/features/assignments/assignment_builder_screen.dart';
 import 'package:studysync_syria_teachers/features/assignments/assignment_submissions_screen.dart';
 import 'package:studysync_syria_teachers/features/assignments/assignments_list_screen.dart';
@@ -116,6 +118,41 @@ GoRouter buildRouter() {
             AssignmentSubmissionsScreen(
               assignmentId: aId,
               title: title,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/classes/:classId/announcements',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final String classId = state.pathParameters['classId']!;
+          final String className =
+              (state.extra as Map<String, dynamic>?)?['name'] as String? ??
+                  'الصف';
+          return _slidePage(
+            state,
+            AnnouncementsScreen(
+              classId: classId,
+              className: className,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/announcements/:announcementId/reads',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final String aId = state.pathParameters['announcementId']!;
+          final Map<String, dynamic>? extra =
+              state.extra as Map<String, dynamic>?;
+          final int seenCount = (extra?['seenCount'] as int?) ?? 0;
+          final int totalStudents =
+              (extra?['totalStudents'] as int?) ?? 0;
+          return _slidePage(
+            state,
+            AnnouncementReadsScreen(
+              announcementId: aId,
+              seenCount: seenCount,
+              totalStudents: totalStudents,
             ),
           );
         },
