@@ -73,15 +73,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   const FadeSlideIn(
                     delay: Duration(milliseconds: 80),
                     child: _AuthHeading(
-                      title: 'Welcome back',
-                      subtitle: 'Continue your learning journey.',
+                      title: 'أهلاً بعودتك',
+                      subtitle: 'تابع رحلتك في الفيزياء والكيمياء.',
                     ),
                   ),
                   const SizedBox(height: 28),
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 160),
                     child: _LabelledField(
-                      label: 'Email',
+                      label: 'البريد الإلكتروني',
                       child: TextFormField(
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         validator: (String? v) {
                           if (v == null || v.trim().isEmpty) {
-                            return 'Please enter your email.';
+                            return 'الرجاء إدخال البريد الإلكتروني.';
                           }
                           return null;
                         },
@@ -103,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 220),
                     child: _LabelledField(
-                      label: 'Password',
+                      label: 'كلمة السر',
                       trailing: TextButton(
                         onPressed: () {},
                         style: TextButton.styleFrom(
@@ -112,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: const Text(
-                          'Forgot?',
+                          'نسيتها؟',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -140,10 +140,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         validator: (String? v) {
                           if (v == null || v.isEmpty) {
-                            return 'Please enter your password.';
+                            return 'الرجاء إدخال كلمة السر.';
                           }
                           if (v.length < 6) {
-                            return 'Password must be at least 6 characters.';
+                            return 'كلمة السر يجب ألّا تقل عن 6 أحرف.';
                           }
                           return null;
                         },
@@ -165,8 +165,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 280),
                     child: AppButton(
-                      label: 'Sign in',
-                      icon: Icons.arrow_forward_rounded,
+                      label: 'دخول',
+                      icon: Icons.arrow_back_rounded,
                       isLoading: _isLoading,
                       onPressed: _handleLogin,
                     ),
@@ -178,14 +178,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          'No account yet? ',
+                          'لا تملك حساباً؟ ',
                           style: TextStyle(
                             color: AppPalette.of(context).muted,
                           ),
                         ),
                         TextButton(
                           onPressed: () => context.go('/signup'),
-                          child: const Text('Create one'),
+                          child: const Text('أنشئ حساباً'),
                         ),
                       ],
                     ),

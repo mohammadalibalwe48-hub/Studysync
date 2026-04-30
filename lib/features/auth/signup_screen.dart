@@ -80,13 +80,13 @@ class _SignupScreenState extends State<SignupScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          'Create your account',
+                          'أنشئ حسابك',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.displayMedium,
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Sign up to start learning.',
+                          'سجّل حساباً لتبدأ الدراسة.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
@@ -100,7 +100,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 160),
                     child: _SignupField(
-                      label: 'Email',
+                      label: 'البريد الإلكتروني',
                       child: TextFormField(
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
@@ -111,12 +111,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         validator: (String? v) {
                           if (v == null || v.trim().isEmpty) {
-                            return 'Please enter your email.';
+                            return 'الرجاء إدخال البريد الإلكتروني.';
                           }
                           final RegExp re =
                               RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
                           if (!re.hasMatch(v.trim())) {
-                            return 'Please enter a valid email address.';
+                            return 'الرجاء إدخال بريد إلكتروني صحيح.';
                           }
                           return null;
                         },
@@ -127,7 +127,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 220),
                     child: _SignupField(
-                      label: 'Password',
+                      label: 'كلمة السر',
                       child: TextFormField(
                         controller: _passwordCtrl,
                         obscureText: _obscurePassword,
@@ -144,14 +144,14 @@ class _SignupScreenState extends State<SignupScreen> {
                                   : Icons.visibility_off_outlined,
                             ),
                           ),
-                          hintText: 'At least 6 characters',
+                          hintText: '6 أحرف أو أكثر',
                         ),
                         validator: (String? v) {
                           if (v == null || v.isEmpty) {
-                            return 'Please enter a password.';
+                            return 'الرجاء إدخال كلمة السر.';
                           }
                           if (v.length < 6) {
-                            return 'Password must be at least 6 characters.';
+                            return 'كلمة السر يجب ألّا تقل عن 6 أحرف.';
                           }
                           return null;
                         },
@@ -162,7 +162,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 280),
                     child: _SignupField(
-                      label: 'Confirm password',
+                      label: 'تأكيد كلمة السر',
                       child: TextFormField(
                         controller: _confirmCtrl,
                         obscureText: _obscureConfirm,
@@ -179,14 +179,14 @@ class _SignupScreenState extends State<SignupScreen> {
                                   : Icons.visibility_off_outlined,
                             ),
                           ),
-                          hintText: 'Re-enter your password',
+                          hintText: 'أعد إدخال كلمة السر',
                         ),
                         validator: (String? v) {
                           if (v == null || v.isEmpty) {
-                            return 'Please confirm your password.';
+                            return 'الرجاء تأكيد كلمة السر.';
                           }
                           if (v != _passwordCtrl.text) {
-                            return 'Passwords do not match.';
+                            return 'كلمتا السر غير متطابقتين.';
                           }
                           return null;
                         },
@@ -208,8 +208,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 340),
                     child: AppButton(
-                      label: 'Create account',
-                      icon: Icons.arrow_forward_rounded,
+                      label: 'إنشاء حساب',
+                      icon: Icons.arrow_back_rounded,
                       isLoading: _isLoading,
                       onPressed: _handleSignup,
                     ),
@@ -221,14 +221,14 @@ class _SignupScreenState extends State<SignupScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          'Already have an account? ',
+                          'لديك حساب بالفعل؟ ',
                           style: TextStyle(
                             color: AppPalette.of(context).muted,
                           ),
                         ),
                         TextButton(
                           onPressed: () => context.go('/login'),
-                          child: const Text('Sign in'),
+                          child: const Text('دخول'),
                         ),
                       ],
                     ),

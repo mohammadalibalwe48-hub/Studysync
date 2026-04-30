@@ -58,7 +58,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
         durationMinutes: minutes < 1 ? 1 : minutes,
       );
     } catch (_) {
-      // Best-effort: don't surface errors during dispose.
+      // أفضل جهد ممكن: لا نظهر الأخطاء أثناء التخلّص من الشاشة.
     }
   }
 
@@ -69,7 +69,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     required bool isCorrect,
   }) async {
     if (!_answeredQuestionIds.add(questionId)) {
-      // Already counted; just save the new attempt and move on.
+      // سُجّل سابقاً؛ نحفظ المحاولة الجديدة فقط.
     } else {
       _totalAnswers += 1;
       if (isCorrect) _correctAnswers += 1;
@@ -97,7 +97,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
       setState(() => _lastError = null);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _lastError = e.toString());
+      setState(() =>
+          _lastError = 'تعذّر حفظ إجابتك حالياً. تابع الدراسة دون قلق.');
     }
   }
 
@@ -112,16 +113,15 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
             child: Column(
               children: <Widget>[
                 _BackBar(
-                  title: 'Topic not found',
+                  title: 'الدرس غير موجود',
                   onBack: () => context.go('/home'),
                 ),
                 const Expanded(
                   child: EmptyState(
                     icon: Icons.search_off_rounded,
-                    title: 'Topic not found',
+                    title: 'الدرس غير موجود',
                     description:
-                        'We could not find that topic. It may have been '
-                        'removed.',
+                        'تعذّر العثور على هذا الدرس. ربما تم حذفه.',
                   ),
                 ),
               ],
@@ -159,6 +159,26 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     FadeSlideIn(
                       child: LessonView(topic: topic, accentColor: accent),
                     ),
+                    if (topic.keyIdeas.isNotEmpty) ...<Widget>[
+                      const SizedBox(height: 18),
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 60),
+                        child: KeyIdeasSection(
+                          ideas: topic.keyIdeas,
+                          accentColor: accent,
+                        ),
+                      ),
+                    ],
+                    if (topic.workedExample != null) ...<Widget>[
+                      const SizedBox(height: 18),
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 120),
+                        child: WorkedExampleSection(
+                          content: topic.workedExample!,
+                          accentColor: accent,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 22),
                     if (topic.questions.isEmpty)
                       const FadeSlideIn(
@@ -166,18 +186,28 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         child: EmptyState(
                           compact: true,
                           icon: Icons.quiz_outlined,
-                          title: 'No practice questions',
+                          title: 'لا توجد أسئلة بعد',
                           description:
-                              'Practice questions for this topic have not '
-                              'been added yet.',
+                              'سيتم إضافة أسئلة تدريبية لهذا الدرس قريباً.',
                         ),
                       )
                     else ...<Widget>[
                       FadeSlideIn(
-                        delay: const Duration(milliseconds: 80),
-                        child: Text(
-                          'Practice questions',
-                          style: Theme.of(context).textTheme.titleLarge,
+                        delay: const Duration(milliseconds: 160),
+                        child: Row(
+                          children: <Widget>[
+                            Icon(
+                              Icons.fact_check_rounded,
+                              color: accent,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'اختبر نفسك',
+                              style:
+                                  Theme.of(context).textTheme.titleLarge,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -186,7 +216,8 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 14),
                           child: FadeSlideIn(
-                            delay: Duration(milliseconds: 140 + i * 80),
+                            delay:
+                                Duration(milliseconds: 220 + i * 80),
                             child: QuestionCard(
                               question: topic.questions[i],
                               questionNumber: i + 1,
@@ -224,15 +255,14 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                                 child: Row(
                                   children: <Widget>[
                                     Icon(
-                                      Icons.error_outline_rounded,
+                                      Icons.info_outline_rounded,
                                       size: 18,
                                       color: scheme.error,
                                     ),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
-                                        'Could not save your answer: '
-                                        '$_lastError',
+                                        _lastError!,
                                         style:
                                             TextStyle(color: scheme.error),
                                       ),
@@ -268,7 +298,8 @@ class _BackBar extends StatelessWidget {
         children: <Widget>[
           IconButton(
             onPressed: onBack,
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            // RTL: زر العودة يستخدم سهماً يتجه إلى اليمين.
+            icon: const Icon(Icons.arrow_forward_ios_rounded, size: 20),
           ),
           Expanded(
             child: Text(

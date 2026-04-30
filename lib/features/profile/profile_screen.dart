@@ -32,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
           FadeSlideIn(
             delay: const Duration(milliseconds: 100),
             child: Text(
-              'Account',
+              'الحساب',
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
@@ -41,13 +41,13 @@ class ProfileScreen extends StatelessWidget {
             delay: const Duration(milliseconds: 160),
             child: _ActionTile(
               icon: Icons.notifications_active_outlined,
-              label: 'Notifications',
-              description: 'Manage reminders and study nudges.',
+              label: 'الإشعارات',
+              description: 'إدارة التذكيرات وتنبيهات الدراسة.',
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     behavior: SnackBarBehavior.floating,
-                    content: Text('Notification preferences coming soon'),
+                    content: Text('إعدادات الإشعارات قريباً'),
                   ),
                 );
               },
@@ -58,13 +58,13 @@ class ProfileScreen extends StatelessWidget {
             delay: const Duration(milliseconds: 220),
             child: _ActionTile(
               icon: Icons.palette_outlined,
-              label: 'Appearance',
-              description: 'Customise theme and display options.',
+              label: 'المظهر',
+              description: 'تخصيص المظهر وخيارات العرض.',
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     behavior: SnackBarBehavior.floating,
-                    content: Text('Appearance settings coming soon'),
+                    content: Text('إعدادات المظهر قريباً'),
                   ),
                 );
               },
@@ -75,8 +75,8 @@ class ProfileScreen extends StatelessWidget {
             delay: const Duration(milliseconds: 280),
             child: _ActionTile(
               icon: Icons.logout_rounded,
-              label: 'Sign out',
-              description: 'End the current session.',
+              label: 'تسجيل الخروج',
+              description: 'إنهاء الجلسة الحالية.',
               danger: true,
               onTap: () => _signOut(context),
             ),
@@ -91,7 +91,7 @@ class ProfileScreen extends StatelessWidget {
                     shaderCallback: (Rect bounds) =>
                         palette.goldGradient.createShader(bounds),
                     child: const Text(
-                      'Educational Steps Platform',
+                      'فيزياء وكيمياء بكالوريا سوريا',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
@@ -102,7 +102,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Crafted with care, golden by design.',
+                    'رفيق دراستك للبكالوريا السورية.',
                     style: TextStyle(
                       fontSize: 11,
                       color: palette.muted,
@@ -194,7 +194,7 @@ class _ProfileHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        'SIGNED IN AS',
+                        'دخلت باسم',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
@@ -204,7 +204,7 @@ class _ProfileHeader extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        email ?? 'Not signed in',
+                        email ?? 'غير مسجّل الدخول',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,

@@ -103,17 +103,17 @@ class MainScaffold extends StatelessWidget {
               GlassNavItem(
                 icon: Icons.home_outlined,
                 activeIcon: Icons.home_rounded,
-                label: 'Home',
+                label: 'الرئيسية',
               ),
               GlassNavItem(
                 icon: Icons.insights_outlined,
                 activeIcon: Icons.insights_rounded,
-                label: 'Progress',
+                label: 'التقدّم',
               ),
               GlassNavItem(
                 icon: Icons.person_outline,
                 activeIcon: Icons.person_rounded,
-                label: 'Profile',
+                label: 'حسابي',
               ),
             ],
           ),

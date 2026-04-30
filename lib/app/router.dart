@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
 import 'package:studysync_syria/features/auth/login_screen.dart';
 import 'package:studysync_syria/features/auth/signup_screen.dart';
+import 'package:studysync_syria/features/exams/exam_questions_screen.dart';
 import 'package:studysync_syria/features/home/home_screen.dart';
 import 'package:studysync_syria/features/profile/profile_screen.dart';
 import 'package:studysync_syria/features/progress/progress_screen.dart';
+import 'package:studysync_syria/features/quiz/quick_quiz_screen.dart';
 import 'package:studysync_syria/features/subjects/topic_list_screen.dart';
 import 'package:studysync_syria/features/topics/topic_detail_screen.dart';
 
@@ -60,6 +62,16 @@ GoRouter buildRouter() {
           final String topicId = state.pathParameters['topicId'] ?? '';
           return _slidePage(state, TopicDetailScreen(topicId: topicId));
         },
+      ),
+      GoRoute(
+        path: '/quick-quiz',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const QuickQuizScreen()),
+      ),
+      GoRoute(
+        path: '/exam-questions',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const ExamQuestionsScreen()),
       ),
       GoRoute(
         path: '/progress',

@@ -68,7 +68,7 @@ class AuthService extends ChangeNotifier {
       final AuthResponse response = await SupabaseService.auth
           .signInWithPassword(email: email.trim(), password: password);
       if (response.user == null) {
-        return 'Sign in failed. Please try again.';
+        return 'تعذّر تسجيل الدخول. حاول مرّة أخرى.';
       }
       // ChangeNotifier will fire via onAuthStateChange too, but notify now
       // so consumers awaiting this future see the new state immediately.
@@ -77,7 +77,7 @@ class AuthService extends ChangeNotifier {
     } on AuthException catch (e) {
       return _humanizeAuthError(e);
     } catch (_) {
-      return 'Could not reach the server. Check your connection.';
+      return 'تعذّر الاتصال بالخادم. تحقّق من اتصالك بالإنترنت.';
     }
   }
 
@@ -104,7 +104,7 @@ class AuthService extends ChangeNotifier {
     if (validationError != null) return validationError;
 
     if (password != confirmPassword) {
-      return 'Passwords do not match.';
+      return 'كلمتا السر غير متطابقتين.';
     }
 
     try {
@@ -113,14 +113,14 @@ class AuthService extends ChangeNotifier {
         password: password,
       );
       if (response.user == null) {
-        return 'Sign up failed. Please try again.';
+        return 'تعذّر إنشاء الحساب. حاول مرّة أخرى.';
       }
       notifyListeners();
       return null;
     } on AuthException catch (e) {
       return _humanizeAuthError(e);
     } catch (_) {
-      return 'Could not reach the server. Check your connection.';
+      return 'تعذّر الاتصال بالخادم. تحقّق من اتصالك بالإنترنت.';
     }
   }
 
@@ -135,13 +135,13 @@ class AuthService extends ChangeNotifier {
 
   String? _validateCredentials(String email, String password) {
     final String trimmed = email.trim();
-    if (trimmed.isEmpty) return 'Please enter your email.';
+    if (trimmed.isEmpty) return 'الرجاء إدخال البريد الإلكتروني.';
     final RegExp emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     if (!emailRegex.hasMatch(trimmed)) {
-      return 'Please enter a valid email address.';
+      return 'الرجاء إدخال بريد إلكتروني صحيح.';
     }
     if (password.length < 6) {
-      return 'Password must be at least 6 characters.';
+      return 'كلمة السر يجب ألّا تقل عن 6 أحرف.';
     }
     return null;
   }
@@ -150,14 +150,14 @@ class AuthService extends ChangeNotifier {
     final String message = e.message.toLowerCase();
     if (message.contains('invalid login') ||
         message.contains('invalid credentials')) {
-      return 'Incorrect email or password.';
+      return 'البريد الإلكتروني أو كلمة السر غير صحيح.';
     }
     if (message.contains('already registered') ||
         message.contains('user already')) {
-      return 'An account with this email already exists.';
+      return 'يوجد حساب بهذا البريد الإلكتروني.';
     }
     if (message.contains('email not confirmed')) {
-      return 'Please confirm your email before signing in.';
+      return 'يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.';
     }
     return e.message;
   }

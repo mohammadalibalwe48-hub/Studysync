@@ -88,11 +88,11 @@ class _QuestionCardState extends State<QuestionCard> {
               ),
               const SizedBox(width: 12),
               Text(
-                'PRACTICE QUESTION',
+                'سؤال تدريبي',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
-                  letterSpacing: 1.0,
+                  letterSpacing: 0.4,
                   color: palette.muted,
                 ),
               ),
@@ -137,7 +137,7 @@ class _QuestionCardState extends State<QuestionCard> {
               ),
             ),
             label: Text(
-              _showSolution ? 'Hide solution' : 'Reveal worked solution',
+              _showSolution ? 'إخفاء الحل' : 'عرض شرح الحل',
             ),
           ),
           AnimatedSize(

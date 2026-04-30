@@ -125,83 +125,86 @@ class AppTheme {
 
     final TextTheme baseText =
         ThemeData(brightness: scheme.brightness).textTheme;
-    final TextTheme manrope = GoogleFonts.manropeTextTheme(baseText)
+    // Use Cairo as the body/display font so Arabic glyphs render
+    // beautifully across the entire app while keeping Latin numerals
+    // readable in question labels.
+    final TextTheme manrope = GoogleFonts.cairoTextTheme(baseText)
         .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface)
         .copyWith(
-          displayLarge: GoogleFonts.manrope(
+          displayLarge: GoogleFonts.cairo(
             fontSize: 36,
             height: 44 / 36,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.72,
             color: scheme.onSurface,
           ),
-          displayMedium: GoogleFonts.manrope(
+          displayMedium: GoogleFonts.cairo(
             fontSize: 28,
             height: 36 / 28,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.4,
             color: scheme.onSurface,
           ),
-          headlineLarge: GoogleFonts.manrope(
+          headlineLarge: GoogleFonts.cairo(
             fontSize: 30,
             height: 38 / 30,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.5,
             color: scheme.onSurface,
           ),
-          headlineMedium: GoogleFonts.manrope(
+          headlineMedium: GoogleFonts.cairo(
             fontSize: 24,
             height: 32 / 24,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.24,
             color: scheme.onSurface,
           ),
-          headlineSmall: GoogleFonts.manrope(
+          headlineSmall: GoogleFonts.cairo(
             fontSize: 20,
             height: 28 / 20,
             fontWeight: FontWeight.w700,
             color: scheme.onSurface,
           ),
-          titleLarge: GoogleFonts.manrope(
+          titleLarge: GoogleFonts.cairo(
             fontSize: 18,
             height: 24 / 18,
             fontWeight: FontWeight.w700,
             color: scheme.onSurface,
           ),
-          titleMedium: GoogleFonts.manrope(
+          titleMedium: GoogleFonts.cairo(
             fontSize: 16,
             height: 22 / 16,
             fontWeight: FontWeight.w700,
             color: scheme.onSurface,
           ),
-          titleSmall: GoogleFonts.manrope(
+          titleSmall: GoogleFonts.cairo(
             fontSize: 14,
             height: 20 / 14,
             fontWeight: FontWeight.w700,
             color: scheme.onSurface,
           ),
-          bodyLarge: GoogleFonts.manrope(
+          bodyLarge: GoogleFonts.cairo(
             fontSize: 16,
             height: 26 / 16,
             color: scheme.onSurface,
           ),
-          bodyMedium: GoogleFonts.manrope(
+          bodyMedium: GoogleFonts.cairo(
             fontSize: 14,
             height: 22 / 14,
             color: scheme.onSurface,
           ),
-          bodySmall: GoogleFonts.manrope(
+          bodySmall: GoogleFonts.cairo(
             fontSize: 12,
             height: 18 / 12,
             color: muted,
           ),
-          labelLarge: GoogleFonts.manrope(
+          labelLarge: GoogleFonts.cairo(
             fontSize: 14,
             height: 20 / 14,
             fontWeight: FontWeight.w700,
             color: scheme.onSurface,
           ),
-          labelSmall: GoogleFonts.manrope(
+          labelSmall: GoogleFonts.cairo(
             fontSize: 12,
             height: 16 / 12,
             fontWeight: FontWeight.w700,
@@ -223,14 +226,14 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.manrope(
+        titleTextStyle: GoogleFonts.cairo(
           color: scheme.onSurface,
           fontSize: 18,
           fontWeight: FontWeight.w800,
           letterSpacing: -0.2,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: card,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -247,7 +250,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          textStyle: GoogleFonts.manrope(
+          textStyle: GoogleFonts.cairo(
             fontSize: 16,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.1,
@@ -257,7 +260,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: scheme.primary,
-          textStyle: GoogleFonts.manrope(
+          textStyle: GoogleFonts.cairo(
             fontWeight: FontWeight.w700,
             fontSize: 14,
           ),
@@ -266,14 +269,14 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: card,
-        hintStyle: GoogleFonts.manrope(color: muted),
-        labelStyle: GoogleFonts.manrope(
+        hintStyle: GoogleFonts.cairo(color: muted),
+        labelStyle: GoogleFonts.cairo(
           color: muted,
           fontWeight: FontWeight.w600,
           fontSize: 12,
           letterSpacing: 0.6,
         ),
-        floatingLabelStyle: GoogleFonts.manrope(
+        floatingLabelStyle: GoogleFonts.cairo(
           color: scheme.primary,
           fontWeight: FontWeight.w700,
           fontSize: 12,
@@ -312,7 +315,7 @@ class AppTheme {
         elevation: 0,
         labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((states) {
           final bool selected = states.contains(WidgetState.selected);
-          return GoogleFonts.manrope(
+          return GoogleFonts.cairo(
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             color: selected ? scheme.primary : muted,
             fontSize: 11,
