@@ -104,7 +104,7 @@ class GlassAppBarBrand extends StatelessWidget {
           shaderCallback: (Rect bounds) =>
               palette.goldGradient.createShader(bounds),
           child: const Text(
-            'بكالوريا',
+            'Steps',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,

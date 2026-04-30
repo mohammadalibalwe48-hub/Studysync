@@ -26,7 +26,7 @@ class _StudySyncAppState extends State<StudySyncApp> {
     ));
 
     return MaterialApp.router(
-      title: 'فيزياء وكيمياء بكالوريا سوريا',
+      title: 'Educational Steps Platform',
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
       theme: AppTheme.light,
