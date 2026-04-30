@@ -7,6 +7,8 @@ import 'package:studysync_syria/features/assignments/take_assignment_screen.dart
 import 'package:studysync_syria/features/auth/auth_service.dart';
 import 'package:studysync_syria/features/auth/login_screen.dart';
 import 'package:studysync_syria/features/auth/signup_screen.dart';
+import 'package:studysync_syria/features/curriculum/custom_lesson_models.dart';
+import 'package:studysync_syria/features/curriculum/custom_topic_detail_screen.dart';
 import 'package:studysync_syria/features/exams/exam_questions_screen.dart';
 import 'package:studysync_syria/features/home/home_screen.dart';
 import 'package:studysync_syria/features/profile/profile_screen.dart';
@@ -95,6 +97,22 @@ GoRouter buildRouter() {
           }
           return _slidePage(
               state, TakeAssignmentScreen(assignment: a));
+        },
+      ),
+      GoRoute(
+        path: '/custom-lesson/:lessonId',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final StudentCustomLesson? lesson =
+              state.extra is StudentCustomLesson
+                  ? state.extra as StudentCustomLesson
+                  : null;
+          if (lesson == null) {
+            return _slidePage(state, const CustomTopicDetailMissingScreen());
+          }
+          return _slidePage(
+            state,
+            CustomTopicDetailScreen(lesson: lesson),
+          );
         },
       ),
       GoRoute(

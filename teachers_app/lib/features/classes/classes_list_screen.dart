@@ -203,6 +203,12 @@ class _TopBar extends StatelessWidget {
             ),
           ),
           IconButton(
+            onPressed: () =>
+                GoRouter.of(context).push('/curriculum'),
+            icon: const Icon(Icons.menu_book_rounded),
+            tooltip: 'المنهج',
+          ),
+          IconButton(
             onPressed: onProfile,
             icon: const Icon(Icons.person_outline_rounded),
             tooltip: 'الملف الشخصي',

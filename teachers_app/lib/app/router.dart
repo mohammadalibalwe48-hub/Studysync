@@ -9,6 +9,9 @@ import 'package:studysync_syria_teachers/features/auth/login_screen.dart';
 import 'package:studysync_syria_teachers/features/auth/signup_screen.dart';
 import 'package:studysync_syria_teachers/features/classes/classes_list_screen.dart';
 import 'package:studysync_syria_teachers/features/classes/class_detail_screen.dart';
+import 'package:studysync_syria_teachers/features/curriculum/curriculum_list_screen.dart';
+import 'package:studysync_syria_teachers/features/curriculum/curriculum_models.dart';
+import 'package:studysync_syria_teachers/features/curriculum/lesson_editor_screen.dart';
 import 'package:studysync_syria_teachers/features/students/student_detail_screen.dart';
 import 'package:studysync_syria_teachers/features/profile/profile_screen.dart';
 
@@ -114,6 +117,32 @@ GoRouter buildRouter() {
               assignmentId: aId,
               title: title,
             ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/curriculum',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const CurriculumListScreen()),
+      ),
+      GoRoute(
+        path: '/curriculum/new',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const LessonEditorScreen()),
+      ),
+      GoRoute(
+        path: '/curriculum/:lessonId',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final CustomLesson? existing = state.extra is CustomLesson
+              ? state.extra as CustomLesson
+              : null;
+          if (existing == null) {
+            // Direct deep-link without payload: bounce back to list.
+            return _slidePage(state, const CurriculumListScreen());
+          }
+          return _slidePage(
+            state,
+            LessonEditorScreen(existing: existing),
           );
         },
       ),

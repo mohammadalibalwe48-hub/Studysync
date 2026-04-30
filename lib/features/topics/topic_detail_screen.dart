@@ -9,6 +9,9 @@ import 'package:studysync_syria/core/widgets/ambient_background.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/question_card.dart';
+import 'package:studysync_syria/features/curriculum/custom_lesson_card.dart';
+import 'package:studysync_syria/features/curriculum/custom_lesson_models.dart';
+import 'package:studysync_syria/features/curriculum/custom_lesson_queries.dart';
 import 'package:studysync_syria/features/topics/lesson_view.dart';
 
 class TopicDetailScreen extends StatefulWidget {
@@ -29,6 +32,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
 
   Topic? _topic;
   Subject? _subject;
+  Future<List<StudentCustomLesson>>? _customLessonsFuture;
 
   @override
   void initState() {
@@ -36,6 +40,10 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
     _topic = Curriculum.topicById(widget.topicId);
     if (_topic != null) {
       _subject = Curriculum.subjectById(_topic!.subjectId);
+      _customLessonsFuture = CustomLessonQueries.fetchLessonsForTopic(
+        subjectId: _topic!.subjectId,
+        topicId: _topic!.id,
+      );
     }
   }
 
@@ -179,6 +187,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         ),
                       ),
                     ],
+                    if (_customLessonsFuture != null) ...<Widget>[
+                      const SizedBox(height: 18),
+                      _CustomLessonsList(
+                        future: _customLessonsFuture!,
+                        accentColor: accent,
+                      ),
+                    ],
                     const SizedBox(height: 22),
                     if (topic.questions.isEmpty)
                       const FadeSlideIn(
@@ -280,6 +295,60 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CustomLessonsList extends StatelessWidget {
+  const _CustomLessonsList({
+    required this.future,
+    required this.accentColor,
+  });
+
+  final Future<List<StudentCustomLesson>> future;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<StudentCustomLesson>>(
+      future: future,
+      builder: (BuildContext context,
+          AsyncSnapshot<List<StudentCustomLesson>> snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const SizedBox.shrink();
+        }
+        if (snap.hasError) return const SizedBox.shrink();
+        final List<StudentCustomLesson> lessons =
+            snap.data ?? const <StudentCustomLesson>[];
+        if (lessons.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.cast_for_education_rounded,
+                    color: accentColor, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'إضافات المعلّم',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            for (int i = 0; i < lessons.length; i++) ...<Widget>[
+              if (i > 0) const SizedBox(height: 12),
+              FadeSlideIn(
+                delay: Duration(milliseconds: 100 + i * 60),
+                child: CustomLessonCard(
+                  lesson: lessons[i],
+                  accentColor: accentColor,
+                ),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
