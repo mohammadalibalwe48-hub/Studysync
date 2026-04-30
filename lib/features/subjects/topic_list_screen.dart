@@ -10,6 +10,8 @@ import 'package:studysync_syria/core/widgets/ambient_background.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/topic_card.dart';
+import 'package:studysync_syria/features/curriculum/custom_lesson_models.dart';
+import 'package:studysync_syria/features/curriculum/custom_lesson_queries.dart';
 
 /// حالة دراسة الموضوع كما تظهر في قائمة المواضيع.
 enum TopicStatus {
@@ -31,11 +33,27 @@ class _TopicListScreenState extends State<TopicListScreen> {
   Map<String, StudentProgressRow> _progressByTopic =
       <String, StudentProgressRow>{};
   bool _loadedProgress = false;
+  List<StudentCustomLesson> _newTopics = const <StudentCustomLesson>[];
 
   @override
   void initState() {
     super.initState();
     _loadProgress();
+    _loadNewTopics();
+  }
+
+  Future<void> _loadNewTopics() async {
+    try {
+      final List<StudentCustomLesson> rows =
+          await CustomLessonQueries.fetchNewTopicsForSubject(
+        subjectId: widget.subjectId,
+      );
+      if (!mounted) return;
+      setState(() => _newTopics = rows);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _newTopics = const <StudentCustomLesson>[]);
+    }
   }
 
   Future<void> _loadProgress() async {
@@ -120,7 +138,7 @@ class _TopicListScreenState extends State<TopicListScreen> {
                 onBack: () => context.go('/home'),
               ),
               Expanded(
-                child: topics.isEmpty
+                child: (topics.isEmpty && _newTopics.isEmpty)
                     ? const EmptyState(
                         icon: Icons.menu_book_outlined,
                         title: 'لا توجد دروس بعد',
@@ -130,7 +148,8 @@ class _TopicListScreenState extends State<TopicListScreen> {
                     : ListView.separated(
                         padding:
                             const EdgeInsets.fromLTRB(20, 12, 20, 32),
-                        itemCount: topics.length + 1,
+                        itemCount:
+                            topics.length + _newTopics.length + 1,
                         separatorBuilder: (_, __) =>
                             const SizedBox(height: 12),
                         itemBuilder: (BuildContext context, int i) {
@@ -138,23 +157,43 @@ class _TopicListScreenState extends State<TopicListScreen> {
                             return FadeSlideIn(
                               child: _SubjectIntro(
                                 subject: subject,
-                                topicCount: topics.length,
+                                topicCount: topics.length +
+                                    _newTopics.length,
                                 completion: _subjectCompletion(topics),
                                 palette: palette,
                               ),
                             );
                           }
                           final int idx = i - 1;
-                          final Topic t = topics[idx];
+                          if (idx < topics.length) {
+                            final Topic t = topics[idx];
+                            return FadeSlideIn(
+                              delay: Duration(
+                                  milliseconds: 80 + idx * 70),
+                              child: TopicCard(
+                                topic: t,
+                                accentColor: subject.color,
+                                index: idx + 1,
+                                status: _statusFor(t),
+                                onTap: () =>
+                                    context.go('/topics/${t.id}'),
+                              ),
+                            );
+                          }
+                          final int newIdx = idx - topics.length;
+                          final StudentCustomLesson lesson =
+                              _newTopics[newIdx];
                           return FadeSlideIn(
-                            delay:
-                                Duration(milliseconds: 80 + idx * 70),
-                            child: TopicCard(
-                              topic: t,
+                            delay: Duration(
+                                milliseconds: 80 + idx * 70),
+                            child: _NewTopicCard(
+                              lesson: lesson,
+                              palette: palette,
                               accentColor: subject.color,
-                              index: idx + 1,
-                              status: _statusFor(t),
-                              onTap: () => context.go('/topics/${t.id}'),
+                              onTap: () => context.push(
+                                '/custom-lesson/${lesson.id}',
+                                extra: lesson,
+                              ),
                             ),
                           );
                         },
@@ -162,6 +201,121 @@ class _TopicListScreenState extends State<TopicListScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NewTopicCard extends StatelessWidget {
+  const _NewTopicCard({
+    required this.lesson,
+    required this.palette,
+    required this.accentColor,
+    required this.onTap,
+  });
+
+  final StudentCustomLesson lesson;
+  final AppPalette palette;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final String title =
+        (lesson.topicTitle != null && lesson.topicTitle!.trim().isNotEmpty)
+            ? lesson.topicTitle!
+            : lesson.lessonTitle;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: palette.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: palette.outline, width: 0.6),
+          boxShadow: palette.cardShadow,
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: <Color>[
+                    accentColor.withOpacity(0.20),
+                    accentColor.withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: accentColor.withOpacity(0.20),
+                  width: 0.6,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.fiber_new_rounded,
+                color: accentColor,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accentColor.withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      'موضوع جديد من المعلّم',
+                      style: TextStyle(
+                        color: accentColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 10.5,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                  if (lesson.teacherDisplayName != null) ...<Widget>[
+                    const SizedBox(height: 4),
+                    Text(
+                      'أعدّه: ${lesson.teacherDisplayName!}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: palette.muted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.chevron_left_rounded,
+              size: 22,
+              color: palette.muted,
+            ),
+          ],
         ),
       ),
     );
