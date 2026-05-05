@@ -29,6 +29,7 @@ flutter:
   uses-material-design: true
   assets:
     - .env
+    - assets/icon/app_icon.png
 
 # Generated launcher icons. Run `dart run flutter_launcher_icons` after
 # `bash tool/setup_android.sh` to (re)generate the Android mipmap PNGs from

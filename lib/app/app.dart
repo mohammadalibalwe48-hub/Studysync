@@ -26,7 +26,7 @@ class _StudySyncAppState extends State<StudySyncApp> {
     ));
 
     return MaterialApp.router(
-      title: 'Educational Steps Platform',
+      title: 'منصة خطوات التعليمية',
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
       theme: AppTheme.light,

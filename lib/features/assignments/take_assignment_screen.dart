@@ -300,7 +300,7 @@ class _OptionTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: selected
-              ? palette.gold.withValues(alpha: 0.15)
+              ? palette.gold.withOpacity(0.15)
               : palette.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(

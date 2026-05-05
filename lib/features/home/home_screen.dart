@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:studysync_syria/app/theme.dart';
-import 'package:studysync_syria/core/constants/curriculum.dart';
-import 'package:studysync_syria/core/models/subject.dart';
 import 'package:studysync_syria/core/supabase/queries.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
-import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/main_scaffold.dart';
-import 'package:studysync_syria/core/widgets/subject_card.dart';
-import 'package:studysync_syria/features/announcements/announcement_queries.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
-import 'package:studysync_syria/features/classes/join_class_dialog.dart';
 
+/// "الرئيسية" tab — a focused dashboard that just covers the daily
+/// "resume and go" flow.
+///
+/// Subjects, study tools, and class-related actions live in their own
+/// dedicated tabs ([SubjectsTabScreen], [ClassroomScreen]) so this
+/// screen can stay calm: a personal hero, a single primary call to
+/// action, and an at-a-glance progress summary.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -21,15 +22,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int? _streakDays;
   ProgressSummary? _summary;
-  int _unreadAnnouncements = 0;
 
   @override
   void initState() {
     super.initState();
     _loadProgress();
-    _loadUnread();
   }
 
   Future<void> _loadProgress() async {
@@ -37,158 +35,58 @@ class _HomeScreenState extends State<HomeScreen> {
       final ProgressSummary summary =
           await StudySyncQueries.fetchProgressSummary();
       if (!mounted) return;
-      setState(() {
-        _summary = summary;
-        _streakDays = summary.streakDays;
-      });
+      setState(() => _summary = summary);
     } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _summary = ProgressSummary.empty;
-        _streakDays = 0;
-      });
+      setState(() => _summary = ProgressSummary.empty);
     }
-  }
-
-  Future<void> _loadUnread() async {
-    final int count = await AnnouncementQueries.fetchUnreadCount();
-    if (!mounted) return;
-    setState(() => _unreadAnnouncements = count);
-  }
-
-  Future<void> _refreshAll() async {
-    await Future.wait<void>(<Future<void>>[
-      _loadProgress(),
-      _loadUnread(),
-    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     final String? rawEmail = AuthService.instance.currentUserEmail;
     final String? displayName = _displayNameFor(rawEmail);
-    const List<Subject> subjects = Curriculum.subjects;
     final ProgressSummary summary = _summary ?? ProgressSummary.empty;
 
     return MainScaffold(
       tab: MainTab.home,
       child: RefreshIndicator(
-        onRefresh: _refreshAll,
+        onRefresh: _loadProgress,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: <Widget>[
             FadeSlideIn(
               child: _HeroCard(
                 name: displayName,
-                streakDays: _streakDays ?? 0,
+                streakDays: summary.streakDays,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             FadeSlideIn(
-              delay: const Duration(milliseconds: 60),
+              delay: const Duration(milliseconds: 80),
               child: _ContinueCard(
-                onTap: () => context.go('/quick-quiz'),
+                onTap: () => context.push('/quick-quiz'),
               ),
             ),
-            const SizedBox(height: 22),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 100),
-              child: const _SectionHeader(
-                title: 'المواد',
-                subtitle: 'اختر المادة لمتابعة الدراسة.',
+            const SizedBox(height: 20),
+            const FadeSlideIn(
+              delay: Duration(milliseconds: 140),
+              child: _SectionHeader(
+                title: 'لمحة سريعة',
+                subtitle: 'متابعة مختصرة لتقدّمك اليوم.',
               ),
             ),
-            const SizedBox(height: 14),
-            if (subjects.isEmpty)
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 140),
-                child: _SubjectsEmptyState(onRefresh: _loadProgress),
-              )
-            else
-              ...List<Widget>.generate(subjects.length, (int i) {
-                final Subject s = subjects[i];
-                final double progress =
-                    summary.completionBySubject[s.id] ?? 0;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: FadeSlideIn(
-                    delay: Duration(milliseconds: 140 + i * 80),
-                    child: SubjectCard(
-                      subject: s,
-                      progress: progress,
-                      onTap: () => context.go('/subjects/${s.id}'),
-                    ),
-                  ),
-                );
-              }),
-            const SizedBox(height: 22),
+            const SizedBox(height: 12),
             FadeSlideIn(
-              delay: const Duration(milliseconds: 220),
-              child: const _SectionHeader(
-                title: 'أدوات سريعة',
-                subtitle: 'تمرّن أو راجع أسئلة الدورات السابقة.',
-              ),
+              delay: const Duration(milliseconds: 180),
+              child: _GlanceRow(summary: summary),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             FadeSlideIn(
-              delay: const Duration(milliseconds: 260),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: _ActionTile(
-                      title: 'اختبار سريع',
-                      subtitle: 'حتى 10 أسئلة مختلطة',
-                      icon: Icons.flash_on_rounded,
-                      tone: const Color(0xFFFF8927),
-                      onTap: () => context.go('/quick-quiz'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _ActionTile(
-                      title: 'أسئلة الدورات',
-                      subtitle: 'نماذج بكالوريا سابقة',
-                      icon: Icons.menu_book_rounded,
-                      tone: const Color(0xFF1E73E8),
-                      onTap: () => context.go('/exam-questions'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 320),
-              child: _JoinClassTile(
-                onTap: () async {
-                  final String? joined = await showDialog<String>(
-                    context: context,
-                    builder: (_) => const JoinClassDialog(),
-                  );
-                  if (joined == null || !context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('تم الانضمام إلى $joined')),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 14),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 360),
-              child: _AssignmentsTile(
-                onTap: () => context.push('/assignments'),
-              ),
-            ),
-            const SizedBox(height: 14),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 420),
-              child: _AnnouncementsTile(
-                unreadCount: _unreadAnnouncements,
-                onTap: () async {
-                  await context.push('/announcements');
-                  if (!mounted) return;
-                  await _loadUnread();
-                },
+              delay: const Duration(milliseconds: 240),
+              child: _ShortcutsRow(
+                onSubjects: () => context.go('/subjects'),
+                onClassroom: () => context.go('/classroom'),
               ),
             ),
           ],
@@ -222,42 +120,77 @@ class _HeroCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        color: AppTheme.surfaceContainerHigh,
-        border: Border.all(color: Colors.white.withOpacity(0.6), width: 0.6),
-        boxShadow: palette.cardShadow,
+        gradient: palette.goldGradient,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: palette.accent.withOpacity(0.30),
+            blurRadius: 30,
+            offset: const Offset(0, 14),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(28),
         child: Stack(
           children: <Widget>[
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: <Color>[
-                      palette.gold.withOpacity(0.22),
-                      Colors.transparent,
-                    ],
+            // Decorative concentric arcs in the corner — a signature
+            // touch that anchors the card so it doesn't read as a flat
+            // gradient block.
+            Positioned(
+              right: -90,
+              top: -90,
+              child: IgnorePointer(
+                child: Container(
+                  width: 260,
+                  height: 260,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.18),
+                      width: 26,
+                    ),
                   ),
                 ),
               ),
             ),
             Positioned(
-              right: -40,
-              top: -40,
+              right: -30,
+              top: -30,
               child: IgnorePointer(
                 child: Container(
-                  width: 180,
-                  height: 180,
+                  width: 140,
+                  height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: <Color>[
-                        palette.warm.withOpacity(0.30),
+                        Colors.white.withOpacity(0.32),
                         Colors.transparent,
                       ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Faint diagonal "shine" stripe for premium feel.
+            Positioned(
+              left: -20,
+              bottom: -20,
+              child: IgnorePointer(
+                child: Transform.rotate(
+                  angle: -0.5,
+                  child: Container(
+                    width: 200,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: <Color>[
+                          Colors.white.withOpacity(0.0),
+                          Colors.white.withOpacity(0.10),
+                          Colors.white.withOpacity(0.0),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(40),
                     ),
                   ),
                 ),
@@ -266,23 +199,37 @@ class _HeroCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  'فيزياء وكيمياء — بكالوريا سوريا',
-                  style: TextStyle(
-                    color: palette.muted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.4,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.32),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: const Text(
+                    'منصة خطوات التعليمية',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   greetingLine,
                   style: const TextStyle(
-                    color: AppTheme.onBackground,
-                    fontSize: 26,
+                    color: Colors.white,
+                    fontSize: 28,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.4,
+                    height: 1.15,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -290,7 +237,7 @@ class _HeroCard extends StatelessWidget {
                 Text(
                   'هيا نتابع رحلتك مع الفيزياء والكيمياء.',
                   style: TextStyle(
-                    color: AppTheme.onBackground.withOpacity(0.74),
+                    color: Colors.white.withOpacity(0.92),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     height: 1.5,
@@ -320,43 +267,37 @@ class _StreakHeroPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return GlowPulse(
-      color: palette.accent,
-      minOpacity: 0.10,
-      maxOpacity: 0.26,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.65),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: Colors.white.withOpacity(0.7), width: 0.6),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              Icons.local_fire_department_rounded,
-              size: 16,
-              color: palette.warm,
-            ),
-            const SizedBox(width: 6),
-            CountUp(
-              value: days,
-              builder: (BuildContext context, int v) {
-                return Text(
-                  '$v أيام دراسة',
-                  style: const TextStyle(
-                    color: AppTheme.onBackground,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.4,
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.22),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withOpacity(0.45), width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const Icon(
+            Icons.local_fire_department_rounded,
+            size: 16,
+            color: Colors.white,
+          ),
+          const SizedBox(width: 6),
+          CountUp(
+            value: days,
+            builder: (BuildContext context, int v) {
+              return Text(
+                '$v أيام دراسة',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -367,28 +308,22 @@ class _KeepGoingHeroPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: <Color>[
-            palette.gold.withOpacity(0.30),
-            palette.warm.withOpacity(0.20),
-          ],
-        ),
+        color: Colors.white.withOpacity(0.18),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.6), width: 0.6),
+        border: Border.all(color: Colors.white.withOpacity(0.40), width: 0.8),
       ),
-      child: Row(
+      child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(Icons.auto_awesome_rounded, size: 16, color: palette.accent),
-          const SizedBox(width: 6),
+          Icon(Icons.auto_awesome_rounded, size: 16, color: Colors.white),
+          SizedBox(width: 6),
           Text(
             'استمرّ',
             style: TextStyle(
-              color: palette.accent,
+              color: Colors.white,
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.4,
@@ -477,8 +412,193 @@ class _ContinueCard extends StatelessWidget {
   }
 }
 
-class _ActionTile extends StatelessWidget {
-  const _ActionTile({
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          width: 4,
+          height: 36,
+          margin: const EdgeInsets.only(top: 4, left: 10),
+          decoration: BoxDecoration(
+            gradient: palette.goldGradient,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: palette.muted,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GlanceRow extends StatelessWidget {
+  const _GlanceRow({required this.summary});
+
+  final ProgressSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: _GlanceCard(
+            label: 'الإنجاز',
+            value: '${(summary.completionPercent * 100).round()}%',
+            icon: Icons.check_circle_outline_rounded,
+            tone: AppTheme.primary,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _GlanceCard(
+            label: 'نسبة الصح',
+            value: '${(summary.correctAnswerRate * 100).round()}%',
+            icon: Icons.gps_fixed_rounded,
+            tone: AppTheme.tertiary,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _GlanceCard(
+            label: 'دقائق',
+            value: '${summary.studyMinutes}',
+            icon: Icons.schedule_rounded,
+            tone: AppTheme.secondary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GlanceCard extends StatelessWidget {
+  const _GlanceCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.tone,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color tone;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: palette.card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: palette.outline, width: 0.6),
+        boxShadow: palette.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: tone.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, color: tone, size: 18),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11.5,
+              color: palette.muted,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShortcutsRow extends StatelessWidget {
+  const _ShortcutsRow({
+    required this.onSubjects,
+    required this.onClassroom,
+  });
+
+  final VoidCallback onSubjects;
+  final VoidCallback onClassroom;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: _Shortcut(
+            title: 'المواد',
+            subtitle: 'الفيزياء والكيمياء',
+            icon: Icons.menu_book_rounded,
+            tone: AppTheme.primary,
+            onTap: onSubjects,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _Shortcut(
+            title: 'صفّي',
+            subtitle: 'الواجبات والإعلانات',
+            icon: Icons.groups_rounded,
+            tone: AppTheme.secondary,
+            onTap: onClassroom,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Shortcut extends StatelessWidget {
+  const _Shortcut({
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -505,8 +625,7 @@ class _ActionTile extends StatelessWidget {
           border: Border.all(color: palette.outline, width: 0.6),
           boxShadow: palette.cardShadow,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: <Widget>[
             Container(
               width: 40,
@@ -521,295 +640,35 @@ class _ActionTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
-              child: Icon(icon, color: tone, size: 22),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.1,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                color: palette.muted,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _JoinClassTile extends StatelessWidget {
-  const _JoinClassTile({required this.onTap});
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return PressableScale(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: palette.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: palette.outline, width: 0.6),
-          boxShadow: palette.cardShadow,
-        ),
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: palette.goldGradient,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: const Icon(Icons.vpn_key_rounded,
-                  color: Colors.white, size: 20),
+              child: Icon(icon, color: tone, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const Text(
-                    'الانضمام إلى صف معلّم',
-                    style: TextStyle(
-                      fontSize: 15,
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14.5,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
-                    'أدخل رمز الانضمام لمتابعة معلّمك لتقدّمك.',
+                    subtitle,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11.5,
                       color: palette.muted,
+                      height: 1.4,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_left_rounded, size: 20),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AssignmentsTile extends StatelessWidget {
-  const _AssignmentsTile({required this.onTap});
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return PressableScale(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: palette.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: palette.outline, width: 0.6),
-          boxShadow: palette.cardShadow,
-        ),
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: palette.goldGradient,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: const Icon(Icons.assignment_outlined,
-                  color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    'الواجبات',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  Text(
-                    'الواجبات التي أنشأها معلّمك للصف.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: palette.muted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_left_rounded, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AnnouncementsTile extends StatelessWidget {
-  const _AnnouncementsTile({
-    required this.unreadCount,
-    required this.onTap,
-  });
-
-  final int unreadCount;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-    return PressableScale(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: palette.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: palette.outline, width: 0.6),
-          boxShadow: palette.cardShadow,
-        ),
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: scheme.primary.withOpacity(0.18),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.campaign_outlined,
-                color: scheme.primary,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    'الإعلانات',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  Text(
-                    'إعلانات معلّميك لكل الصفوف.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: palette.muted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (unreadCount > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: scheme.primary,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  '$unreadCount جديد',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              )
-            else
-              const Icon(Icons.chevron_left_rounded, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: TextStyle(fontSize: 13, color: palette.muted, height: 1.5),
-        ),
-      ],
-    );
-  }
-}
-
-class _SubjectsEmptyState extends StatelessWidget {
-  const _SubjectsEmptyState({required this.onRefresh});
-
-  final Future<void> Function() onRefresh;
-
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-      decoration: BoxDecoration(
-        color: palette.card,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: palette.outline, width: 0.6),
-        boxShadow: palette.cardShadow,
-      ),
-      child: EmptyState(
-        compact: true,
-        icon: Icons.menu_book_outlined,
-        title: 'لا توجد مواد بعد',
-        description:
-            'سيظهر هنا مساراك في الفيزياء والكيمياء لتبدأ رحلة الدراسة.',
-        action: TextButton.icon(
-          onPressed: () => onRefresh(),
-          icon: const Icon(Icons.refresh_rounded, size: 18),
-          label: const Text('تحديث'),
         ),
       ),
     );

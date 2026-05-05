@@ -24,14 +24,14 @@ class Curriculum {
       name: 'الفيزياء',
       description: 'الكهرباء والحركة والطاقة لطلاب البكالوريا.',
       icon: Icons.bolt_rounded,
-      color: Color(0xFF1E73E8),
+      color: Color(0xFFE0A100),
     ),
     Subject(
       id: chemistryId,
       name: 'الكيمياء',
       description: 'سرعة التفاعل والتوازن والكيمياء العضوية.',
       icon: Icons.science_rounded,
-      color: Color(0xFF7B3FE4),
+      color: Color(0xFFD2461A),
     ),
   ];
 

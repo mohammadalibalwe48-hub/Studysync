@@ -1,63 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Centralised theming for the Educational Steps Platform app.
+/// Centralised theming for "منصة خطوات التعليمية".
 ///
-/// The look-and-feel follows the "Radiant Achievement" design system:
-/// a soft champagne canvas, warm radiant-gold primary, rich amber
-/// secondary, subtle blue functional accent for data visualisation,
-/// and a tactile-luxury aesthetic with high-diffusion shadows and
-/// glassmorphism layers.
+/// The brand is a refined gold → orange system inspired directly by the
+/// app logo (a golden-orange figure on a stack of books).
+///
+/// Design rules to keep contrast strong and the UI readable:
+/// - Surfaces are white. The canvas is a very faint warm off-white so
+///   the eye still feels the warm tone but body text always has high
+///   contrast on light surface.
+/// - The gold→orange gradient is reserved for *brand moments* only —
+///   the hero card, primary call-to-action, brand mark, and accent
+///   icon plates. Body text and large fields are NEVER coloured with
+///   the gradient.
+/// - Body text is deep slate so 12sp / 13sp metadata is comfortably
+///   readable on white cards.
+/// - Outlines are warm, but very low contrast so cards have a soft
+///   gilded edge instead of a heavy beige border.
 class AppTheme {
   AppTheme._();
 
   // ────────────────────────── Brand colours ──────────────────────────
 
-  /// Brand primary — deep gold (used for text-on-light, primary actions
-  /// background fills behind text, and key iconography).
-  static const Color primary = Color(0xFF7B5800);
+  /// Brand primary — saturated orange, used for primary actions, key
+  /// icons, and selected-state tints. (Brand "deep orange".)
+  static const Color primary = Color(0xFFE76F0C);
 
-  /// Top stop of the radiant-gold gradient (used on CTAs / hero).
-  static const Color goldStart = Color(0xFFEBB12F);
+  /// Top stop of the brand gradient — warm gold from the logo.
+  static const Color goldStart = Color(0xFFFFC93C);
 
-  /// Bottom stop of the radiant-gold gradient (rich amber).
-  static const Color goldEnd = Color(0xFFFF8927);
+  /// Bottom stop of the brand gradient — deep saturated orange.
+  static const Color goldEnd = Color(0xFFFF7A1A);
 
   /// Soft fixed gold (chips, hero glow, badge fill).
-  static const Color primaryFixed = Color(0xFFFFDEA4);
+  static const Color primaryFixed = Color(0xFFFFE7B8);
 
-  /// Brighter radiant gold used for highlights and badges.
-  static const Color primaryFixedDim = Color(0xFFF8BD3B);
+  /// Brighter accent gold used for highlights and badges.
+  static const Color primaryFixedDim = Color(0xFFF6B33A);
 
-  /// Secondary accent — rich amber.
-  static const Color secondary = Color(0xFF964900);
+  /// Secondary accent — a deeper amber/bronze used for secondary
+  /// surfaces and dark-on-light text accents. Not purple.
+  static const Color secondary = Color(0xFFB7541A);
 
-  /// Subtle blue used for data visualisation / analytics only.
-  static const Color tertiary = Color(0xFF0060AC);
+  /// Tertiary accent — a calm teal that pairs with gold but stays
+  /// visually distinct (used for analytics / data viz only).
+  static const Color tertiary = Color(0xFF0E8F8F);
 
-  static const Color tertiaryContainer = Color(0xFF8DBDFF);
+  static const Color tertiaryContainer = Color(0xFFB7E5E5);
 
-  /// Champagne background.
-  static const Color background = Color(0xFFFFF8F3);
+  /// Very faint warm off-white canvas behind cards.
+  static const Color background = Color(0xFFFFFAF1);
 
-  /// Pure off-white surface for cards / inputs.
+  /// Pure white surface for cards / inputs.
   static const Color surfaceCardLowest = Color(0xFFFFFFFF);
-  static const Color surfaceContainerLow = Color(0xFFFDF2E3);
-  static const Color surfaceContainer = Color(0xFFF8ECDE);
-  static const Color surfaceContainerHigh = Color(0xFFF2E7D8);
+  static const Color surfaceContainerLow = Color(0xFFFFF4E2);
+  static const Color surfaceContainer = Color(0xFFFFEAC9);
+  static const Color surfaceContainerHigh = Color(0xFFFFE0AF);
 
-  /// Deep charcoal text on the soft champagne background.
-  static const Color onBackground = Color(0xFF201B12);
+  /// Deep ink text on light cards (~14:1 contrast on white).
+  static const Color onBackground = Color(0xFF1F1A12);
 
-  /// Muted on-surface variant (secondary text, label-caps overlines).
-  static const Color onSurfaceVariant = Color(0xFF4F4534);
+  /// Muted on-surface variant (secondary text). Tuned for 4.5:1
+  /// contrast on white.
+  static const Color onSurfaceVariant = Color(0xFF6B5B45);
 
-  /// Hairline outline used around cards and inputs.
-  static const Color outline = Color(0xFF827562);
-  static const Color outlineVariant = Color(0xFFD3C5AE);
+  /// Hairline outline used around cards and inputs (warm, soft).
+  static const Color outline = Color(0xFF9E8B6E);
+  static const Color outlineVariant = Color(0xFFEAD9BF);
 
-  static const Color error = Color(0xFFBA1A1A);
-  static const Color errorContainer = Color(0xFFFFDAD6);
+  static const Color error = Color(0xFFC02E1F);
+  static const Color errorContainer = Color(0xFFFCE4DE);
 
   // ────────────────────────── Theme builders ─────────────────────────
 
@@ -66,42 +79,42 @@ class AppTheme {
       brightness: Brightness.light,
       primary: primary,
       onPrimary: Colors.white,
-      primaryContainer: primaryFixedDim,
-      onPrimaryContainer: Color(0xFF624600),
+      primaryContainer: primaryFixed,
+      onPrimaryContainer: Color(0xFF3F1F00),
       secondary: secondary,
       onSecondary: Colors.white,
-      secondaryContainer: Color(0xFFFFDCC6),
-      onSecondaryContainer: Color(0xFF311400),
+      secondaryContainer: Color(0xFFFFD9B4),
+      onSecondaryContainer: Color(0xFF351600),
       tertiary: tertiary,
       onTertiary: Colors.white,
       tertiaryContainer: tertiaryContainer,
-      onTertiaryContainer: Color(0xFF004B89),
+      onTertiaryContainer: Color(0xFF003D3D),
       error: error,
       onError: Colors.white,
       errorContainer: errorContainer,
-      onErrorContainer: Color(0xFF93000A),
+      onErrorContainer: Color(0xFF6B0E04),
       surface: background,
       onSurface: onBackground,
       surfaceContainerLowest: surfaceCardLowest,
       surfaceContainerLow: surfaceContainerLow,
       surfaceContainer: surfaceContainer,
       surfaceContainerHigh: surfaceContainerHigh,
-      surfaceContainerHighest: Color(0xFFECE1D3),
+      surfaceContainerHighest: Color(0xFFFFD79A),
       onSurfaceVariant: onSurfaceVariant,
       outline: outline,
       outlineVariant: outlineVariant,
-      shadow: Color(0xFF1A1A1A),
-      scrim: Color(0xFF1A1A1A),
-      inverseSurface: Color(0xFF353026),
-      onInverseSurface: Color(0xFFFAEFE1),
+      shadow: Color(0xFF1F1A12),
+      scrim: Color(0xFF1F1A12),
+      inverseSurface: Color(0xFF2A2218),
+      onInverseSurface: Color(0xFFFFF4E2),
       inversePrimary: primaryFixedDim,
       surfaceTint: primary,
     );
     return _buildTheme(scheme: scheme);
   }
 
-  /// Dark mode reuses the same gold accent system over a deep charcoal
-  /// canvas so the brand stays consistent.
+  /// Dark mode reuses the same gold accent system over a deep
+  /// chocolate canvas so the brand stays consistent.
   static ThemeData get dark {
     final ColorScheme scheme = ColorScheme.fromSeed(
       seedColor: primaryFixedDim,
@@ -125,62 +138,64 @@ class AppTheme {
 
     final TextTheme baseText =
         ThemeData(brightness: scheme.brightness).textTheme;
-    // Use Cairo as the body/display font so Arabic glyphs render
-    // beautifully across the entire app while keeping Latin numerals
-    // readable in question labels.
+    // Display/headline — Tajawal: a strong, geometric Arabic display
+    // font that pairs well with Latin numerals and gives the brand a
+    // confident voice.
+    // Body — Cairo: a humanist Arabic sans that is exceptionally
+    // readable at 12–16sp.
     final TextTheme manrope = GoogleFonts.cairoTextTheme(baseText)
         .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface)
         .copyWith(
-          displayLarge: GoogleFonts.cairo(
+          displayLarge: GoogleFonts.tajawal(
             fontSize: 36,
             height: 44 / 36,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.72,
             color: scheme.onSurface,
           ),
-          displayMedium: GoogleFonts.cairo(
+          displayMedium: GoogleFonts.tajawal(
             fontSize: 28,
             height: 36 / 28,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.4,
             color: scheme.onSurface,
           ),
-          headlineLarge: GoogleFonts.cairo(
+          headlineLarge: GoogleFonts.tajawal(
             fontSize: 30,
             height: 38 / 30,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.5,
             color: scheme.onSurface,
           ),
-          headlineMedium: GoogleFonts.cairo(
+          headlineMedium: GoogleFonts.tajawal(
             fontSize: 24,
             height: 32 / 24,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             letterSpacing: -0.24,
             color: scheme.onSurface,
           ),
-          headlineSmall: GoogleFonts.cairo(
+          headlineSmall: GoogleFonts.tajawal(
             fontSize: 20,
             height: 28 / 20,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             color: scheme.onSurface,
           ),
-          titleLarge: GoogleFonts.cairo(
+          titleLarge: GoogleFonts.tajawal(
             fontSize: 18,
             height: 24 / 18,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             color: scheme.onSurface,
           ),
-          titleMedium: GoogleFonts.cairo(
+          titleMedium: GoogleFonts.tajawal(
             fontSize: 16,
             height: 22 / 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             color: scheme.onSurface,
           ),
-          titleSmall: GoogleFonts.cairo(
+          titleSmall: GoogleFonts.tajawal(
             fontSize: 14,
             height: 20 / 14,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             color: scheme.onSurface,
           ),
           bodyLarge: GoogleFonts.cairo(
@@ -198,16 +213,16 @@ class AppTheme {
             height: 18 / 12,
             color: muted,
           ),
-          labelLarge: GoogleFonts.cairo(
+          labelLarge: GoogleFonts.tajawal(
             fontSize: 14,
             height: 20 / 14,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             color: scheme.onSurface,
           ),
-          labelSmall: GoogleFonts.cairo(
+          labelSmall: GoogleFonts.tajawal(
             fontSize: 12,
             height: 16 / 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             letterSpacing: 0.6,
             color: muted,
           ),
@@ -226,14 +241,14 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.cairo(
+        titleTextStyle: GoogleFonts.tajawal(
           color: scheme.onSurface,
           fontSize: 18,
           fontWeight: FontWeight.w800,
           letterSpacing: -0.2,
         ),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: card,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -250,9 +265,9 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          textStyle: GoogleFonts.cairo(
+          textStyle: GoogleFonts.tajawal(
             fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             letterSpacing: 0.1,
           ),
         ),
@@ -260,8 +275,8 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: scheme.primary,
-          textStyle: GoogleFonts.cairo(
-            fontWeight: FontWeight.w700,
+          textStyle: GoogleFonts.tajawal(
+            fontWeight: FontWeight.w800,
             fontSize: 14,
           ),
         ),
@@ -270,15 +285,15 @@ class AppTheme {
         filled: true,
         fillColor: card,
         hintStyle: GoogleFonts.cairo(color: muted),
-        labelStyle: GoogleFonts.cairo(
+        labelStyle: GoogleFonts.tajawal(
           color: muted,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           fontSize: 12,
           letterSpacing: 0.6,
         ),
-        floatingLabelStyle: GoogleFonts.cairo(
+        floatingLabelStyle: GoogleFonts.tajawal(
           color: scheme.primary,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
           fontSize: 12,
           letterSpacing: 0.6,
         ),
@@ -315,8 +330,8 @@ class AppTheme {
         elevation: 0,
         labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((states) {
           final bool selected = states.contains(WidgetState.selected);
-          return GoogleFonts.cairo(
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          return GoogleFonts.tajawal(
+            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
             color: selected ? scheme.primary : muted,
             fontSize: 11,
             letterSpacing: 0.6,
@@ -371,28 +386,36 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final Color champagne;
   final Color info;
 
-  /// Default radiant-gold gradient (top-left → bottom-right).
+  /// Default brand gradient (top-left → bottom-right): warm gold →
+  /// deep saturated orange. Mirrors the logo.
   LinearGradient get goldGradient => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: <Color>[accent, warm],
       );
 
-  /// Soft amber glow used under elevated CTAs and hero pieces.
+  /// Soft golden glow used under elevated CTAs and hero pieces.
   List<BoxShadow> get goldGlow => <BoxShadow>[
         BoxShadow(
-          color: accent.withOpacity(0.25),
-          blurRadius: 30,
-          offset: const Offset(0, 10),
+          color: warm.withOpacity(0.32),
+          blurRadius: 32,
+          offset: const Offset(0, 14),
         ),
       ];
 
-  /// Soft, high-diffusion card shadow (Level 1 elevation).
+  /// Soft, high-diffusion card shadow (Level 1 elevation). Tinted very
+  /// faintly warm so cards feel held by the brand canvas instead of
+  /// floating in cold grey.
   List<BoxShadow> get cardShadow => const <BoxShadow>[
         BoxShadow(
-          color: Color(0x0A1A1A1A),
-          blurRadius: 20,
-          offset: Offset(0, 4),
+          color: Color(0x141F1A12),
+          blurRadius: 24,
+          offset: Offset(0, 8),
+        ),
+        BoxShadow(
+          color: Color(0x081F1A12),
+          blurRadius: 4,
+          offset: Offset(0, 1),
         ),
       ];
 

@@ -103,8 +103,8 @@ class _NavCell extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 280),
         curve: Curves.easeOutCubic,
-        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         decoration: BoxDecoration(
           gradient: active
               ? LinearGradient(
@@ -143,12 +143,17 @@ class _NavCell extends StatelessWidget {
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 220),
               style: TextStyle(
-                fontSize: 10.5,
+                fontSize: 10,
                 fontWeight: active ? FontWeight.w800 : FontWeight.w600,
-                letterSpacing: 0.6,
+                letterSpacing: 0.2,
                 color: active ? activeColor : inactiveColor,
               ),
-              child: Text(item.label.toUpperCase()),
+              child: Text(
+                item.label,
+                maxLines: 1,
+                overflow: TextOverflow.fade,
+                softWrap: false,
+              ),
             ),
           ],
         ),

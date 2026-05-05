@@ -6,12 +6,12 @@ import 'package:studysync_syria/core/widgets/glass_app_bar.dart';
 import 'package:studysync_syria/core/widgets/glass_bottom_nav.dart';
 
 /// One of the bottom-nav destinations in the main app shell.
-enum MainTab { home, progress, profile }
+enum MainTab { home, subjects, classroom, progress, profile }
 
-/// Shared scaffold used by [HomeScreen], [ProgressScreen] and
-/// [ProfileScreen] so the floating glass top bar and bottom navigation
-/// look identical across tabs and the active tab indicator stays in
-/// sync. Adds the ambient golden-hour background behind every screen.
+/// Shared scaffold used by all top-level tab screens so the floating
+/// glass top bar and bottom navigation look identical across tabs and
+/// the active tab indicator stays in sync. Adds the ambient indigo
+/// background behind every screen.
 class MainScaffold extends StatelessWidget {
   const MainScaffold({
     super.key,
@@ -81,7 +81,7 @@ class MainScaffold extends StatelessWidget {
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
           child: GlassBottomNav(
             currentIndex: tab.index,
             onTap: (int i) {
@@ -90,6 +90,12 @@ class MainScaffold extends StatelessWidget {
               switch (next) {
                 case MainTab.home:
                   context.go('/home');
+                  break;
+                case MainTab.subjects:
+                  context.go('/subjects');
+                  break;
+                case MainTab.classroom:
+                  context.go('/classroom');
                   break;
                 case MainTab.progress:
                   context.go('/progress');
@@ -104,6 +110,16 @@ class MainScaffold extends StatelessWidget {
                 icon: Icons.home_outlined,
                 activeIcon: Icons.home_rounded,
                 label: 'الرئيسية',
+              ),
+              GlassNavItem(
+                icon: Icons.menu_book_outlined,
+                activeIcon: Icons.menu_book_rounded,
+                label: 'المواد',
+              ),
+              GlassNavItem(
+                icon: Icons.groups_outlined,
+                activeIcon: Icons.groups_rounded,
+                label: 'صفّي',
               ),
               GlassNavItem(
                 icon: Icons.insights_outlined,

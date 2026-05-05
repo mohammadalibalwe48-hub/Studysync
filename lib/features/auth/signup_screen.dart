@@ -250,32 +250,52 @@ class _SignupHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppPalette palette = AppPalette.of(context);
     return Center(
-      child: GlowPulse(
-        color: palette.accent,
-        minOpacity: 0.10,
-        maxOpacity: 0.28,
-        blur: 36,
-        child: Container(
-          width: 84,
-          height: 84,
-          decoration: BoxDecoration(
-            gradient: palette.goldGradient,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: palette.accent.withOpacity(0.25),
-                blurRadius: 30,
-                offset: const Offset(0, 14),
+      child: Column(
+        children: <Widget>[
+          GlowPulse(
+            color: palette.warm,
+            minOpacity: 0.10,
+            maxOpacity: 0.28,
+            blur: 36,
+            child: Container(
+              width: 116,
+              height: 116,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(color: palette.outline, width: 0.6),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: palette.warm.withOpacity(0.18),
+                    blurRadius: 30,
+                    offset: const Offset(0, 14),
+                  ),
+                ],
               ),
-            ],
+              alignment: Alignment.center,
+              child: Image.asset(
+                'assets/icon/app_icon.png',
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+              ),
+            ),
           ),
-          alignment: Alignment.center,
-          child: const Icon(
-            Icons.school_rounded,
-            color: Colors.white,
-            size: 40,
+          const SizedBox(height: 12),
+          ShaderMask(
+            shaderCallback: (Rect bounds) =>
+                palette.goldGradient.createShader(bounds),
+            child: const Text(
+              'منصة خطوات التعليمية',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
+                color: Colors.white,
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
