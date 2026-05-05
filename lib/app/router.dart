@@ -14,7 +14,9 @@ import 'package:studysync_syria/features/exams/exam_questions_screen.dart';
 import 'package:studysync_syria/features/home/home_screen.dart';
 import 'package:studysync_syria/features/profile/profile_screen.dart';
 import 'package:studysync_syria/features/progress/progress_screen.dart';
+import 'package:studysync_syria/features/classroom/classroom_screen.dart';
 import 'package:studysync_syria/features/quiz/quick_quiz_screen.dart';
+import 'package:studysync_syria/features/subjects/subjects_tab_screen.dart';
 import 'package:studysync_syria/features/subjects/topic_list_screen.dart';
 import 'package:studysync_syria/features/topics/topic_detail_screen.dart';
 
@@ -54,6 +56,16 @@ GoRouter buildRouter() {
         path: '/home',
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _fadePage(state, const HomeScreen()),
+      ),
+      GoRoute(
+        path: '/subjects',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fadePage(state, const SubjectsTabScreen()),
+      ),
+      GoRoute(
+        path: '/classroom',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fadePage(state, const ClassroomScreen()),
       ),
       GoRoute(
         path: '/subjects/:subjectId',

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
 
-/// A primary gradient-gold call-to-action button used across the app.
+/// A primary brand-gradient call-to-action button used across the app.
 ///
 /// The button has:
-/// - Radiant gold → rich amber linear gradient.
-/// - Deep charcoal label for premium legibility.
-/// - Soft amber glow shadow that grows on press.
+/// - Indigo → violet linear gradient.
+/// - White label for premium legibility on the saturated background.
+/// - Soft indigo glow shadow that grows on press.
 /// - Press-scale haptic-feel via [PressableScale].
 /// - Built-in loading state.
 class AppButton extends StatelessWidget {
@@ -35,7 +35,7 @@ class AppButton extends StatelessWidget {
     final bool disabled = isLoading || onPressed == null;
     final VoidCallback? handler = isLoading ? null : onPressed;
     final Color labelColor =
-        disabled ? AppTheme.onBackground.withOpacity(0.5) : AppTheme.onBackground;
+        disabled ? Colors.white.withOpacity(0.7) : Colors.white;
 
     return PressableScale(
       onTap: handler,
@@ -68,7 +68,7 @@ class AppButton extends StatelessWidget {
                     child: CircularProgressIndicator(
                       strokeWidth: 2.4,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        AppTheme.onBackground,
+                        Colors.white,
                       ),
                     ),
                   )

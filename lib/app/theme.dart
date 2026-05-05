@@ -3,61 +3,62 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Centralised theming for the Educational Steps Platform app.
 ///
-/// The look-and-feel follows the "Radiant Achievement" design system:
-/// a soft champagne canvas, warm radiant-gold primary, rich amber
-/// secondary, subtle blue functional accent for data visualisation,
-/// and a tactile-luxury aesthetic with high-diffusion shadows and
-/// glassmorphism layers.
+/// The look-and-feel is a calm, modern academic palette: a cool
+/// near-white canvas, deep indigo primary, violet companion gradient
+/// stop, and a sky-blue functional accent for data visualisation.
+/// Field names that historically referenced "gold" / "champagne" are
+/// kept for backwards compatibility with widgets that still read them
+/// from [AppPalette]; only their colour values were updated.
 class AppTheme {
   AppTheme._();
 
   // ────────────────────────── Brand colours ──────────────────────────
 
-  /// Brand primary — deep gold (used for text-on-light, primary actions
-  /// background fills behind text, and key iconography).
-  static const Color primary = Color(0xFF7B5800);
+  /// Brand primary — deep indigo (used for primary actions, key icons,
+  /// and selected-state tints).
+  static const Color primary = Color(0xFF4F46E5);
 
-  /// Top stop of the radiant-gold gradient (used on CTAs / hero).
-  static const Color goldStart = Color(0xFFEBB12F);
+  /// Top stop of the brand gradient (indigo).
+  static const Color goldStart = Color(0xFF6366F1);
 
-  /// Bottom stop of the radiant-gold gradient (rich amber).
-  static const Color goldEnd = Color(0xFFFF8927);
+  /// Bottom stop of the brand gradient (violet).
+  static const Color goldEnd = Color(0xFF8B5CF6);
 
-  /// Soft fixed gold (chips, hero glow, badge fill).
-  static const Color primaryFixed = Color(0xFFFFDEA4);
+  /// Soft fixed indigo (chips, hero glow, badge fill).
+  static const Color primaryFixed = Color(0xFFE0E7FF);
 
-  /// Brighter radiant gold used for highlights and badges.
-  static const Color primaryFixedDim = Color(0xFFF8BD3B);
+  /// Brighter accent indigo used for highlights and badges.
+  static const Color primaryFixedDim = Color(0xFF818CF8);
 
-  /// Secondary accent — rich amber.
-  static const Color secondary = Color(0xFF964900);
+  /// Secondary accent — saturated violet.
+  static const Color secondary = Color(0xFF7C3AED);
 
-  /// Subtle blue used for data visualisation / analytics only.
-  static const Color tertiary = Color(0xFF0060AC);
+  /// Subtle sky blue used for data visualisation / analytics.
+  static const Color tertiary = Color(0xFF0EA5E9);
 
-  static const Color tertiaryContainer = Color(0xFF8DBDFF);
+  static const Color tertiaryContainer = Color(0xFFBAE6FD);
 
-  /// Champagne background.
-  static const Color background = Color(0xFFFFF8F3);
+  /// Cool near-white background.
+  static const Color background = Color(0xFFF6F7FB);
 
-  /// Pure off-white surface for cards / inputs.
+  /// Pure white surface for cards / inputs.
   static const Color surfaceCardLowest = Color(0xFFFFFFFF);
-  static const Color surfaceContainerLow = Color(0xFFFDF2E3);
-  static const Color surfaceContainer = Color(0xFFF8ECDE);
-  static const Color surfaceContainerHigh = Color(0xFFF2E7D8);
+  static const Color surfaceContainerLow = Color(0xFFF1F3F9);
+  static const Color surfaceContainer = Color(0xFFE9ECF4);
+  static const Color surfaceContainerHigh = Color(0xFFE2E6F0);
 
-  /// Deep charcoal text on the soft champagne background.
-  static const Color onBackground = Color(0xFF201B12);
+  /// Deep slate text on the cool canvas.
+  static const Color onBackground = Color(0xFF111827);
 
   /// Muted on-surface variant (secondary text, label-caps overlines).
-  static const Color onSurfaceVariant = Color(0xFF4F4534);
+  static const Color onSurfaceVariant = Color(0xFF566177);
 
   /// Hairline outline used around cards and inputs.
-  static const Color outline = Color(0xFF827562);
-  static const Color outlineVariant = Color(0xFFD3C5AE);
+  static const Color outline = Color(0xFF8A93A6);
+  static const Color outlineVariant = Color(0xFFD7DCE8);
 
-  static const Color error = Color(0xFFBA1A1A);
-  static const Color errorContainer = Color(0xFFFFDAD6);
+  static const Color error = Color(0xFFDC2626);
+  static const Color errorContainer = Color(0xFFFEE2E2);
 
   // ────────────────────────── Theme builders ─────────────────────────
 
@@ -66,41 +67,41 @@ class AppTheme {
       brightness: Brightness.light,
       primary: primary,
       onPrimary: Colors.white,
-      primaryContainer: primaryFixedDim,
-      onPrimaryContainer: Color(0xFF624600),
+      primaryContainer: primaryFixed,
+      onPrimaryContainer: Color(0xFF1E1B4B),
       secondary: secondary,
       onSecondary: Colors.white,
-      secondaryContainer: Color(0xFFFFDCC6),
-      onSecondaryContainer: Color(0xFF311400),
+      secondaryContainer: Color(0xFFEDE9FE),
+      onSecondaryContainer: Color(0xFF2E1065),
       tertiary: tertiary,
       onTertiary: Colors.white,
       tertiaryContainer: tertiaryContainer,
-      onTertiaryContainer: Color(0xFF004B89),
+      onTertiaryContainer: Color(0xFF075985),
       error: error,
       onError: Colors.white,
       errorContainer: errorContainer,
-      onErrorContainer: Color(0xFF93000A),
+      onErrorContainer: Color(0xFF7F1D1D),
       surface: background,
       onSurface: onBackground,
       surfaceContainerLowest: surfaceCardLowest,
       surfaceContainerLow: surfaceContainerLow,
       surfaceContainer: surfaceContainer,
       surfaceContainerHigh: surfaceContainerHigh,
-      surfaceContainerHighest: Color(0xFFECE1D3),
+      surfaceContainerHighest: Color(0xFFDADFEC),
       onSurfaceVariant: onSurfaceVariant,
       outline: outline,
       outlineVariant: outlineVariant,
-      shadow: Color(0xFF1A1A1A),
-      scrim: Color(0xFF1A1A1A),
-      inverseSurface: Color(0xFF353026),
-      onInverseSurface: Color(0xFFFAEFE1),
+      shadow: Color(0xFF0F172A),
+      scrim: Color(0xFF0F172A),
+      inverseSurface: Color(0xFF1F2937),
+      onInverseSurface: Color(0xFFF1F5F9),
       inversePrimary: primaryFixedDim,
       surfaceTint: primary,
     );
     return _buildTheme(scheme: scheme);
   }
 
-  /// Dark mode reuses the same gold accent system over a deep charcoal
+  /// Dark mode reuses the same indigo accent system over a deep slate
   /// canvas so the brand stays consistent.
   static ThemeData get dark {
     final ColorScheme scheme = ColorScheme.fromSeed(
@@ -233,7 +234,7 @@ class AppTheme {
           letterSpacing: -0.2,
         ),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: card,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -350,6 +351,9 @@ class AppTheme {
 
 /// Custom palette tokens shared across screens (muted text, hairline
 /// outlines, accent colour etc.) without re-deriving them everywhere.
+///
+/// Field names retain the historical "gold" / "champagne" naming for
+/// backwards compatibility — they now hold cool indigo / slate values.
 class AppPalette extends ThemeExtension<AppPalette> {
   const AppPalette({
     required this.muted,
@@ -371,14 +375,14 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final Color champagne;
   final Color info;
 
-  /// Default radiant-gold gradient (top-left → bottom-right).
+  /// Default brand gradient (top-left → bottom-right): indigo → violet.
   LinearGradient get goldGradient => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: <Color>[accent, warm],
       );
 
-  /// Soft amber glow used under elevated CTAs and hero pieces.
+  /// Soft indigo glow used under elevated CTAs and hero pieces.
   List<BoxShadow> get goldGlow => <BoxShadow>[
         BoxShadow(
           color: accent.withOpacity(0.25),
@@ -390,9 +394,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
   /// Soft, high-diffusion card shadow (Level 1 elevation).
   List<BoxShadow> get cardShadow => const <BoxShadow>[
         BoxShadow(
-          color: Color(0x0A1A1A1A),
-          blurRadius: 20,
-          offset: Offset(0, 4),
+          color: Color(0x14111827),
+          blurRadius: 24,
+          offset: Offset(0, 6),
         ),
       ];
 
