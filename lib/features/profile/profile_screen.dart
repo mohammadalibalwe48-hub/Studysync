@@ -91,11 +91,11 @@ class ProfileScreen extends StatelessWidget {
                     shaderCallback: (Rect bounds) =>
                         palette.goldGradient.createShader(bounds),
                     child: const Text(
-                      'Educational Steps Platform',
+                      'منصة خطوات التعليمية',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        letterSpacing: 0.4,
+                        letterSpacing: 0.2,
                         color: Colors.white,
                       ),
                     ),

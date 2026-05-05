@@ -133,14 +133,34 @@ class _ScreenHeading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppPalette palette = AppPalette.of(context);
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(title, style: Theme.of(context).textTheme.headlineMedium),
-        const SizedBox(height: 6),
-        Text(
-          subtitle,
-          style: TextStyle(fontSize: 13.5, color: palette.muted, height: 1.5),
+        Container(
+          width: 5,
+          height: 44,
+          margin: const EdgeInsets.only(top: 6, left: 12),
+          decoration: BoxDecoration(
+            gradient: palette.goldGradient,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(title, style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  color: palette.muted,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -156,14 +176,34 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppPalette palette = AppPalette.of(context);
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(title, style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: TextStyle(fontSize: 13, color: palette.muted, height: 1.5),
+        Container(
+          width: 4,
+          height: 36,
+          margin: const EdgeInsets.only(top: 4, left: 10),
+          decoration: BoxDecoration(
+            gradient: palette.goldGradient,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(title, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: palette.muted,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

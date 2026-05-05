@@ -102,23 +102,23 @@ class _GlowPainter extends CustomPainter {
     final double h = size.height;
     const double drift = 18.0;
 
-    // Calmer indigo/violet wash — much lower opacity than the previous
-    // golden-hour glow so foreground content always reads cleanly.
+    // Soft warm "golden-hour" wash kept low-opacity so foreground
+    // content always reads cleanly on white cards.
     drawGlow(
       Offset(w * 0.92 + math.cos(t) * drift, -40 + math.sin(t) * drift),
       w * 0.7,
-      palette.gold.withOpacity(0.10 * intensity),
+      palette.gold.withOpacity(0.16 * intensity),
     );
     drawGlow(
       Offset(-30 + math.cos(t + 1.2) * drift, h * 0.30 + math.sin(t + 1.2) * drift),
       w * 0.55,
-      palette.warm.withOpacity(0.07 * intensity),
+      palette.warm.withOpacity(0.10 * intensity),
     );
     drawGlow(
       Offset(w * 0.50 + math.cos(t + 2.4) * drift,
           h * 1.05 + math.sin(t + 2.4) * drift),
       w * 0.75,
-      palette.accent.withOpacity(0.06 * intensity),
+      palette.accent.withOpacity(0.08 * intensity),
     );
   }
 

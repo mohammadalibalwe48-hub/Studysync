@@ -133,21 +133,64 @@ class _HeroCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         child: Stack(
           children: <Widget>[
-            // Subtle radial highlight for depth.
+            // Decorative concentric arcs in the corner — a signature
+            // touch that anchors the card so it doesn't read as a flat
+            // gradient block.
             Positioned(
-              right: -40,
-              top: -40,
+              right: -90,
+              top: -90,
               child: IgnorePointer(
                 child: Container(
-                  width: 200,
-                  height: 200,
+                  width: 260,
+                  height: 260,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.18),
+                      width: 26,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: -30,
+              top: -30,
+              child: IgnorePointer(
+                child: Container(
+                  width: 140,
+                  height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: <Color>[
-                        Colors.white.withOpacity(0.28),
+                        Colors.white.withOpacity(0.32),
                         Colors.transparent,
                       ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Faint diagonal "shine" stripe for premium feel.
+            Positioned(
+              left: -20,
+              bottom: -20,
+              child: IgnorePointer(
+                child: Transform.rotate(
+                  angle: -0.5,
+                  child: Container(
+                    width: 200,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: <Color>[
+                          Colors.white.withOpacity(0.0),
+                          Colors.white.withOpacity(0.10),
+                          Colors.white.withOpacity(0.0),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(40),
                     ),
                   ),
                 ),
@@ -156,23 +199,37 @@ class _HeroCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  'فيزياء وكيمياء — بكالوريا سوريا',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.82),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.4,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.32),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: const Text(
+                    'منصة خطوات التعليمية',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   greetingLine,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 26,
+                    fontSize: 28,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.4,
+                    height: 1.15,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -180,7 +237,7 @@ class _HeroCard extends StatelessWidget {
                 Text(
                   'هيا نتابع رحلتك مع الفيزياء والكيمياء.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.86),
+                    color: Colors.white.withOpacity(0.92),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     height: 1.5,
@@ -364,17 +421,37 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppPalette palette = AppPalette.of(context);
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge,
+        Container(
+          width: 4,
+          height: 36,
+          margin: const EdgeInsets.only(top: 4, left: 10),
+          decoration: BoxDecoration(
+            gradient: palette.goldGradient,
+            borderRadius: BorderRadius.circular(4),
+          ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: TextStyle(fontSize: 13, color: palette.muted, height: 1.5),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: palette.muted,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

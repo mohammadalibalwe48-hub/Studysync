@@ -79,24 +79,26 @@ class GlassAppBarBrand extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Container(
-          width: 36,
-          height: 36,
+          width: 40,
+          height: 40,
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            gradient: palette.goldGradient,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: palette.outline, width: 0.6),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: palette.accent.withOpacity(0.30),
-                blurRadius: 18,
+                color: palette.warm.withOpacity(0.18),
+                blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
             ],
           ),
           alignment: Alignment.center,
-          child: const Icon(
-            Icons.school_rounded,
-            color: Colors.white,
-            size: 20,
+          child: Image.asset(
+            'assets/icon/app_icon.png',
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
           ),
         ),
         const SizedBox(width: 10),
@@ -104,11 +106,11 @@ class GlassAppBarBrand extends StatelessWidget {
           shaderCallback: (Rect bounds) =>
               palette.goldGradient.createShader(bounds),
           child: const Text(
-            'Steps',
+            'خطوات',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              letterSpacing: -0.4,
+              letterSpacing: -0.2,
               color: Colors.white,
             ),
           ),
