@@ -7,7 +7,6 @@ import 'package:studysync_syria/core/models/subject.dart';
 import 'package:studysync_syria/core/services/study_goal_service.dart';
 import 'package:studysync_syria/core/supabase/queries.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
-import 'package:studysync_syria/core/widgets/daily_goal_ring.dart';
 import 'package:studysync_syria/core/widgets/main_scaffold.dart';
 import 'package:studysync_syria/core/widgets/section_header.dart';
 import 'package:studysync_syria/core/widgets/stat_card.dart';
@@ -111,20 +110,19 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 18),
             FadeSlideIn(
               delay: const Duration(milliseconds: 60),
-              child: _TodayCard(
-                progress: goal.todayProgress,
-                minutes: goal.todayMinutes,
-                goalMinutes: goal.goalMinutes,
-                streakDays: summary.streakDays,
-                accuracyPercent: accuracy,
-                onTap: () => context.push('/pomodoro'),
+              child: _AiHeroCard(
+                onStudyNow: () => context.go('/quick-quiz'),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             FadeSlideIn(
               delay: const Duration(milliseconds: 100),
-              child: _ContinueLearningCard(
-                onTap: () => context.go('/quick-quiz'),
+              child: _StatsRow(
+                accuracyPercent: accuracy,
+                revisionMinutes: goal.todayMinutes,
+                completionPercent: (summary.completionPercent * 100)
+                    .clamp(0, 100)
+                    .round(),
               ),
             ),
             const SizedBox(height: 22),
@@ -388,150 +386,151 @@ class _GreetingHeader extends StatelessWidget {
   }
 }
 
-class _TodayCard extends StatelessWidget {
-  const _TodayCard({
-    required this.progress,
-    required this.minutes,
-    required this.goalMinutes,
-    required this.streakDays,
-    required this.accuracyPercent,
-    required this.onTap,
-  });
+/// Big orange "AI Recommendation" hero — sparkle icon, two-line copy,
+/// pill-style "Study Now" button.
+class _AiHeroCard extends StatelessWidget {
+  const _AiHeroCard({required this.onStudyNow});
 
-  final double progress;
-  final int minutes;
-  final int goalMinutes;
-  final int streakDays;
-  final int accuracyPercent;
-  final VoidCallback onTap;
+  final VoidCallback onStudyNow;
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
     final AppPalette palette = AppPalette.of(context);
-    return PressableScale(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-        decoration: BoxDecoration(
-          color: palette.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: palette.outline, width: 1),
-          boxShadow: palette.cardShadow,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            DailyGoalRing(
-              progress: progress,
-              minutes: minutes,
-              goalMinutes: goalMinutes,
-              size: 132,
-              strokeWidth: 11,
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      decoration: BoxDecoration(
+        gradient: palette.goldGradient,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: palette.goldGlow,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.22),
+              borderRadius: BorderRadius.circular(18),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'هدف اليوم',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                      color: palette.muted,
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.auto_awesome_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Text(
+                  'توصية الذكاء',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'راجع "التيار الكهربائي" — لقد أتقنت 75% من المفاهيم الأساسية.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.5,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                PressableScale(
+                  onTap: onStudyNow,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    progress >= 1
-                        ? 'أحسنت! حقّقت هدف اليوم.'
-                        : 'ادرس قليلاً للحفاظ على وتيرتك.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface,
-                      height: 1.4,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  _InlineStat(
-                    icon: Icons.local_fire_department_rounded,
-                    label: 'سلسلة',
-                    value: '$streakDays يوم',
-                    tone: palette.warm,
-                  ),
-                  const SizedBox(height: 6),
-                  _InlineStat(
-                    icon: Icons.verified_rounded,
-                    label: 'الدقة',
-                    value: '$accuracyPercent%',
-                    tone: palette.success,
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: <Widget>[
-                      Icon(
-                        Icons.play_circle_rounded,
-                        size: 18,
-                        color: scheme.primary,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'ابدأ جلسة تركيز',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: scheme.primary,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          color: AppTheme.sunOrange,
+                          size: 18,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Text(
+                          'ابدأ الآن',
+                          style: TextStyle(
+                            color: AppTheme.sunOrange,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _InlineStat extends StatelessWidget {
-  const _InlineStat({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.tone,
+/// Three pill stats — Average, Revision time, Progression — that
+/// echo the screenshot's tight stat row directly under the hero.
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({
+    required this.accuracyPercent,
+    required this.revisionMinutes,
+    required this.completionPercent,
   });
 
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color tone;
+  final int accuracyPercent;
+  final int revisionMinutes;
+  final int completionPercent;
 
   @override
   Widget build(BuildContext context) {
     final AppPalette palette = AppPalette.of(context);
+    final String revisionLabel = revisionMinutes >= 60
+        ? '${(revisionMinutes / 60).toStringAsFixed(1)} س'
+        : '${revisionMinutes} د';
+
     return Row(
       children: <Widget>[
-        Icon(icon, size: 16, color: tone),
-        const SizedBox(width: 6),
-        Text(
-          '$label  ',
-          style: TextStyle(
-            fontSize: 12,
-            color: palette.muted,
-            fontWeight: FontWeight.w500,
+        Expanded(
+          child: _StatPill(
+            icon: Icons.check_circle_rounded,
+            tone: palette.accent,
+            value: '$accuracyPercent%',
+            label: 'الدقة',
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            color: tone,
-            fontWeight: FontWeight.w800,
+        const SizedBox(width: 10),
+        Expanded(
+          child: _StatPill(
+            icon: Icons.access_time_rounded,
+            tone: palette.success,
+            value: revisionLabel,
+            label: 'مراجعة',
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _StatPill(
+            icon: Icons.donut_small_rounded,
+            tone: palette.info,
+            value: '$completionPercent%',
+            label: 'التقدّم',
           ),
         ),
       ],
@@ -539,73 +538,63 @@ class _InlineStat extends StatelessWidget {
   }
 }
 
-class _ContinueLearningCard extends StatelessWidget {
-  const _ContinueLearningCard({required this.onTap});
+class _StatPill extends StatelessWidget {
+  const _StatPill({
+    required this.icon,
+    required this.tone,
+    required this.value,
+    required this.label,
+  });
 
-  final VoidCallback onTap;
+  final IconData icon;
+  final Color tone;
+  final String value;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     final AppPalette palette = AppPalette.of(context);
-    return PressableScale(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: palette.goldGradient,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: palette.goldGlow,
-        ),
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.18),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.play_arrow_rounded,
-                color: Colors.white,
-                size: 28,
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: palette.card,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: palette.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: tone.withOpacity(0.16),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'تابع التعلّم',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'ابدأ اختباراً سريعاً مكوّناً من 10 أسئلة.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12.5,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
+            alignment: Alignment.center,
+            child: Icon(icon, color: tone, size: 18),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: scheme.onSurface,
+              letterSpacing: -0.2,
             ),
-            const SizedBox(width: 6),
-            const Icon(
-              Icons.chevron_left_rounded,
-              color: Colors.white,
-              size: 22,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: palette.muted,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

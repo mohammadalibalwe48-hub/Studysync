@@ -3,118 +3,129 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Centralised theming for the Educational Steps Platform app.
 ///
-/// Palette is sampled directly from the app logo (vivid orange figure
-/// reaching for yellow stars, on a stack of orange-gold books). The
-/// dominant logo pixels cluster in the `#FF6B00 → #FF9500 → #FFD000`
-/// range, with bright `#FFEF0E` highlights at the stars and
-/// `#FD5C00` shadows at the bottom edge of the books.
-///
-/// The previous palette mapped the brand to a desaturated saffron
-/// (`#D68A1A`) which read muddy next to the logo's actual energy. The
-/// new tokens below stay 100% in the warm family but use the logo's
-/// real saturated stops, so:
-///
-/// - The brand primary actually matches the logo orange instead of
-///   reading as a faded vintage tan.
-/// - The hero gradient mirrors the logo's top→bottom yellow→sunset
-///   fade exactly (so a CTA gradient feels like the logo glowed).
-/// - The cream canvas is cleaner / less yellow-cast, so the orange
-///   accents pop instead of getting absorbed by the background.
-/// - Text contrast deepens (deeper walnut on lighter canvas) so the
-///   app feels crisper and more legible.
+/// The student app pairs a deep indigo-violet primary with the brand's
+/// signature sunset-orange as a secondary accent. The primary leads the
+/// app shell (top bar, bottom nav, headers, big cards), while the
+/// orange punches through on hero CTAs, streaks, the "AI" card, and
+/// any "achievement"-flavoured surface — so the logo's orange is still
+/// front-and-centre but no longer fights with itself across every
+/// screen.
 ///
 /// Hierarchy:
 ///
-/// - [primary]/`sunOrange`: brand CTA, focused inputs, selected chips,
-///   ring fills, primary icons.
-/// - [secondary]/`sunsetEmber`: streaks, "completed/correct", success
-///   badges, progress accents — same warm family but more intense, so
-///   it reads as "heat/achievement" without leaving the brand.
-/// - [tertiary]/`walnut`: data-viz / chart axes / muted analytics
-///   colour. Stays warm, never competes with the orange.
-/// - Surfaces step from `cream-25` (nearly white) up through warm
-///   honey containers; outlines are tight warm sand.
+/// - [primary]/`indigo`: brand chrome, focused inputs, selected chips,
+///   bottom-nav active dot, primary icons, large headers.
+/// - [secondary]/`sunOrange`: hero CTAs, streaks, "completed/correct"
+///   states, the AI Recommendation card — the warm "achievement" tone.
+/// - [tertiary]/`blossom`: alternate subject card tint, soft accent.
+/// - Surfaces step from `lavender-25` (nearly white) up through
+///   lavender-tinted containers; outlines are tight cool sand.
 class AppTheme {
   AppTheme._();
 
-  // ────────────────────────── Logo gradient ──────────────────────────
+  // ────────────────────────── Primary (indigo) ──────────────────────────
 
-  /// Brightest yellow at the top of the logo (stars / arm tip).
-  /// Sampled from the `#FFEF0E` star pixels and warmed slightly so it
-  /// stays readable on white.
+  /// Deep indigo-violet primary — the dominant colour in the redesign.
+  static const Color indigo = Color(0xFF5B47E0);
+
+  /// Slightly warmer indigo used at the top of vertical hero gradients.
+  static const Color indigoLight = Color(0xFF8472F0);
+
+  /// Deep night-violet used at the bottom of vertical hero gradients
+  /// and for tab-bar backgrounds in dark surfaces.
+  static const Color indigoDeep = Color(0xFF3925B5);
+
+  /// Lavender container — pale violet used for big subject cards and
+  /// soft purple chips.
+  static const Color lavender = Color(0xFFE6DFFF);
+
+  /// Hover-state / on-violet container.
+  static const Color lavenderDeep = Color(0xFFC9BCFF);
+
+  /// Three-stop indigo gradient — used on the bottom-nav rail, big
+  /// study-path hero, and any place we want the brand violet to glow.
+  static const List<Color> primaryGradient = <Color>[
+    indigoLight,
+    indigo,
+    indigoDeep,
+  ];
+
+  // ─────────────────────── Secondary (sunset orange) ─────────────────────
+
+  /// Bright yellow at the top of the orange gradient (logo top).
   static const Color sunYellow = Color(0xFFFFD000);
 
-  /// The signature mid-orange of the figure & books — the most-common
-  /// pixel colour in the logo by a wide margin (`#F09000` cluster).
-  /// This is the brand.
+  /// The brand's signature mid-orange — used for hero CTAs, "Study
+  /// Now" pill buttons, AI Recommendation surface fill, streaks.
   static const Color sunOrange = Color(0xFFFF9500);
 
-  /// Deep sunset orange at the bottom edge of the books (`#FD5C00`),
-  /// used for streaks, success and the gradient's bottom stop.
+  /// Deep sunset for streak / "hot" badges and the bottom of the
+  /// orange gradient.
   static const Color sunset = Color(0xFFFF6B00);
 
-  /// Three-stop gradient that mirrors the logo top→bottom fade.
+  /// Three-stop sunset gradient mirroring the logo top→bottom fade.
+  /// Reserved for the AI Recommendation card and streak surfaces so
+  /// the brand orange still has a hero moment.
   static const List<Color> heroGradient = <Color>[
     sunYellow,
     sunOrange,
     sunset,
   ];
 
-  // Backwards-compat aliases. Existing widgets reference `goldStart` /
-  // `goldEnd` / `streakAmber` / `primary` — keep the names so this PR
-  // is a colour change only, not a sweeping rename.
-  static const Color primary = sunOrange;
+  // Backwards-compat aliases used by widgets shipped before the
+  // purple repaint. Keep the names so this is a colour change only,
+  // not a sweeping rename.
+  static const Color primary = indigo;
   static const Color goldStart = sunYellow;
   static const Color goldEnd = sunset;
   static const Color streakAmber = sunset;
 
-  /// Soft fixed honey (chips, hero glow, badge fill).
-  static const Color primaryFixed = Color(0xFFFFE9C2); // honey-100
+  // ─────────────────────── Tertiary (warm blossom) ───────────────────────
 
-  /// Brighter brand tone used for highlights / dark-mode primary.
-  static const Color primaryFixedDim = Color(0xFFFFB347); // honey-300
+  /// Warm pink — the second subject-card tint and the "girly" accent
+  /// you see on the second card in the screenshot. Stays gentle so it
+  /// never shouts over the indigo primary.
+  static const Color blossom = Color(0xFFFFB7C5);
+  static const Color blossomDeep = Color(0xFFE08099);
 
-  /// Secondary accent — deeper sunset ember. Same gradient family as
-  /// [sunOrange], just hotter / more intense, so streaks and success
-  /// states read as "fire" without introducing a foreign hue.
-  static const Color secondary = Color(0xFFE25A0D);
+  /// Soft fixed indigo (chips, pill backgrounds, "tag" surfaces).
+  static const Color primaryFixed = lavender;
 
-  static const Color secondaryContainer = Color(0xFFFFD8B8);
+  /// Brighter brand tone used as dark-mode primary.
+  static const Color primaryFixedDim = Color(0xFFB7A8FF);
 
-  /// Tertiary — deep walnut. Reserved for analytics / chart text /
-  /// data viz axes. Stays in the warm family so it never fights the
-  /// brand orange.
-  static const Color tertiary = Color(0xFF6B3F1A); // walnut-700
+  /// Secondary accent — the brand orange. (Keeping the name `secondary`
+  /// makes any widget reading `scheme.secondary` light up orange.)
+  static const Color secondary = sunOrange;
 
-  static const Color tertiaryContainer = Color(0xFFF1DFC3); // walnut-100
+  static const Color secondaryContainer = Color(0xFFFFE2C7);
 
-  /// App background — barely-tinted warm white. Far enough from pure
-  /// white to keep the warm brand identity, but much cleaner than the
-  /// previous `#FFFAF1` which had a yellow cast that absorbed the
-  /// orange accents.
-  static const Color background = Color(0xFFFFFCF6);
+  /// Tertiary container — pale blossom for the alternate subject card.
+  static const Color tertiary = blossom;
+  static const Color tertiaryContainer = Color(0xFFFFE0E6);
 
-  /// Pure white card surface (still warm-feeling against the cream
-  /// canvas behind it).
+  /// App background — barely-tinted lavender white.
+  static const Color background = Color(0xFFF7F4FF);
+
+  /// Pure white card surface.
   static const Color surfaceCardLowest = Color(0xFFFFFFFF);
-  static const Color surfaceContainerLow = Color(0xFFFFF7E8); // honey-50
-  static const Color surfaceContainer = Color(0xFFFFEED2); // honey-100
-  static const Color surfaceContainerHigh = Color(0xFFFADDA8); // honey-200
+  static const Color surfaceContainerLow = Color(0xFFF1ECFF);
+  static const Color surfaceContainer = Color(0xFFE6DFFF);
+  static const Color surfaceContainerHigh = Color(0xFFD7CCFF);
 
-  /// Primary text on light surfaces — deep walnut, deepened from the
-  /// previous `#2A1F12` so headings and body copy feel sharper against
-  /// the lighter canvas.
-  static const Color onBackground = Color(0xFF1A1208);
+  /// Primary text on light surfaces — deep night violet so headings
+  /// and body copy feel sharper against the lavender canvas.
+  static const Color onBackground = Color(0xFF1A1633);
 
-  /// Muted on-surface variant — warm taupe.
-  static const Color onSurfaceVariant = Color(0xFF6F5A3F);
+  /// Muted on-surface variant — cool taupe with a hint of indigo.
+  static const Color onSurfaceVariant = Color(0xFF6F6A8A);
 
-  /// Hairline outline used around cards and inputs (warm sand).
-  static const Color outline = Color(0xFFF0DDB6); // sand-200
-  static const Color outlineVariant = Color(0xFFFAF1DC); // sand-100
+  /// Hairline outline used around cards and inputs.
+  static const Color outline = Color(0xFFE2DDF5);
+  static const Color outlineVariant = Color(0xFFF1ECFF);
 
-  static const Color error = Color(0xFFC53030); // crimson-600
-  static const Color errorContainer = Color(0xFFFFE0DA); // crimson-100
+  static const Color error = Color(0xFFC53030);
+  static const Color errorContainer = Color(0xFFFFE0DA);
 
   // ────────────────────────── Theme builders ─────────────────────────
 
@@ -123,16 +134,16 @@ class AppTheme {
       brightness: Brightness.light,
       primary: primary,
       onPrimary: Colors.white,
-      primaryContainer: primaryFixed,
-      onPrimaryContainer: Color(0xFF5C2C00), // deep cocoa
+      primaryContainer: lavender,
+      onPrimaryContainer: Color(0xFF1A1633),
       secondary: secondary,
       onSecondary: Colors.white,
       secondaryContainer: secondaryContainer,
       onSecondaryContainer: Color(0xFF5C2410),
       tertiary: tertiary,
-      onTertiary: Colors.white,
+      onTertiary: Color(0xFF3A1622),
       tertiaryContainer: tertiaryContainer,
-      onTertiaryContainer: Color(0xFF3A2415),
+      onTertiaryContainer: Color(0xFF3A1622),
       error: error,
       onError: Colors.white,
       errorContainer: errorContainer,
@@ -143,57 +154,58 @@ class AppTheme {
       surfaceContainerLow: surfaceContainerLow,
       surfaceContainer: surfaceContainer,
       surfaceContainerHigh: surfaceContainerHigh,
-      surfaceContainerHighest: Color(0xFFEBC57A),
+      surfaceContainerHighest: lavenderDeep,
       onSurfaceVariant: onSurfaceVariant,
       outline: outline,
       outlineVariant: outlineVariant,
-      shadow: Color(0xFF1A1208),
-      scrim: Color(0xFF1A1208),
-      inverseSurface: Color(0xFF2D1F0F),
-      onInverseSurface: Color(0xFFFFF7E8),
+      shadow: Color(0xFF1A1633),
+      scrim: Color(0xFF1A1633),
+      inverseSurface: Color(0xFF231C4D),
+      onInverseSurface: Color(0xFFF1ECFF),
       inversePrimary: primaryFixedDim,
       surfaceTint: primary,
     );
     return _buildTheme(scheme: scheme);
   }
 
-  /// Dark mode reuses the same logo gradient over a deep walnut canvas
-  /// so the brand stays consistent without feeling oppressive.
+  /// Dark mode reuses the same indigo + orange pairing over a deep
+  /// night-violet canvas so the brand stays consistent without feeling
+  /// oppressive.
   static ThemeData get dark {
     const ColorScheme scheme = ColorScheme(
       brightness: Brightness.dark,
-      primary: Color(0xFFFFB347), // sun-orange-300 (brighter for contrast)
-      onPrimary: Color(0xFF2C1605),
-      primaryContainer: Color(0xFF7A3C00), // sun-orange-800
-      onPrimaryContainer: Color(0xFFFFE5C2),
-      secondary: Color(0xFFFF8A4A), // sunset-300
-      onSecondary: Color(0xFF3A1408),
-      secondaryContainer: Color(0xFF7A2E0A), // sunset-800
-      onSecondaryContainer: Color(0xFFFFD8B8),
-      tertiary: Color(0xFFD9A678), // walnut-300
-      onTertiary: Color(0xFF2A1A0B),
-      tertiaryContainer: Color(0xFF563620),
-      onTertiaryContainer: Color(0xFFF1DFC3),
+      primary: Color(0xFFB7A8FF), // indigo-300 (brighter for contrast)
+      onPrimary: Color(0xFF1A1633),
+      primaryContainer: Color(0xFF3925B5), // indigo-800
+      onPrimaryContainer: Color(0xFFE6DFFF),
+      secondary: Color(0xFFFFB347), // sun-orange-300
+      onSecondary: Color(0xFF2C1605),
+      secondaryContainer: Color(0xFF7A3C00), // sun-orange-800
+      onSecondaryContainer: Color(0xFFFFE5C2),
+      tertiary: Color(0xFFFFB7C5),
+      onTertiary: Color(0xFF3A1622),
+      tertiaryContainer: Color(0xFF6E2A40),
+      onTertiaryContainer: Color(0xFFFFE0E6),
       error: Color(0xFFE89A82),
       onError: Color(0xFF4A150A),
       errorContainer: Color(0xFF7C2613),
       onErrorContainer: Color(0xFFFFE0DA),
-      surface: Color(0xFF15110A), // deeper walnut for crisper contrast
-      onSurface: Color(0xFFF6E9D2),
-      surfaceContainerLowest: Color(0xFF0F0B05),
-      surfaceContainerLow: Color(0xFF1F1708),
-      surfaceContainer: Color(0xFF2A1F0F),
-      surfaceContainerHigh: Color(0xFF3A2B17),
-      surfaceContainerHighest: Color(0xFF4A3621),
-      onSurfaceVariant: Color(0xFFC4AE8E),
-      outline: Color(0xFF3A2B17),
-      outlineVariant: Color(0xFF2A1F0F),
+      surface: Color(0xFF11102A),
+      onSurface: Color(0xFFEDE9FB),
+      surfaceContainerLowest: Color(0xFF0B0A20),
+      surfaceContainerLow: Color(0xFF181736),
+      surfaceContainer: Color(0xFF211F47),
+      surfaceContainerHigh: Color(0xFF2D2A5C),
+      surfaceContainerHighest: Color(0xFF3A3672),
+      onSurfaceVariant: Color(0xFFB6B0D6),
+      outline: Color(0xFF2D2A5C),
+      outlineVariant: Color(0xFF211F47),
       shadow: Color(0xFF000000),
       scrim: Color(0xFF000000),
-      inverseSurface: Color(0xFFF6E9D2),
-      onInverseSurface: Color(0xFF15110A),
+      inverseSurface: Color(0xFFEDE9FB),
+      onInverseSurface: Color(0xFF11102A),
       inversePrimary: primary,
-      surfaceTint: Color(0xFFFFB347),
+      surfaceTint: Color(0xFFB7A8FF),
     );
     return _buildTheme(scheme: scheme);
   }
@@ -202,8 +214,8 @@ class AppTheme {
     final bool isLight = scheme.brightness == Brightness.light;
     final Color card = scheme.surfaceContainerLowest;
     final Color hairline = isLight
-        ? const Color(0xFFF0DDB6) // sand-200
-        : const Color(0xFF3A2B17); // walnut-300
+        ? const Color(0xFFE2DDF5)
+        : const Color(0xFF2D2A5C);
     final Color muted = scheme.onSurfaceVariant;
     final Color appBg = scheme.surface;
 
@@ -324,7 +336,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           side: BorderSide(color: hairline, width: 1),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -340,23 +352,23 @@ class AppTheme {
         prefixIconColor: muted,
         suffixIconColor: muted,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: hairline, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: hairline, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: scheme.primary, width: 1.6),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: scheme.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: scheme.error, width: 1.6),
         ),
       ),
@@ -366,7 +378,7 @@ class AppTheme {
           foregroundColor: scheme.onPrimary,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
           textStyle: cairo.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
@@ -388,54 +400,37 @@ class AppTheme {
           minimumSize: const Size(double.infinity, 52),
           side: BorderSide(color: hairline, width: 1.2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
-          textStyle: cairo.labelLarge,
+          textStyle: cairo.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: scheme.onSurface,
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: scheme.surfaceContainerLow,
+        selectedColor: scheme.primaryContainer,
+        labelStyle: cairo.labelMedium,
+        side: BorderSide(color: hairline, width: 1),
+        shape: const StadiumBorder(),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: muted,
+        type: BottomNavigationBarType.fixed,
+        showUnselectedLabels: true,
+        elevation: 0,
       ),
       dividerTheme: DividerThemeData(
         color: hairline,
         thickness: 1,
         space: 1,
-      ),
-      bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: card,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        shape: const RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        showDragHandle: true,
-      ),
-      dialogTheme: DialogThemeData(
-        backgroundColor: card,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: scheme.inverseSurface,
-        contentTextStyle: cairo.bodyMedium?.copyWith(
-          color: scheme.onInverseSurface,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        behavior: SnackBarBehavior.floating,
-        elevation: 0,
-      ),
-      chipTheme: ChipThemeData(
-        backgroundColor: scheme.surfaceContainerLow,
-        side: BorderSide(color: hairline, width: 1),
-        labelStyle: cairo.labelMedium,
-        padding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-        ),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: scheme.primary,
@@ -463,20 +458,23 @@ class AppPalette {
     required this.champagne,
     required this.cardShadow,
     required this.goldGradient,
+    required this.primaryGradient,
     required this.info,
     required this.goldGlow,
+    required this.indigoGlow,
     required this.success,
   });
 
-  /// Primary brand colour — the logo's signature mid-orange.
-  /// Named `gold` for backwards-compat with widgets predating this
-  /// palette refresh.
+  /// Brand "gold" — the orange hero accent (sunOrange). Named `gold`
+  /// for backwards-compat with widgets predating this palette refresh.
+  /// Reads from `scheme.secondary` so light mode = saturated orange,
+  /// dark mode = brighter sunset.
   final Color gold;
 
-  /// Streak / "hot" accent — the logo's deepest sunset.
+  /// Streak / "hot" accent — the deepest sunset.
   final Color warm;
 
-  /// Action / focus tone (matches [primary]).
+  /// Action / focus tone — the indigo primary.
   final Color accent;
 
   final Color muted;
@@ -484,24 +482,35 @@ class AppPalette {
   final Color card;
 
   /// Soft surface colour used for chips and inert pill backgrounds.
-  /// Named `champagne` for backwards-compat.
+  /// Named `champagne` for backwards-compat (pulls from
+  /// `scheme.surfaceContainerLow`, which is now lavender).
   final Color champagne;
 
   final List<BoxShadow> cardShadow;
 
-  /// Three-stop logo gradient (yellow → orange → sunset). Used on hero
-  /// CTAs, hero headers, and the brand wordmark fill. Named
-  /// `goldGradient` for backwards-compat.
+  /// Three-stop sunset gradient (yellow → orange → sunset). Reserved
+  /// for "achievement"-flavoured surfaces — the AI Recommendation
+  /// card, "Study Now" CTAs, streak badges. Named `goldGradient` for
+  /// backwards-compat.
   final LinearGradient goldGradient;
 
-  /// Walnut tone used for analytics / informational chips. Stays warm
-  /// so it never competes with the brand orange.
+  /// Three-stop indigo gradient. Used on the brand bottom-nav rail,
+  /// big study-path heroes, and any place we want the brand violet to
+  /// glow.
+  final LinearGradient primaryGradient;
+
+  /// Deep walnut historically; now a violet-tinted analytics tone
+  /// pulled from the tertiary slot. Stays in the cool family so it
+  /// never fights the brand orange when both are on screen.
   final Color info;
 
   /// Soft warm glow used behind hero CTAs and ring stats.
   final List<BoxShadow> goldGlow;
 
-  /// "Completed / correct / streak" success tone — the deeper sunset.
+  /// Soft violet glow used behind primary buttons and indigo cards.
+  final List<BoxShadow> indigoGlow;
+
+  /// "Completed / correct / streak" success tone — bright sunset.
   final Color success;
 
   /// Build a palette from the active theme. Prefer this in widgets so
@@ -510,7 +519,7 @@ class AppPalette {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final bool isLight = scheme.brightness == Brightness.light;
     return AppPalette(
-      gold: scheme.primary,
+      gold: scheme.secondary,
       warm: AppTheme.streakAmber,
       accent: scheme.primary,
       muted: scheme.onSurfaceVariant,
@@ -522,7 +531,7 @@ class AppPalette {
       cardShadow: <BoxShadow>[
         BoxShadow(
           color: isLight
-              ? const Color(0x141A1208) // walnut @ 8%
+              ? const Color(0x141A1633) // indigo @ 8%
               : const Color(0x99000000),
           blurRadius: 18,
           offset: const Offset(0, 6),
@@ -535,10 +544,22 @@ class AppPalette {
           offset: const Offset(0, 14),
         ),
       ],
-      goldGradient: LinearGradient(
+      indigoGlow: <BoxShadow>[
+        BoxShadow(
+          color: AppTheme.indigo.withOpacity(isLight ? 0.28 : 0.20),
+          blurRadius: 32,
+          offset: const Offset(0, 14),
+        ),
+      ],
+      goldGradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: AppTheme.heroGradient,
+      ),
+      primaryGradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: AppTheme.primaryGradient,
       ),
     );
   }

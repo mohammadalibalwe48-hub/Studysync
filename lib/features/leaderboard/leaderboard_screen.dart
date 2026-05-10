@@ -18,14 +18,14 @@ class LeaderboardScreen extends StatefulWidget {
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   static const List<Color> _avatarTones = <Color>[
-    Color(0xFFFF9500),
-    Color(0xFFE25A0D),
-    Color(0xFFFFB347),
-    Color(0xFF6B3F1A),
-    Color(0xFFFFD000),
-    Color(0xFFFF7A1F),
-    Color(0xFFA0683C),
-    Color(0xFFB87A2A),
+    Color(0xFF5B47E0), // indigo primary
+    Color(0xFF8472F0), // indigo light
+    Color(0xFFB7A8FF), // lavender 300
+    Color(0xFFFF9500), // sun orange (brand accent)
+    Color(0xFFFFB7C5), // blossom pink
+    Color(0xFFE08099), // blossom deep
+    Color(0xFFFFD000), // sun yellow
+    Color(0xFF7C68F0), // physics lavender
   ];
 
   bool _loading = true;
@@ -210,7 +210,7 @@ class _Podium extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: <Color>[Color(0xFFFFF6E6), Color(0xFFFCE5C0)],
+          colors: <Color>[Color(0xFFF1ECFF), Color(0xFFE6DFFF)],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: palette.outline, width: 1),
@@ -223,7 +223,7 @@ class _Podium extends StatelessWidget {
             child: _PodiumPlace(
               entry: second,
               rank: 2,
-              tone: const Color(0xFFE25A0D),
+              tone: const Color(0xFF8472F0), // indigo light
               barHeight: 60,
             ),
           ),
@@ -232,7 +232,7 @@ class _Podium extends StatelessWidget {
             child: _PodiumPlace(
               entry: first,
               rank: 1,
-              tone: const Color(0xFFFF9500),
+              tone: const Color(0xFFFF9500), // brand orange (winner)
               barHeight: 88,
             ),
           ),
@@ -241,7 +241,7 @@ class _Podium extends StatelessWidget {
             child: _PodiumPlace(
               entry: third,
               rank: 3,
-              tone: const Color(0xFF6B3F1A),
+              tone: const Color(0xFFFFB7C5), // blossom pink
               barHeight: 44,
             ),
           ),
