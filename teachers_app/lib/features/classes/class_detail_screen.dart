@@ -112,6 +112,20 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                child: _ClassActionTile(
+                  palette: palette,
+                  icon: Icons.forum_rounded,
+                  title: 'الدردشة المباشرة + اختبار حيّ',
+                  description:
+                      'حادث طلابك مباشرة وابثّ سؤالاً لجمع إجاباتهم لحظيًا',
+                  onTap: () => context.push(
+                    '/classes/${widget.classId}/chat',
+                    extra: <String, dynamic>{'name': widget.className},
+                  ),
+                ),
+              ),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: _refresh,

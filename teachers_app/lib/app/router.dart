@@ -11,6 +11,7 @@ import 'package:studysync_syria_teachers/features/auth/login_screen.dart';
 import 'package:studysync_syria_teachers/features/auth/signup_screen.dart';
 import 'package:studysync_syria_teachers/features/classes/classes_list_screen.dart';
 import 'package:studysync_syria_teachers/features/classes/class_detail_screen.dart';
+import 'package:studysync_syria_teachers/features/class_chat/class_chat_screen.dart';
 import 'package:studysync_syria_teachers/features/curriculum/curriculum_list_screen.dart';
 import 'package:studysync_syria_teachers/features/curriculum/curriculum_models.dart';
 import 'package:studysync_syria_teachers/features/curriculum/lesson_editor_screen.dart';
@@ -132,6 +133,22 @@ GoRouter buildRouter() {
           return _slidePage(
             state,
             AnnouncementsScreen(
+              classId: classId,
+              className: className,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/classes/:classId/chat',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final String classId = state.pathParameters['classId']!;
+          final String className =
+              (state.extra as Map<String, dynamic>?)?['name'] as String? ??
+                  'الصف';
+          return _slidePage(
+            state,
+            ClassChatScreen(
               classId: classId,
               className: className,
             ),
