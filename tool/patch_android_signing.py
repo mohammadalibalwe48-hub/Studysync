@@ -26,6 +26,7 @@ fails loudly rather than silently producing a debug-signed release.
 """
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -157,7 +158,21 @@ def patch_groovy(text: str) -> str:
 
 
 def main() -> int:
-    repo_root = Path(__file__).resolve().parent.parent
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path(__file__).resolve().parent.parent,
+        help=(
+            "Path to the Flutter project root containing `android/app/`. "
+            "Defaults to the parent of the directory holding this script, "
+            "which is correct when invoked from the main repo's `tool/`. "
+            "Pass an explicit path when invoking from a sub-app like "
+            "`teachers_app/`."
+        ),
+    )
+    args = parser.parse_args()
+    repo_root = args.repo_root.resolve()
     kts = repo_root / "android" / "app" / "build.gradle.kts"
     groovy = repo_root / "android" / "app" / "build.gradle"
 
