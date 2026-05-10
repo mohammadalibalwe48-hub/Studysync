@@ -14,7 +14,11 @@ import 'package:studysync_syria/features/curriculum/custom_topic_detail_screen.d
 import 'package:studysync_syria/features/exams/exam_questions_screen.dart';
 import 'package:studysync_syria/features/flashcards/flashcards_screen.dart';
 import 'package:studysync_syria/features/home/home_screen.dart';
+import 'package:studysync_syria/features/leaderboard/leaderboard_screen.dart';
 import 'package:studysync_syria/features/library/library_screen.dart';
+import 'package:studysync_syria/features/mindmap/mind_map_screen.dart';
+import 'package:studysync_syria/features/notes/notes_screen.dart';
+import 'package:studysync_syria/features/periodic_table/periodic_table_screen.dart';
 import 'package:studysync_syria/features/pomodoro/pomodoro_screen.dart';
 import 'package:studysync_syria/features/profile/profile_screen.dart';
 import 'package:studysync_syria/features/progress/progress_screen.dart';
@@ -160,6 +164,26 @@ GoRouter buildRouter() {
         path: '/search',
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _slidePage(state, const SearchScreen()),
+      ),
+      GoRoute(
+        path: '/notes',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const NotesScreen()),
+      ),
+      GoRoute(
+        path: '/leaderboard',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const LeaderboardScreen()),
+      ),
+      GoRoute(
+        path: '/mind-map',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const MindMapScreen()),
+      ),
+      GoRoute(
+        path: '/periodic-table',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const PeriodicTableScreen()),
       ),
     ],
   );
