@@ -35,8 +35,8 @@ class _StudySyncAppState extends State<StudySyncApp> {
               isDark ? Brightness.light : Brightness.dark,
           statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
           systemNavigationBarColor: isDark
-              ? const Color(0xFF15110A) // matches dark surface
-              : const Color(0xFFFFFCF6), // matches AppTheme.background
+              ? const Color(0xFF11102A) // matches dark surface
+              : const Color(0xFFF7F4FF), // matches AppTheme.background
           systemNavigationBarIconBrightness:
               isDark ? Brightness.light : Brightness.dark,
         ));

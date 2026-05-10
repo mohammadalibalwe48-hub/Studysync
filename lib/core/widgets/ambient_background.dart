@@ -1,15 +1,15 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// Warm "Sunlit Gold" ambient background used app-wide.
+/// "Lavender dawn" ambient background used app-wide.
 ///
-/// Renders three slow-drifting honey/sunset blobs over the cream
-/// surface so every screen has a subtle, golden-hour atmosphere
-/// without ever feeling neon or busy.  The blobs are heavily blurred,
-/// low-opacity, and only animate over ~30 seconds, so they read as
-/// gentle "warm light" rather than motion noise.  In dark mode the
-/// blobs sit on a deep walnut canvas with the same gold/clay tones,
-/// dimmer.
+/// Renders three slow-drifting indigo/violet/orange blobs over a
+/// faintly tinted lavender surface so every screen has a subtle,
+/// gradient-glow atmosphere without ever feeling neon or busy. The
+/// blobs are heavily blurred, low-opacity, and only animate over ~30
+/// seconds, so they read as gentle "colour wash" rather than motion
+/// noise. In dark mode the same blobs sit on a deep night-violet
+/// canvas, dimmer.
 ///
 /// Set [intensity] to 0 to disable the moving glows on screens that
 /// already have their own hero header (kept for backwards-compat).
@@ -46,27 +46,26 @@ class _AmbientBackgroundState extends State<AmbientBackground>
     final bool isLight = scheme.brightness == Brightness.light;
     final double k = widget.intensity.clamp(0.0, 1.0).toDouble();
 
-    // Warm palette pulled directly from the logo gradient stops
-    // (`#FFD000` → `#FF9500` → `#FF6B00`). Light mode uses luminous
-    // gold/orange/sunset blobs over a near-white canvas so the orange
-    // accents pop instead of getting absorbed by a yellow cast; dark
-    // mode dims the same tones over walnut so contrast stays high.
+    // Lead with two indigo/lavender blobs (matching the new primary)
+    // and keep one warm sunset blob so the brand orange still glows
+    // through. Light mode reads as "morning haze on lavender"; dark
+    // mode dims the same tones on a night-violet canvas.
     final Color blobA = isLight
-        ? const Color(0xFFFFD068) // logo top yellow, glowing
-        : const Color(0xFFB87A2A); // dim honey
+        ? const Color(0xFFB7A8FF) // lavender-300
+        : const Color(0xFF4F3FA8); // dim indigo
     final Color blobB = isLight
-        ? const Color(0xFFFFA64F) // logo mid orange, soft
-        : const Color(0xFF9A5A24); // dim sunset
+        ? const Color(0xFF8472F0) // indigo-light
+        : const Color(0xFF3D2E8F); // dim violet
     final Color blobC = isLight
-        ? const Color(0xFFFF7A1F) // logo bottom sunset
-        : const Color(0xFF7C4517); // dim saffron
+        ? const Color(0xFFFF9A4F) // warm orange highlight
+        : const Color(0xFF8A4A1F); // dim sunset
 
     final Color baseTop = isLight
-        ? const Color(0xFFFFFCF6) // matches AppTheme.background
-        : const Color(0xFF15110A); // matches dark surface
+        ? const Color(0xFFF7F4FF) // matches AppTheme.background
+        : const Color(0xFF11102A); // matches dark surface
     final Color baseBottom = isLight
-        ? const Color(0xFFFFF3DD) // warmer cream at the bottom edge
-        : const Color(0xFF0F0B05);
+        ? const Color(0xFFEFE9FF) // deeper lavender at the bottom edge
+        : const Color(0xFF0B0A20);
 
     return AnimatedBuilder(
       animation: _c,
@@ -87,7 +86,8 @@ class _AmbientBackgroundState extends State<AmbientBackground>
                 ),
               ),
             ),
-            // Three drifting warm blobs.
+            // Three drifting violet/indigo blobs with a warm orange
+            // accent so the brand pairing stays present.
             _Blob(
               color: blobA.withOpacity(isLight ? 0.55 * k : 0.40 * k),
               size: 360,
@@ -101,7 +101,7 @@ class _AmbientBackgroundState extends State<AmbientBackground>
               dy: 0.32 + 0.06 * math.sin(t * 0.95),
             ),
             _Blob(
-              color: blobC.withOpacity(isLight ? 0.30 * k : 0.24 * k),
+              color: blobC.withOpacity(isLight ? 0.22 * k : 0.18 * k),
               size: 420,
               dx: 0.45 + 0.10 * math.sin(t * 1.15 + 1.2),
               dy: 0.85 + 0.04 * math.cos(t * 0.6),

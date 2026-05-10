@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/widgets/ambient_background.dart';
+import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/glass_app_bar.dart';
 import 'package:studysync_syria/core/widgets/glass_bottom_nav.dart';
 
@@ -58,6 +60,7 @@ class MainScaffold extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
+      extendBody: true,
       body: AmbientBackground(
         child: Column(
           children: <Widget>[
@@ -68,6 +71,10 @@ class MainScaffold extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: _CenterFab(
+        onTap: () => context.go('/quick-quiz'),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: GlassBottomNav(
         currentIndex: tab.index,
         onTap: (int i) {
@@ -110,6 +117,45 @@ class MainScaffold extends StatelessWidget {
             label: 'حسابي',
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Center-docked indigo FAB used for "quick action" — currently
+/// launches the quick quiz flow. Mirrors the floating `+` button from
+/// the reference design.
+class _CenterFab extends StatelessWidget {
+  const _CenterFab({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 18),
+      child: PressableScale(
+        onTap: onTap,
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: palette.primaryGradient,
+            boxShadow: palette.indigoGlow,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.surface,
+              width: 4,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.add_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
       ),
     );
   }
