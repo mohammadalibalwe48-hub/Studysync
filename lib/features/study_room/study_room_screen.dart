@@ -23,11 +23,13 @@ class StudyRoomScreen extends StatefulWidget {
     required this.roomId,
     required this.displayName,
     this.isHost = false,
+    this.mode = RoomMode.discussion,
   });
 
   final String roomId;
   final String displayName;
   final bool isHost;
+  final RoomMode mode;
 
   @override
   State<StudyRoomScreen> createState() => _StudyRoomScreenState();
@@ -60,6 +62,7 @@ class _StudyRoomScreenState extends State<StudyRoomScreen> {
       userId: userId,
       displayName: widget.displayName,
       isHost: widget.isHost,
+      mode: widget.mode,
     );
     setState(() => _service = svc);
     svc.addListener(_onServiceUpdate);
@@ -139,15 +142,28 @@ class _StudyRoomScreenState extends State<StudyRoomScreen> {
         _GridTile.remote(p),
     ];
 
+    final Widget body;
+    switch (svc.mode) {
+      case RoomMode.lecture:
+        body = _LectureLayout(tiles: tiles, service: svc);
+        break;
+      case RoomMode.voice:
+        body = _VoiceGridLayout(tiles: tiles);
+        break;
+      case RoomMode.discussion:
+        body = _ParticipantGrid(tiles: tiles);
+        break;
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Stack(
           children: <Widget>[
-            // Video grid
+            // Video grid / lecture / voice layout
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 56, 8, 96),
-              child: _ParticipantGrid(tiles: tiles),
+              child: body,
             ),
             // Top bar
             Positioned(
@@ -166,10 +182,16 @@ class _StudyRoomScreenState extends State<StudyRoomScreen> {
               left: 0,
               right: 0,
               child: _ControlBar(
+                mode: svc.mode,
                 audioMuted: svc.audioMuted,
                 videoMuted: svc.videoMuted,
                 videoSupported: svc.videoSupported,
+                videoVisible: svc.mode != RoomMode.voice,
+                audioLocked: svc.audioLocked,
+                videoLocked: svc.videoLocked,
                 isHost: widget.isHost,
+                myHandRaised: svc.myHandRaised,
+                raisedHandCount: svc.raisedHands.length,
                 chatBadge: svc.chatMessages.isEmpty
                     ? 0
                     : (_chatOpen ? 0 : svc.chatMessages.length),
@@ -178,6 +200,8 @@ class _StudyRoomScreenState extends State<StudyRoomScreen> {
                 onToggleVideo: () =>
                     svc.setLocalVideoMuted(!svc.videoMuted),
                 onToggleChat: () => setState(() => _chatOpen = !_chatOpen),
+                onToggleHandRaise: () => svc.toggleHandRaised(),
+                onShowHands: () => _showHandsSheet(svc),
                 onMuteEveryone: () async {
                   await svc.hostMuteEveryone();
                   if (!mounted) return;
@@ -231,6 +255,94 @@ class _StudyRoomScreenState extends State<StudyRoomScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showHandsSheet(StudyRoomService svc) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1B1B1B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (BuildContext sheetCtx) {
+        return AnimatedBuilder(
+          animation: svc,
+          builder: (BuildContext _, Widget? __) {
+            final List<RaisedHand> hands = svc.raisedHands;
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        const Icon(Icons.front_hand_rounded,
+                            color: Colors.amber),
+                        const SizedBox(width: 8),
+                        Text(
+                          'أيدٍ مرفوعة (${hands.length})',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (hands.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Center(
+                          child: Text(
+                            'لا توجد طلبات للكلام حالياً.',
+                            style: TextStyle(color: Colors.white54),
+                          ),
+                        ),
+                      )
+                    else
+                      ...hands.map((RaisedHand h) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: Text(
+                                  h.displayName,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  svc.dismissHand(h.userId);
+                                },
+                                child: const Text('تجاهل'),
+                              ),
+                              const SizedBox(width: 4),
+                              FilledButton.icon(
+                                onPressed: () {
+                                  svc.grantUnmute(h.userId);
+                                },
+                                icon: const Icon(Icons.mic_rounded, size: 16),
+                                label: const Text('إذن كلام'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -351,6 +463,191 @@ class _ParticipantGrid extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// Voice-only layout: avatar grid, no [RTCVideoView].
+class _VoiceGridLayout extends StatelessWidget {
+  const _VoiceGridLayout({required this.tiles});
+
+  final List<_GridTile> tiles;
+
+  @override
+  Widget build(BuildContext context) {
+    final int n = tiles.length;
+    final int columns;
+    if (n <= 1) {
+      columns = 1;
+    } else if (n <= 4) {
+      columns = 2;
+    } else if (n <= 9) {
+      columns = 3;
+    } else {
+      columns = 4;
+    }
+    return GridView.count(
+      crossAxisCount: columns,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1,
+      children: <Widget>[
+        for (final _GridTile t in tiles)
+          _VoiceTile(
+            displayName: t.displayName,
+            audioMuted: t.audioMuted,
+            isHost: t.isHost,
+            isLocal: t.isLocal,
+          ),
+      ],
+    );
+  }
+}
+
+class _VoiceTile extends StatelessWidget {
+  const _VoiceTile({
+    required this.displayName,
+    required this.audioMuted,
+    required this.isHost,
+    required this.isLocal,
+  });
+
+  final String displayName;
+  final bool audioMuted;
+  final bool isHost;
+  final bool isLocal;
+
+  @override
+  Widget build(BuildContext context) {
+    final String initial = displayName.isEmpty
+        ? '?'
+        : displayName.characters.first.toUpperCase();
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: audioMuted
+              ? Colors.red.withOpacity(0.5)
+              : Colors.green.withOpacity(0.5),
+          width: 2,
+        ),
+      ),
+      child: Stack(
+        children: <Widget>[
+          Center(
+            child: Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                color: isHost
+                    ? Colors.amber.shade700
+                    : const Color(0xFFB66C2E),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                initial,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 8,
+            right: 8,
+            bottom: 8,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                if (isHost)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 4),
+                    child: Icon(Icons.star_rounded,
+                        color: Colors.amber, size: 16),
+                  ),
+                Flexible(
+                  child: Text(
+                    isLocal ? '$displayName (أنت)' : displayName,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  audioMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+                  color: audioMuted ? Colors.red : Colors.greenAccent,
+                  size: 14,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Lecture layout: one big speaker tile (the host or whichever
+/// participant is currently unmuted) + a horizontal strip of student
+/// thumbnails along the bottom.
+class _LectureLayout extends StatelessWidget {
+  const _LectureLayout({required this.tiles, required this.service});
+
+  final List<_GridTile> tiles;
+  final StudyRoomService service;
+
+  @override
+  Widget build(BuildContext context) {
+    // Pick the speaker: prefer a remote host, else local host, else
+    // the first non-muted-audio participant, else the first tile.
+    _GridTile speaker = tiles.first;
+    final Iterable<_GridTile> hosts = tiles.where((_GridTile t) => t.isHost);
+    if (hosts.isNotEmpty) {
+      speaker = hosts.first;
+    } else {
+      final Iterable<_GridTile> active =
+          tiles.where((_GridTile t) => !t.audioMuted);
+      if (active.isNotEmpty) speaker = active.first;
+    }
+
+    final List<_GridTile> others =
+        tiles.where((_GridTile t) => t != speaker).toList();
+
+    return Column(
+      children: <Widget>[
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: _ParticipantTile(tile: speaker),
+          ),
+        ),
+        if (others.isNotEmpty) const SizedBox(height: 8),
+        if (others.isNotEmpty)
+          SizedBox(
+            height: 96,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: others.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (BuildContext _, int i) {
+                final _GridTile t = others[i];
+                return AspectRatio(
+                  aspectRatio: 3 / 4,
+                  child: _ParticipantTile(tile: t),
+                );
+              },
+            ),
+          ),
+      ],
     );
   }
 }
@@ -537,26 +834,42 @@ class _TopBar extends StatelessWidget {
 
 class _ControlBar extends StatelessWidget {
   const _ControlBar({
+    required this.mode,
     required this.audioMuted,
     required this.videoMuted,
     required this.videoSupported,
+    required this.videoVisible,
+    required this.audioLocked,
+    required this.videoLocked,
     required this.isHost,
+    required this.myHandRaised,
+    required this.raisedHandCount,
     required this.chatBadge,
     required this.onToggleAudio,
     required this.onToggleVideo,
     required this.onToggleChat,
+    required this.onToggleHandRaise,
+    required this.onShowHands,
     required this.onMuteEveryone,
     required this.onLeave,
   });
 
+  final RoomMode mode;
   final bool audioMuted;
   final bool videoMuted;
   final bool videoSupported;
+  final bool videoVisible;
+  final bool audioLocked;
+  final bool videoLocked;
   final bool isHost;
+  final bool myHandRaised;
+  final int raisedHandCount;
   final int chatBadge;
   final VoidCallback onToggleAudio;
   final VoidCallback onToggleVideo;
   final VoidCallback onToggleChat;
+  final VoidCallback onToggleHandRaise;
+  final VoidCallback onShowHands;
   final VoidCallback onMuteEveryone;
   final VoidCallback onLeave;
 
@@ -572,15 +885,72 @@ class _ControlBar extends StatelessWidget {
             icon: audioMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
             color: audioMuted ? Colors.red : Colors.white24,
             onTap: onToggleAudio,
+            disabled: audioLocked,
           ),
-          _RoundButton(
-            icon: !videoSupported || videoMuted
-                ? Icons.videocam_off_rounded
-                : Icons.videocam_rounded,
-            color: videoMuted ? Colors.red : Colors.white24,
-            onTap: videoSupported ? onToggleVideo : () {},
-            disabled: !videoSupported,
-          ),
+          if (videoVisible)
+            _RoundButton(
+              icon: !videoSupported || videoMuted
+                  ? Icons.videocam_off_rounded
+                  : Icons.videocam_rounded,
+              color: videoMuted ? Colors.red : Colors.white24,
+              onTap: videoSupported ? onToggleVideo : () {},
+              disabled: !videoSupported || videoLocked,
+            ),
+          // Lecture mode: students get a "raise hand" button; hosts
+          // get a "see raised hands" button.
+          if (mode == RoomMode.lecture && !isHost)
+            _RoundButton(
+              icon: Icons.front_hand_rounded,
+              color: myHandRaised
+                  ? Colors.amber
+                  : Colors.white24,
+              foreground: myHandRaised ? Colors.black : Colors.white,
+              onTap: onToggleHandRaise,
+            ),
+          if (mode == RoomMode.lecture && isHost)
+            Stack(
+              clipBehavior: Clip.none,
+              children: <Widget>[
+                _RoundButton(
+                  icon: Icons.front_hand_rounded,
+                  color: raisedHandCount > 0
+                      ? Colors.amber
+                      : Colors.white24,
+                  foreground: raisedHandCount > 0
+                      ? Colors.black
+                      : Colors.white,
+                  onTap: onShowHands,
+                ),
+                if (raisedHandCount > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '$raisedHandCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           Stack(
             clipBehavior: Clip.none,
             children: <Widget>[

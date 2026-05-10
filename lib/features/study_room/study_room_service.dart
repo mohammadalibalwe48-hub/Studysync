@@ -28,6 +28,7 @@ class StudyRoomService extends ChangeNotifier {
     required this.userId,
     required this.displayName,
     this.isHost = false,
+    this.mode = RoomMode.discussion,
     CloudflareRealtimeClient? client,
   }) : _client = client ?? CloudflareRealtimeClient();
 
@@ -35,8 +36,22 @@ class StudyRoomService extends ChangeNotifier {
   final String userId;
   final String displayName;
   final bool isHost;
+  final RoomMode mode;
 
   final CloudflareRealtimeClient _client;
+
+  /// Whether non-host participants are allowed to unmute themselves.
+  /// Lecture rooms lock students; the host can grant per-user unmute
+  /// via [grantUnmute].
+  bool get _audioLocked =>
+      mode == RoomMode.lecture && !isHost && !_unmuteGranted;
+  bool get _videoLocked =>
+      mode == RoomMode.lecture && !isHost && !_unmuteGranted;
+
+  bool _unmuteGranted = false;
+
+  bool get audioLocked => _audioLocked;
+  bool get videoLocked => _videoLocked;
 
   // ─────────────────────────── state ────────────────────────────────
 
@@ -55,6 +70,12 @@ class StudyRoomService extends ChangeNotifier {
 
   /// Persistent chat scrollback for this room (newest last).
   final List<RoomChatMessage> _chat = <RoomChatMessage>[];
+
+  /// Hosts in [RoomMode.lecture] see this as a queue of students
+  /// requesting to speak. Cleared when the host grants or dismisses.
+  final Map<String, RaisedHand> _raisedHands = <String, RaisedHand>{};
+
+  bool _myHandRaised = false;
 
   bool _audioMuted = false;
   bool _videoMuted = false;
@@ -82,11 +103,24 @@ class StudyRoomService extends ChangeNotifier {
   List<RoomChatMessage> get chatMessages =>
       List<RoomChatMessage>.unmodifiable(_chat);
 
+  List<RaisedHand> get raisedHands {
+    final List<RaisedHand> hands = _raisedHands.values.toList();
+    hands.sort((RaisedHand a, RaisedHand b) =>
+        a.raisedAt.compareTo(b.raisedAt));
+    return List<RaisedHand>.unmodifiable(hands);
+  }
+
+  bool get myHandRaised => _myHandRaised;
+
   // ────────────────────────── lifecycle ─────────────────────────────
 
   /// Joins the room. Camera-on-by-default per spec; if camera capture
   /// fails we transparently fall back to voice-only.
-  Future<void> start({bool startWithVideo = true}) async {
+  ///
+  /// In [RoomMode.voice] the camera is never requested. In
+  /// [RoomMode.lecture] non-hosts join with mic+cam disabled and
+  /// cannot toggle them until the host grants unmute.
+  Future<void> start({bool? startWithVideo}) async {
     if (_started) return;
     _setStatus('initialising');
     try {
@@ -94,7 +128,17 @@ class StudyRoomService extends ChangeNotifier {
         throw const RealtimeNotConfiguredException();
       }
       await localRenderer.initialize();
-      await _initLocalMedia(startWithVideo: startWithVideo);
+      final bool wantVideo = _resolveInitialVideo(startWithVideo);
+      await _initLocalMedia(startWithVideo: wantVideo);
+      // Apply lecture-mode initial mute for non-hosts.
+      if (mode == RoomMode.lecture && !isHost) {
+        _audioMuted = true;
+        _videoMuted = true;
+        for (final MediaStreamTrack t
+            in _localStream?.getTracks() ?? const <MediaStreamTrack>[]) {
+          t.enabled = false;
+        }
+      }
       await _initPeerConnection();
       await _publishToCloudflare();
       _joinSupabaseChannel();
@@ -105,6 +149,12 @@ class StudyRoomService extends ChangeNotifier {
       _setStatus('failed');
       rethrow;
     }
+  }
+
+  bool _resolveInitialVideo(bool? requested) {
+    if (mode == RoomMode.voice) return false;
+    if (mode == RoomMode.lecture && !isHost) return false;
+    return requested ?? true;
   }
 
   Future<void> _initLocalMedia({required bool startWithVideo}) async {
@@ -261,7 +311,60 @@ class StudyRoomService extends ChangeNotifier {
         // Anyone in the room receives the order; we only respect it
         // if it came from a real host. We trust the broadcast — an
         // attacker who can post on the channel can also do worse.
-        unawaited(setLocalAudioMuted(true));
+        _unmuteGranted = false;
+        for (final MediaStreamTrack t
+            in _localStream?.getAudioTracks() ?? const <MediaStreamTrack>[]) {
+          t.enabled = false;
+        }
+        _audioMuted = true;
+        notifyListeners();
+      },
+    );
+    ch.onBroadcast(
+      event: 'hand_raise',
+      callback: (Map<String, dynamic> raw) {
+        if (!isHost) return;
+        final String uid = (raw['userId'] as String?) ?? '';
+        final String name = (raw['displayName'] as String?) ?? '';
+        if (uid.isEmpty || uid == userId) return;
+        if ((raw['lower'] as bool?) ?? false) {
+          _raisedHands.remove(uid);
+        } else {
+          _raisedHands[uid] = RaisedHand(
+            userId: uid,
+            displayName: name.isEmpty ? 'طالب' : name,
+            raisedAt: DateTime.tryParse(raw['at'] as String? ?? '') ??
+                DateTime.now(),
+          );
+        }
+        notifyListeners();
+      },
+    );
+    ch.onBroadcast(
+      event: 'unmute_grant',
+      callback: (Map<String, dynamic> raw) {
+        // Only the targeted user reacts; everyone else ignores.
+        final String target = (raw['target'] as String?) ?? '';
+        if (target != userId) return;
+        _unmuteGranted = true;
+        _myHandRaised = false;
+        notifyListeners();
+      },
+    );
+    ch.onBroadcast(
+      event: 'unmute_revoke',
+      callback: (Map<String, dynamic> raw) {
+        final String target = (raw['target'] as String?) ?? '';
+        if (target != userId) return;
+        _unmuteGranted = false;
+        // Force-mute on revoke.
+        for (final MediaStreamTrack t
+            in _localStream?.getTracks() ?? const <MediaStreamTrack>[]) {
+          t.enabled = false;
+        }
+        _audioMuted = true;
+        _videoMuted = true;
+        notifyListeners();
       },
     );
 
@@ -377,6 +480,8 @@ class StudyRoomService extends ChangeNotifier {
   // ───────────────────────── controls ───────────────────────────────
 
   Future<void> setLocalAudioMuted(bool muted) async {
+    // Allow muting at any time; only block *unmuting* when locked.
+    if (!muted && _audioLocked) return;
     _audioMuted = muted;
     for (final MediaStreamTrack t
         in _localStream?.getAudioTracks() ?? const <MediaStreamTrack>[]) {
@@ -387,12 +492,72 @@ class StudyRoomService extends ChangeNotifier {
 
   Future<void> setLocalVideoMuted(bool muted) async {
     if (!_videoSupported) return;
+    if (!muted && _videoLocked) return;
     _videoMuted = muted;
     for (final MediaStreamTrack t
         in _localStream?.getVideoTracks() ?? const <MediaStreamTrack>[]) {
       t.enabled = !muted;
     }
     notifyListeners();
+  }
+
+  /// Lecture-only: a non-host student requests permission to speak.
+  /// Idempotent — calling twice toggles the raised state.
+  Future<void> toggleHandRaised() async {
+    if (mode != RoomMode.lecture || isHost) return;
+    final RealtimeChannel? ch = _channel;
+    if (ch == null) return;
+    _myHandRaised = !_myHandRaised;
+    notifyListeners();
+    await ch.sendBroadcastMessage(
+      event: 'hand_raise',
+      payload: <String, dynamic>{
+        'userId': userId,
+        'displayName': displayName,
+        'at': DateTime.now().toIso8601String(),
+        'lower': !_myHandRaised,
+      },
+    );
+  }
+
+  /// Host-only: grant a specific student temporary unmute permission.
+  Future<void> grantUnmute(String targetUserId) async {
+    if (!isHost) return;
+    final RealtimeChannel? ch = _channel;
+    if (ch == null) return;
+    _raisedHands.remove(targetUserId);
+    notifyListeners();
+    await ch.sendBroadcastMessage(
+      event: 'unmute_grant',
+      payload: <String, dynamic>{
+        'target': targetUserId,
+        'fromUserId': userId,
+        'at': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+
+  /// Host-only: revoke an earlier grant and force-mute the student.
+  Future<void> revokeUnmute(String targetUserId) async {
+    if (!isHost) return;
+    final RealtimeChannel? ch = _channel;
+    if (ch == null) return;
+    await ch.sendBroadcastMessage(
+      event: 'unmute_revoke',
+      payload: <String, dynamic>{
+        'target': targetUserId,
+        'fromUserId': userId,
+        'at': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+
+  /// Host-only: dismiss a raised hand without granting unmute.
+  void dismissHand(String targetUserId) {
+    if (!isHost) return;
+    if (_raisedHands.remove(targetUserId) != null) {
+      notifyListeners();
+    }
   }
 
   /// Host-only: tell every participant to locally mute their mic.
@@ -407,9 +572,12 @@ class StudyRoomService extends ChangeNotifier {
         'at': DateTime.now().toIso8601String(),
       },
     );
-    // Mute self too — a host that tells the room to shut up should
-    // also be quiet.
-    await setLocalAudioMuted(true);
+    // In a lecture, the host stays unmuted (they're the speaker).
+    // In a discussion / voice room, the host should silence themselves
+    // too as a courtesy.
+    if (mode != RoomMode.lecture) {
+      await setLocalAudioMuted(true);
+    }
   }
 
   Future<void> sendChatMessage(String body) async {

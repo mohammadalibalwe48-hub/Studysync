@@ -9,6 +9,7 @@ import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/section_header.dart';
 import 'package:studysync_syria/core/widgets/stat_card.dart';
 import 'package:studysync_syria/features/study_room/cloudflare_realtime_client.dart';
+import 'package:studysync_syria/features/study_room/study_room_models.dart';
 
 /// Lightweight lobby for study rooms.
 ///
@@ -17,7 +18,9 @@ import 'package:studysync_syria/features/study_room/cloudflare_realtime_client.d
 /// enter the live room. There is no server-side "rooms" table — the
 /// room id is just an arbitrary shared string.
 class StudyRoomLobbyScreen extends StatefulWidget {
-  const StudyRoomLobbyScreen({super.key});
+  const StudyRoomLobbyScreen({super.key, this.initialMode = RoomMode.discussion});
+
+  final RoomMode initialMode;
 
   @override
   State<StudyRoomLobbyScreen> createState() => _StudyRoomLobbyScreenState();
@@ -26,6 +29,16 @@ class StudyRoomLobbyScreen extends StatefulWidget {
 class _StudyRoomLobbyScreenState extends State<StudyRoomLobbyScreen> {
   final TextEditingController _codeCtrl = TextEditingController();
   bool _asHost = false;
+  late RoomMode _mode = widget.initialMode;
+
+  @override
+  void initState() {
+    super.initState();
+    // Lecture rooms make most sense when you create them as a teacher.
+    if (_mode == RoomMode.lecture) {
+      _asHost = true;
+    }
+  }
 
   @override
   void dispose() {
@@ -53,11 +66,12 @@ class _StudyRoomLobbyScreenState extends State<StudyRoomLobbyScreen> {
     final String displayName =
         AuthService.instance.currentUser?.email?.split('@').first ?? 'طالب';
     context.push(
-      '/study-rooms/$code',
+      '/study-rooms/$code?mode=${_mode.wire}',
       extra: <String, dynamic>{
         'displayName': displayName,
         'isHost': _asHost,
         'userId': userId,
+        'mode': _mode.wire,
       },
     );
   }
@@ -75,8 +89,8 @@ class _StudyRoomLobbyScreenState extends State<StudyRoomLobbyScreen> {
           child: Column(
             children: <Widget>[
               BackBar(
-                title: 'غرف الدراسة',
-                subtitle: 'مكالمات فيديو جماعية وحوار نصّي',
+                title: _modeTitle(_mode),
+                subtitle: _modeSubtitle(_mode),
                 onBack: () => context.pop(),
               ),
               Expanded(
@@ -130,6 +144,28 @@ class _StudyRoomLobbyScreenState extends State<StudyRoomLobbyScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
+                            // Mode selector
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: <Widget>[
+                                for (final RoomMode m in RoomMode.values)
+                                  ChoiceChip(
+                                    label: Text(_modeChipLabel(m)),
+                                    avatar: Icon(_modeChipIcon(m), size: 16),
+                                    selected: _mode == m,
+                                    onSelected: (bool _) {
+                                      setState(() {
+                                        _mode = m;
+                                        if (m == RoomMode.lecture) {
+                                          _asHost = true;
+                                        }
+                                      });
+                                    },
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
                             SwitchListTile.adaptive(
                               contentPadding: EdgeInsets.zero,
                               title: const Text('انضمّ كمضيف (للمعلّم)'),
@@ -137,8 +173,13 @@ class _StudyRoomLobbyScreenState extends State<StudyRoomLobbyScreen> {
                                 'يفعّل أدوات المضيف مثل كتم الجميع.',
                               ),
                               value: _asHost,
-                              onChanged: (bool v) =>
-                                  setState(() => _asHost = v),
+                              // Lock the host toggle ON when creating a
+                              // lecture (it doesn't make sense as a
+                              // student creating a lecture).
+                              onChanged: _mode == RoomMode.lecture
+                                  ? null
+                                  : (bool v) =>
+                                      setState(() => _asHost = v),
                             ),
                             const SizedBox(height: 8),
                             Align(
@@ -175,6 +216,50 @@ class _StudyRoomLobbyScreenState extends State<StudyRoomLobbyScreen> {
         ),
       ),
     );
+  }
+}
+
+String _modeTitle(RoomMode m) {
+  switch (m) {
+    case RoomMode.discussion:
+      return 'غرف الدراسة';
+    case RoomMode.voice:
+      return 'غرفة صوتية';
+    case RoomMode.lecture:
+      return 'بثّ معلّم مباشر';
+  }
+}
+
+String _modeSubtitle(RoomMode m) {
+  switch (m) {
+    case RoomMode.discussion:
+      return 'مكالمات فيديو جماعية وحوار نصّي';
+    case RoomMode.voice:
+      return 'محادثة صوتية فقط — بدون كاميرا';
+    case RoomMode.lecture:
+      return 'يبثّ المعلّم؛ الطلاب صامتون افتراضيًا';
+  }
+}
+
+String _modeChipLabel(RoomMode m) {
+  switch (m) {
+    case RoomMode.discussion:
+      return 'نقاش';
+    case RoomMode.voice:
+      return 'صوت فقط';
+    case RoomMode.lecture:
+      return 'بثّ معلّم';
+  }
+}
+
+IconData _modeChipIcon(RoomMode m) {
+  switch (m) {
+    case RoomMode.discussion:
+      return Icons.groups_3_rounded;
+    case RoomMode.voice:
+      return Icons.mic_rounded;
+    case RoomMode.lecture:
+      return Icons.cast_for_education_rounded;
   }
 }
 
