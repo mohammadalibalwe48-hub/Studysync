@@ -3,71 +3,77 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Centralised theming for the Educational Steps Platform app.
 ///
-/// The look-and-feel follows the "Focus & Flow" design system, inspired
-/// by Notion, Quizlet, Linear and Things 3:
+/// The look-and-feel follows the "Sunlit Gold" design system pulled
+/// from the Educational Steps Platform logo (orange/yellow gradient
+/// over stacked books):
 ///
-/// - Calm slate background (almost pure white in light mode, deep
-///   charcoal in dark mode).
-/// - Indigo brand primary (premium, trustworthy, knowledge-coded).
-/// - Vivid violet for highlight gradients.
-/// - Emerald success accent for streaks, progress and "completed".
-/// - Amber accent reserved for the streak flame only.
-/// - No glassmorphism. Solid surfaces, hairline borders, very soft
-///   single-layer shadows. Generous spacing.
+/// - Warm cream canvas (a soft, low-glare off-white in light mode,
+///   deep walnut in dark mode) — easy on the eyes during long study
+///   sessions, never neon.
+/// - Saffron gold brand primary (premium, optimistic, knowledge-coded).
+/// - Sunset orange highlight gradient that mirrors the logo gradient.
+/// - Honey amber success accent for streaks, progress and "completed".
+/// - Mocha tertiary for analytics / data viz so charts stay readable.
+/// - Solid surfaces, hairline borders, very soft single-layer shadows,
+///   generous spacing. Subtle warm glow only behind hero CTAs.
 class AppTheme {
   AppTheme._();
 
   // ────────────────────────── Brand colours ──────────────────────────
 
-  /// Brand primary — deep indigo. The single colour everything else
-  /// is calibrated against.
-  static const Color primary = Color(0xFF4F46E5); // indigo-600
+  /// Brand primary — deep saffron gold. Calibrated to be readable as a
+  /// fill colour on white surfaces (~4.5:1 against text white).
+  static const Color primary = Color(0xFFD68A1A); // saffron-700
 
-  /// Top stop of the primary gradient (vivid indigo).
-  static const Color goldStart = Color(0xFF6366F1); // indigo-500
+  /// Top stop of the hero gradient — warm honey gold.
+  static const Color goldStart = Color(0xFFF5B544); // honey-400
 
-  /// Bottom stop of the primary gradient (vivid violet).
-  static const Color goldEnd = Color(0xFF8B5CF6); // violet-500
+  /// Bottom stop of the hero gradient — sunset orange.
+  static const Color goldEnd = Color(0xFFE2862F); // sunset-600
 
-  /// Soft fixed indigo (chips, hero glow, badge fill).
-  static const Color primaryFixed = Color(0xFFE0E7FF); // indigo-100
+  /// Soft fixed honey (chips, hero glow, badge fill).
+  static const Color primaryFixed = Color(0xFFFFEFCF); // cream-100
 
-  /// Brighter brand tone used for highlights.
-  static const Color primaryFixedDim = Color(0xFFA5B4FC); // indigo-300
+  /// Brighter brand tone used for highlights / dark-mode primary.
+  static const Color primaryFixedDim = Color(0xFFF6C66B); // honey-300
 
-  /// Secondary accent — emerald (used for success, streaks, progress).
-  static const Color secondary = Color(0xFF059669); // emerald-600
+  /// Secondary accent — clay rose (used for success, streaks, progress).
+  /// A muted earthy warm tone that pairs cleanly with saffron without
+  /// fighting it for attention.
+  static const Color secondary = Color(0xFFC9602B); // clay-600
 
-  /// Warm streak amber (reserved for the flame icon only).
-  static const Color streakAmber = Color(0xFFF59E0B); // amber-500
+  /// Warm streak flame (reserved for the streak flame and CTA glow).
+  static const Color streakAmber = Color(0xFFEF8E2A); // flame-500
 
-  /// Tertiary — sky blue used for analytics / data viz only.
-  static const Color tertiary = Color(0xFF0284C7); // sky-600
+  /// Tertiary — mocha brown for analytics / data viz / chart bars.
+  static const Color tertiary = Color(0xFF8C5A38); // mocha-600
 
-  static const Color tertiaryContainer = Color(0xFFBAE6FD); // sky-200
+  static const Color tertiaryContainer = Color(0xFFF1DFC9); // mocha-100
 
-  /// App background — soft slate (off-white that's calmer than pure
-  /// white on OLED screens).
-  static const Color background = Color(0xFFF8FAFC); // slate-50
+  /// App background — warm cream (off-white with a hint of gold). Stays
+  /// far from pure white so the gold accents don't blow out, and stays
+  /// far from neon so it's gentle on the eyes during long sessions.
+  static const Color background = Color(0xFFFFFAF1); // cream-50
 
-  /// Pure white card surface.
+  /// Pure white card surface (still warm-tinted).
   static const Color surfaceCardLowest = Color(0xFFFFFFFF);
-  static const Color surfaceContainerLow = Color(0xFFF1F5F9); // slate-100
-  static const Color surfaceContainer = Color(0xFFE2E8F0); // slate-200
-  static const Color surfaceContainerHigh = Color(0xFFCBD5E1); // slate-300
+  static const Color surfaceContainerLow = Color(0xFFFFF6E6); // cream-100
+  static const Color surfaceContainer = Color(0xFFFAEFD8); // cream-200
+  static const Color surfaceContainerHigh = Color(0xFFF1E2C2); // cream-300
 
-  /// Primary text on light surfaces (slate-900).
-  static const Color onBackground = Color(0xFF0F172A);
+  /// Primary text on light surfaces — deep walnut (instead of slate-900
+  /// which would feel cold against the warm cream background).
+  static const Color onBackground = Color(0xFF2A1F12);
 
-  /// Muted on-surface variant (slate-500).
-  static const Color onSurfaceVariant = Color(0xFF64748B);
+  /// Muted on-surface variant — soft mocha grey.
+  static const Color onSurfaceVariant = Color(0xFF7A6754);
 
-  /// Hairline outline used around cards and inputs.
-  static const Color outline = Color(0xFFCBD5E1); // slate-300
-  static const Color outlineVariant = Color(0xFFE2E8F0); // slate-200
+  /// Hairline outline used around cards and inputs (warm sand).
+  static const Color outline = Color(0xFFEFE3CD); // sand-200
+  static const Color outlineVariant = Color(0xFFF7EDDA); // sand-100
 
-  static const Color error = Color(0xFFDC2626); // red-600
-  static const Color errorContainer = Color(0xFFFEE2E2); // red-100
+  static const Color error = Color(0xFFB23B1F); // burnt-clay-600 (warm red)
+  static const Color errorContainer = Color(0xFFFADCD2); // burnt-clay-100
 
   // ────────────────────────── Theme builders ─────────────────────────
 
@@ -77,76 +83,76 @@ class AppTheme {
       primary: primary,
       onPrimary: Colors.white,
       primaryContainer: primaryFixed,
-      onPrimaryContainer: Color(0xFF312E81),
+      onPrimaryContainer: Color(0xFF5B3A0A), // dark gold
       secondary: secondary,
       onSecondary: Colors.white,
-      secondaryContainer: Color(0xFFD1FAE5),
-      onSecondaryContainer: Color(0xFF064E3B),
+      secondaryContainer: Color(0xFFFADAB7), // clay-100
+      onSecondaryContainer: Color(0xFF5C2A0E),
       tertiary: tertiary,
       onTertiary: Colors.white,
       tertiaryContainer: tertiaryContainer,
-      onTertiaryContainer: Color(0xFF075985),
+      onTertiaryContainer: Color(0xFF3F2715),
       error: error,
       onError: Colors.white,
       errorContainer: errorContainer,
-      onErrorContainer: Color(0xFF7F1D1D),
+      onErrorContainer: Color(0xFF5B1D0E),
       surface: background,
       onSurface: onBackground,
       surfaceContainerLowest: surfaceCardLowest,
       surfaceContainerLow: surfaceContainerLow,
       surfaceContainer: surfaceContainer,
       surfaceContainerHigh: surfaceContainerHigh,
-      surfaceContainerHighest: Color(0xFFB6C2D1),
+      surfaceContainerHighest: Color(0xFFE6D4B2),
       onSurfaceVariant: onSurfaceVariant,
       outline: outline,
       outlineVariant: outlineVariant,
-      shadow: Color(0xFF0F172A),
-      scrim: Color(0xFF0F172A),
-      inverseSurface: Color(0xFF1E293B),
-      onInverseSurface: Color(0xFFF8FAFC),
+      shadow: Color(0xFF2A1F12),
+      scrim: Color(0xFF2A1F12),
+      inverseSurface: Color(0xFF2D2317),
+      onInverseSurface: Color(0xFFFFF6E6),
       inversePrimary: primaryFixedDim,
       surfaceTint: primary,
     );
     return _buildTheme(scheme: scheme);
   }
 
-  /// Dark mode reuses the same indigo accent system over a deep slate
+  /// Dark mode reuses the same gold accent system over a deep walnut
   /// canvas so the brand stays consistent without feeling oppressive.
   static ThemeData get dark {
     const ColorScheme scheme = ColorScheme(
       brightness: Brightness.dark,
-      primary: Color(0xFF818CF8), // indigo-400 (lighter for contrast)
-      onPrimary: Color(0xFF1E1B4B),
-      primaryContainer: Color(0xFF3730A3),
-      onPrimaryContainer: Color(0xFFE0E7FF),
-      secondary: Color(0xFF34D399), // emerald-400
-      onSecondary: Color(0xFF064E3B),
-      secondaryContainer: Color(0xFF065F46),
-      onSecondaryContainer: Color(0xFFD1FAE5),
-      tertiary: Color(0xFF38BDF8),
-      onTertiary: Color(0xFF075985),
-      tertiaryContainer: Color(0xFF0369A1),
-      onTertiaryContainer: Color(0xFFBAE6FD),
-      error: Color(0xFFF87171),
-      onError: Color(0xFF7F1D1D),
-      errorContainer: Color(0xFF991B1B),
-      onErrorContainer: Color(0xFFFECACA),
-      surface: Color(0xFF0B1220), // very deep slate
-      onSurface: Color(0xFFE2E8F0),
-      surfaceContainerLowest: Color(0xFF050810),
-      surfaceContainerLow: Color(0xFF111827),
-      surfaceContainer: Color(0xFF1E293B),
-      surfaceContainerHigh: Color(0xFF334155),
-      surfaceContainerHighest: Color(0xFF475569),
-      onSurfaceVariant: Color(0xFF94A3B8),
-      outline: Color(0xFF334155),
-      outlineVariant: Color(0xFF1E293B),
+      primary: Color(0xFFF5C56C), // honey-300 (brighter for contrast)
+      onPrimary: Color(0xFF2C1B05),
+      primaryContainer: Color(0xFF6E460E),
+      onPrimaryContainer: Color(0xFFFFE7BD),
+      secondary: Color(0xFFE6925E), // clay-300
+      onSecondary: Color(0xFF3A1808),
+      secondaryContainer: Color(0xFF6B361A),
+      onSecondaryContainer: Color(0xFFFADAB7),
+      tertiary: Color(0xFFD9A678), // mocha-300
+      onTertiary: Color(0xFF2A1A0B),
+      tertiaryContainer: Color(0xFF563620),
+      onTertiaryContainer: Color(0xFFF1DFC9),
+      error: Color(0xFFE89A82),
+      onError: Color(0xFF4A150A),
+      errorContainer: Color(0xFF7C2613),
+      onErrorContainer: Color(0xFFFADCD2),
+      surface: Color(0xFF1A130A), // deep walnut
+      onSurface: Color(0xFFF6E9D2),
+      surfaceContainerLowest: Color(0xFF120D06),
+      surfaceContainerLow: Color(0xFF221808),
+      surfaceContainer: Color(0xFF2A1F0F),
+      surfaceContainerHigh: Color(0xFF3A2B17),
+      surfaceContainerHighest: Color(0xFF4A3621),
+      onSurfaceVariant: Color(0xFFC4AE8E),
+      outline: Color(0xFF3A2B17),
+      outlineVariant: Color(0xFF2A1F0F),
       shadow: Color(0xFF000000),
       scrim: Color(0xFF000000),
-      inverseSurface: Color(0xFFF1F5F9),
-      onInverseSurface: Color(0xFF0F172A),
+      inverseSurface: Color(0xFFF6E9D2),
+      onInverseSurface: Color(0xFF1A130A),
       inversePrimary: primary,
-      surfaceTint: Color(0xFF818CF8),
+      surfaceTint: Color(0xFFF5C56C),
     );
     return _buildTheme(scheme: scheme);
   }
@@ -155,8 +161,8 @@ class AppTheme {
     final bool isLight = scheme.brightness == Brightness.light;
     final Color card = scheme.surfaceContainerLowest;
     final Color hairline = isLight
-        ? const Color(0xFFE2E8F0) // slate-200
-        : const Color(0xFF1E293B);
+        ? const Color(0xFFEFE3CD) // sand-200
+        : const Color(0xFF3A2B17); // walnut-300
     final Color muted = scheme.onSurfaceVariant;
     final Color appBg = scheme.surface;
 
@@ -471,17 +477,17 @@ class AppPalette {
       cardShadow: <BoxShadow>[
         BoxShadow(
           color: isLight
-              ? const Color(0x0A0F172A) // slate-900 @ 4%
+              ? const Color(0x142A1F12) // walnut @ 8%
               : const Color(0x99000000),
-          blurRadius: 16,
-          offset: const Offset(0, 4),
+          blurRadius: 18,
+          offset: const Offset(0, 6),
         ),
       ],
       goldGlow: <BoxShadow>[
         BoxShadow(
-          color: scheme.primary.withOpacity(0.22),
-          blurRadius: 28,
-          offset: const Offset(0, 12),
+          color: const Color(0xFFE89D2A).withOpacity(0.32),
+          blurRadius: 32,
+          offset: const Offset(0, 14),
         ),
       ],
       goldGradient: const LinearGradient(

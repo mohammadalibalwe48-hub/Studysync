@@ -134,7 +134,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   icon: Icons.style_rounded,
                   title: 'بطاقات تذكيرية',
                   subtitle: 'مفاهيم أساسية',
-                  tone: const Color(0xFF8B5CF6),
+                  tone: const Color(0xFF8C5A38), // mocha
                   onTap: () => context.push('/flashcards'),
                 ),
                 _ToolTile(
@@ -159,6 +159,34 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   subtitle: 'في كل الدروس',
                   tone: scheme.onSurfaceVariant,
                   onTap: () => context.push('/search'),
+                ),
+                _ToolTile(
+                  icon: Icons.edit_note_rounded,
+                  title: 'ملاحظاتي',
+                  subtitle: 'ماركداون مع تظليل',
+                  tone: const Color(0xFFD68A1A),
+                  onTap: () => context.push('/notes'),
+                ),
+                _ToolTile(
+                  icon: Icons.emoji_events_rounded,
+                  title: 'لوحة المتصدرين',
+                  subtitle: 'تنافس مع أصدقائك',
+                  tone: const Color(0xFFE2862F),
+                  onTap: () => context.push('/leaderboard'),
+                ),
+                _ToolTile(
+                  icon: Icons.account_tree_rounded,
+                  title: 'الخريطة الذهنية',
+                  subtitle: 'روابط المنهج بصريًا',
+                  tone: const Color(0xFFC9602B),
+                  onTap: () => context.push('/mind-map'),
+                ),
+                _ToolTile(
+                  icon: Icons.grid_view_rounded,
+                  title: 'الجدول الدوري',
+                  subtitle: 'العناصر الكيميائية',
+                  tone: const Color(0xFF8C5A38),
+                  onTap: () => context.push('/periodic-table'),
                 ),
               ],
             ),
