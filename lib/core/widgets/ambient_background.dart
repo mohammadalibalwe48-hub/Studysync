@@ -46,25 +46,27 @@ class _AmbientBackgroundState extends State<AmbientBackground>
     final bool isLight = scheme.brightness == Brightness.light;
     final double k = widget.intensity.clamp(0.0, 1.0).toDouble();
 
-    // Warm palette pulled from the logo gradient. Light mode uses
-    // luminous honey/sunset over cream; dark mode dims the same tones
-    // over walnut so contrast stays high.
+    // Warm palette pulled directly from the logo gradient stops
+    // (`#FFD000` → `#FF9500` → `#FF6B00`). Light mode uses luminous
+    // gold/orange/sunset blobs over a near-white canvas so the orange
+    // accents pop instead of getting absorbed by a yellow cast; dark
+    // mode dims the same tones over walnut so contrast stays high.
     final Color blobA = isLight
-        ? const Color(0xFFFFD27A) // honey
+        ? const Color(0xFFFFD068) // logo top yellow, glowing
         : const Color(0xFFB87A2A); // dim honey
     final Color blobB = isLight
-        ? const Color(0xFFFAB05B) // sunset
+        ? const Color(0xFFFFA64F) // logo mid orange, soft
         : const Color(0xFF9A5A24); // dim sunset
     final Color blobC = isLight
-        ? const Color(0xFFE2862F) // saffron
+        ? const Color(0xFFFF7A1F) // logo bottom sunset
         : const Color(0xFF7C4517); // dim saffron
 
     final Color baseTop = isLight
-        ? const Color(0xFFFFFAF1) // cream-50
-        : const Color(0xFF1A130A); // walnut
+        ? const Color(0xFFFFFCF6) // matches AppTheme.background
+        : const Color(0xFF15110A); // matches dark surface
     final Color baseBottom = isLight
-        ? const Color(0xFFFFF1D8) // cream-200 warmer
-        : const Color(0xFF120D06);
+        ? const Color(0xFFFFF3DD) // warmer cream at the bottom edge
+        : const Color(0xFF0F0B05);
 
     return AnimatedBuilder(
       animation: _c,

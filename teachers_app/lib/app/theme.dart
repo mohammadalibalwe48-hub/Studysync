@@ -1,63 +1,87 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Centralised theming for the Educational Steps Platform app.
+/// Centralised theming for the Educational Steps Platform teachers
+/// companion app.
 ///
-/// The look-and-feel follows the "Radiant Achievement" design system:
-/// a soft champagne canvas, warm radiant-gold primary, rich amber
-/// secondary, subtle blue functional accent for data visualisation,
-/// and a tactile-luxury aesthetic with high-diffusion shadows and
-/// glassmorphism layers.
+/// Palette is sampled directly from the shared app logo (vivid orange
+/// figure reaching for yellow stars on a stack of orange-gold books).
+/// The dominant logo pixels cluster in the `#FF6B00 → #FF9500 → #FFD000`
+/// range. The previous palette mapped the brand to a deep mustard
+/// `#7B5800` primary plus an out-of-family blue `#0060AC` tertiary,
+/// which made the teachers app look noticeably different from — and
+/// less energetic than — its own logo. The tokens below stay 100% in
+/// the warm family and exactly mirror the student app's palette so
+/// both apps feel like one product.
 class AppTheme {
   AppTheme._();
 
-  // ────────────────────────── Brand colours ──────────────────────────
+  // ────────────────────────── Logo gradient ──────────────────────────
 
-  /// Brand primary — deep gold (used for text-on-light, primary actions
-  /// background fills behind text, and key iconography).
-  static const Color primary = Color(0xFF7B5800);
+  /// Brightest yellow at the top of the logo (stars / arm tip).
+  static const Color sunYellow = Color(0xFFFFD000);
 
-  /// Top stop of the radiant-gold gradient (used on CTAs / hero).
-  static const Color goldStart = Color(0xFFEBB12F);
+  /// The signature mid-orange of the figure & books — the most-common
+  /// pixel colour in the logo by a wide margin. This is the brand.
+  static const Color sunOrange = Color(0xFFFF9500);
 
-  /// Bottom stop of the radiant-gold gradient (rich amber).
-  static const Color goldEnd = Color(0xFFFF8927);
+  /// Deep sunset orange at the bottom edge of the books, used for
+  /// streaks, success and the gradient's bottom stop.
+  static const Color sunset = Color(0xFFFF6B00);
 
-  /// Soft fixed gold (chips, hero glow, badge fill).
-  static const Color primaryFixed = Color(0xFFFFDEA4);
+  /// Three-stop gradient that mirrors the logo top→bottom fade.
+  static const List<Color> heroGradient = <Color>[
+    sunYellow,
+    sunOrange,
+    sunset,
+  ];
 
-  /// Brighter radiant gold used for highlights and badges.
-  static const Color primaryFixedDim = Color(0xFFF8BD3B);
+  // Backwards-compat aliases. Keep the existing names so widgets that
+  // reference `goldStart` / `goldEnd` / `primary` keep working.
+  static const Color primary = sunOrange;
+  static const Color goldStart = sunYellow;
+  static const Color goldEnd = sunset;
 
-  /// Secondary accent — rich amber.
-  static const Color secondary = Color(0xFF964900);
+  /// Soft fixed honey (chips, hero glow, badge fill).
+  static const Color primaryFixed = Color(0xFFFFE9C2);
 
-  /// Subtle blue used for data visualisation / analytics only.
-  static const Color tertiary = Color(0xFF0060AC);
+  /// Brighter brand tone used for highlights and dark-mode primary.
+  static const Color primaryFixedDim = Color(0xFFFFB347);
 
-  static const Color tertiaryContainer = Color(0xFF8DBDFF);
+  /// Secondary accent — deeper sunset ember. Same gradient family as
+  /// [sunOrange], just hotter, so streaks and "completed" states read
+  /// as fire without introducing a foreign hue.
+  static const Color secondary = Color(0xFFE25A0D);
 
-  /// Champagne background.
-  static const Color background = Color(0xFFFFF8F3);
+  /// Tertiary — deep walnut. Reserved for analytics / chart axes /
+  /// data viz. Stays in the warm family so it never fights the brand
+  /// orange (replacing the previous `#0060AC` blue, which clashed).
+  static const Color tertiary = Color(0xFF6B3F1A);
+
+  static const Color tertiaryContainer = Color(0xFFF1DFC3);
+
+  /// App background — barely-tinted warm white. Cleaner than the old
+  /// `#FFF8F3` so the orange accents pop instead of getting absorbed.
+  static const Color background = Color(0xFFFFFCF6);
 
   /// Pure off-white surface for cards / inputs.
   static const Color surfaceCardLowest = Color(0xFFFFFFFF);
-  static const Color surfaceContainerLow = Color(0xFFFDF2E3);
-  static const Color surfaceContainer = Color(0xFFF8ECDE);
-  static const Color surfaceContainerHigh = Color(0xFFF2E7D8);
+  static const Color surfaceContainerLow = Color(0xFFFFF7E8);
+  static const Color surfaceContainer = Color(0xFFFFEED2);
+  static const Color surfaceContainerHigh = Color(0xFFFADDA8);
 
-  /// Deep charcoal text on the soft champagne background.
-  static const Color onBackground = Color(0xFF201B12);
+  /// Deep walnut text on the soft cream background.
+  static const Color onBackground = Color(0xFF1A1208);
 
   /// Muted on-surface variant (secondary text, label-caps overlines).
-  static const Color onSurfaceVariant = Color(0xFF4F4534);
+  static const Color onSurfaceVariant = Color(0xFF6F5A3F);
 
   /// Hairline outline used around cards and inputs.
-  static const Color outline = Color(0xFF827562);
-  static const Color outlineVariant = Color(0xFFD3C5AE);
+  static const Color outline = Color(0xFFB89E78);
+  static const Color outlineVariant = Color(0xFFF0DDB6);
 
-  static const Color error = Color(0xFFBA1A1A);
-  static const Color errorContainer = Color(0xFFFFDAD6);
+  static const Color error = Color(0xFFC53030);
+  static const Color errorContainer = Color(0xFFFFE0DA);
 
   // ────────────────────────── Theme builders ─────────────────────────
 
@@ -66,34 +90,34 @@ class AppTheme {
       brightness: Brightness.light,
       primary: primary,
       onPrimary: Colors.white,
-      primaryContainer: primaryFixedDim,
-      onPrimaryContainer: Color(0xFF624600),
+      primaryContainer: primaryFixed,
+      onPrimaryContainer: Color(0xFF5C2C00),
       secondary: secondary,
       onSecondary: Colors.white,
-      secondaryContainer: Color(0xFFFFDCC6),
-      onSecondaryContainer: Color(0xFF311400),
+      secondaryContainer: Color(0xFFFFD8B8),
+      onSecondaryContainer: Color(0xFF5C2410),
       tertiary: tertiary,
       onTertiary: Colors.white,
       tertiaryContainer: tertiaryContainer,
-      onTertiaryContainer: Color(0xFF004B89),
+      onTertiaryContainer: Color(0xFF3A2415),
       error: error,
       onError: Colors.white,
       errorContainer: errorContainer,
-      onErrorContainer: Color(0xFF93000A),
+      onErrorContainer: Color(0xFF5B1408),
       surface: background,
       onSurface: onBackground,
       surfaceContainerLowest: surfaceCardLowest,
       surfaceContainerLow: surfaceContainerLow,
       surfaceContainer: surfaceContainer,
       surfaceContainerHigh: surfaceContainerHigh,
-      surfaceContainerHighest: Color(0xFFECE1D3),
+      surfaceContainerHighest: Color(0xFFEBC57A),
       onSurfaceVariant: onSurfaceVariant,
       outline: outline,
       outlineVariant: outlineVariant,
-      shadow: Color(0xFF1A1A1A),
-      scrim: Color(0xFF1A1A1A),
-      inverseSurface: Color(0xFF353026),
-      onInverseSurface: Color(0xFFFAEFE1),
+      shadow: Color(0xFF1A1208),
+      scrim: Color(0xFF1A1208),
+      inverseSurface: Color(0xFF2D1F0F),
+      onInverseSurface: Color(0xFFFFF7E8),
       inversePrimary: primaryFixedDim,
       surfaceTint: primary,
     );
