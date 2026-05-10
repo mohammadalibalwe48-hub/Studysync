@@ -1,18 +1,68 @@
-/// Domain types for the study-rooms feature.
-///
-/// A "study room" is a lightweight concept on top of Cloudflare's
-/// SFU + Supabase Realtime broadcast channels:
-///
-///  • Each participant gets a Cloudflare Realtime *session* (one
-///    PeerConnection per device).
-///  • Sessions discover each other by broadcasting their `sessionId`
-///    to a Supabase channel keyed on the room id. There's no DB
-///    table — broadcast events disappear with the page.
-///  • Chat messages travel through the same Supabase channel under a
-///    different event name so they can survive A/V mute/unmute
-///    without re-creating subscriptions.
+// Domain types for the study-rooms feature.
+//
+// Three room modes are supported:
+//
+//  • [RoomMode.discussion] — default. Camera + mic on by default,
+//    everyone is symmetric, anyone can mute themselves.
+//  • [RoomMode.voice] — voice-only room. Camera capture is never
+//    requested; the UI shows avatar tiles instead of video views.
+//  • [RoomMode.lecture] — teacher livestream. Non-hosts join muted
+//    (mic + cam) and cannot unmute themselves until the host sends
+//    an `unmute_grant` event. Hosts get a single-speaker layout
+//    with a thumbnail strip below for raised hands.
+//
+// A "study room" is a lightweight concept on top of Cloudflare's
+// SFU + Supabase Realtime broadcast channels:
+//
+//  • Each participant gets a Cloudflare Realtime *session* (one
+//    PeerConnection per device).
+//  • Sessions discover each other by broadcasting their `sessionId`
+//    to a Supabase channel keyed on the room id. There's no DB
+//    table — broadcast events disappear with the page.
+//  • Chat messages travel through the same Supabase channel under a
+//    different event name so they can survive A/V mute/unmute
+//    without re-creating subscriptions.
 
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+
+/// How a study room is structured. Affects default mute state, the
+/// UI layout, and whether non-hosts can manipulate their own A/V.
+enum RoomMode {
+  /// Camera + mic on by default. Everyone is peer-to-peer-ish.
+  discussion,
+
+  /// No camera capture. Audio-only avatar grid.
+  voice,
+
+  /// Teacher livestream. Non-hosts auto-mute + locked controls.
+  lecture,
+}
+
+extension RoomModeX on RoomMode {
+  /// Wire-format string used in route extras + presence payloads.
+  String get wire {
+    switch (this) {
+      case RoomMode.discussion:
+        return 'discussion';
+      case RoomMode.voice:
+        return 'voice';
+      case RoomMode.lecture:
+        return 'lecture';
+    }
+  }
+
+  static RoomMode parse(String? raw) {
+    switch (raw) {
+      case 'voice':
+        return RoomMode.voice;
+      case 'lecture':
+        return RoomMode.lecture;
+      case 'discussion':
+      default:
+        return RoomMode.discussion;
+    }
+  }
+}
 
 /// Identifier of one peer in a study room.
 class StudyRoomParticipant {
@@ -129,4 +179,20 @@ class RoomPresencePayload {
         'audioTrackName': audioTrackName,
         'videoTrackName': videoTrackName,
       };
+}
+
+/// One pending raised hand in a [RoomMode.lecture] room.
+///
+/// Students broadcast a `hand_raise` event when they want to speak;
+/// the host sees them in a list and can grant temporary unmute.
+class RaisedHand {
+  const RaisedHand({
+    required this.userId,
+    required this.displayName,
+    required this.raisedAt,
+  });
+
+  final String userId;
+  final String displayName;
+  final DateTime raisedAt;
 }

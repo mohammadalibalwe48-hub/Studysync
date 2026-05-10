@@ -202,6 +202,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   tone: const Color(0xFFC9602B),
                   onTap: () => context.push('/study-rooms'),
                 ),
+                _ToolTile(
+                  icon: Icons.mic_rounded,
+                  title: 'غرفة صوتية',
+                  subtitle: 'محادثة صوتية بدون كاميرا',
+                  tone: const Color(0xFF8E5BB5),
+                  onTap: () =>
+                      context.push('/study-rooms?mode=voice'),
+                ),
+                _ToolTile(
+                  icon: Icons.cast_for_education_rounded,
+                  title: 'بثّ معلّم',
+                  subtitle: 'محاضرة مباشرة (للمعلّمين)',
+                  tone: const Color(0xFFA8743F),
+                  onTap: () =>
+                      context.push('/study-rooms?mode=lecture'),
+                ),
               ],
             ),
           ),

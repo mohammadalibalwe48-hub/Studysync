@@ -29,6 +29,7 @@ import 'package:studysync_syria/features/search/search_screen.dart';
 import 'package:studysync_syria/features/settings/notifications_settings_screen.dart';
 import 'package:studysync_syria/features/solver/equation_solver_screen.dart';
 import 'package:studysync_syria/features/study_room/study_room_lobby_screen.dart';
+import 'package:studysync_syria/features/study_room/study_room_models.dart';
 import 'package:studysync_syria/features/study_room/study_room_screen.dart';
 import 'package:studysync_syria/features/subjects/topic_list_screen.dart';
 import 'package:studysync_syria/features/topics/topic_detail_screen.dart';
@@ -208,8 +209,14 @@ GoRouter buildRouter() {
       ),
       GoRoute(
         path: '/study-rooms',
-        pageBuilder: (BuildContext context, GoRouterState state) =>
-            _slidePage(state, const StudyRoomLobbyScreen()),
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final RoomMode mode =
+              RoomModeX.parse(state.uri.queryParameters['mode']);
+          return _slidePage(
+            state,
+            StudyRoomLobbyScreen(initialMode: mode),
+          );
+        },
       ),
       GoRoute(
         path: '/study-rooms/:roomId',
@@ -220,12 +227,19 @@ GoRouter buildRouter() {
           final String displayName =
               (extra?['displayName'] as String?) ?? 'طالب';
           final bool isHost = (extra?['isHost'] as bool?) ?? false;
+          // Mode comes from extras first (lobby flow), falls back to
+          // the query parameter so a teacher can paste a deep link.
+          final RoomMode mode = RoomModeX.parse(
+            (extra?['mode'] as String?) ??
+                state.uri.queryParameters['mode'],
+          );
           return _slidePage(
             state,
             StudyRoomScreen(
               roomId: roomId,
               displayName: displayName,
               isHost: isHost,
+              mode: mode,
             ),
           );
         },
