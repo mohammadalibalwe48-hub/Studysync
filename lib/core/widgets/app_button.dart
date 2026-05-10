@@ -1,5 +1,8 @@
+import 'dart:ui' show PathMetric;
+
 import 'package:flutter/material.dart';
 
+import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
 
 /// Primary call-to-action button used across the app.
@@ -89,6 +92,188 @@ class AppButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Vivid sunset-orange pill button used for hero CTAs ("Study Now",
+/// "TO START") that need to feel celebratory. Mirrors the orange
+/// pill button in the reference image.
+class OrangePillButton extends StatelessWidget {
+  const OrangePillButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon,
+    this.isLoading = false,
+    this.height = 48,
+    this.expand = false,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  final bool isLoading;
+  final double height;
+  final bool expand;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    final bool disabled = isLoading || onPressed == null;
+    return PressableScale(
+      onTap: isLoading ? null : onPressed,
+      pressedScale: 0.96,
+      child: Container(
+        width: expand ? double.infinity : null,
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: 22),
+        decoration: BoxDecoration(
+          gradient: palette.goldGradient,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          boxShadow: disabled ? const <BoxShadow>[] : palette.goldGlow,
+        ),
+        alignment: Alignment.center,
+        child: AnimatedSwitcher(
+          duration: AppMotion.short,
+          child: isLoading
+              ? const SizedBox(
+                  key: ValueKey<String>('loading'),
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Row(
+                  key: const ValueKey<String>('label'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (icon != null) ...<Widget>[
+                      Icon(icon, size: 18, color: Colors.white),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Dashed-outline CTA used by empty states ("+ Create a Card" pattern).
+/// A thin warm-orange dashed pill with a leading `+` icon — mirrors
+/// the reference's "Create a Card" button directly.
+class DashedActionButton extends StatelessWidget {
+  const DashedActionButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon = Icons.add_rounded,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
+    return PressableScale(
+      onTap: onPressed,
+      pressedScale: 0.97,
+      child: CustomPaint(
+        painter: _DashedRRectPainter(
+          color: palette.gold,
+          radius: AppRadii.pill,
+          strokeWidth: 1.4,
+          dashLength: 6,
+          gapLength: 4,
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(icon, size: 18, color: palette.gold),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: palette.gold,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Hand-rolled dashed rounded-rectangle border painter used by
+/// [DashedActionButton]. Avoids pulling in another dependency just
+/// for the dashed outline.
+class _DashedRRectPainter extends CustomPainter {
+  _DashedRRectPainter({
+    required this.color,
+    required this.radius,
+    required this.strokeWidth,
+    required this.dashLength,
+    required this.gapLength,
+  });
+
+  final Color color;
+  final double radius;
+  final double strokeWidth;
+  final double dashLength;
+  final double gapLength;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    final RRect rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
+
+    final Path path = Path()..addRRect(rrect);
+    final double dashSpan = dashLength + gapLength;
+    for (final PathMetric metric in path.computeMetrics()) {
+      double dist = 0;
+      while (dist < metric.length) {
+        final double end = (dist + dashLength).clamp(0, metric.length);
+        canvas.drawPath(metric.extractPath(dist, end), paint);
+        dist += dashSpan;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedRRectPainter old) {
+    return old.color != color ||
+        old.radius != radius ||
+        old.strokeWidth != strokeWidth ||
+        old.dashLength != dashLength ||
+        old.gapLength != gapLength;
   }
 }
 

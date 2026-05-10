@@ -8,6 +8,7 @@ import 'package:studysync_syria/core/models/topic.dart';
 import 'package:studysync_syria/core/services/notes_service.dart';
 import 'package:studysync_syria/core/widgets/ambient_background.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
+import 'package:studysync_syria/core/widgets/app_button.dart';
 import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/section_header.dart';
 
@@ -55,12 +56,22 @@ class _NotesScreenState extends State<NotesScreen> {
               ),
               Expanded(
                 child: notes.isEmpty
-                    ? const EmptyState(
-                        icon: Icons.sticky_note_2_outlined,
-                        title: 'ابدأ ملاحظاتك',
-                        description:
-                            'دوّن أفكارك ومراجعاتك بصيغة ماركداون '
-                            'وأبرز ما يهمّك بأقواس == نص ==.',
+                    ? Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                        child: Center(
+                          child: EmptyState(
+                            card: true,
+                            icon: Icons.sticky_note_2_outlined,
+                            title: 'ابدأ ملاحظاتك',
+                            description:
+                                'دوّن أفكارك ومراجعاتك بصيغة ماركداون '
+                                'وأبرز ما يهمّك بأقواس == نص ==.',
+                            action: DashedActionButton(
+                              label: 'إنشاء ملاحظة',
+                              onPressed: () => _openEditor(),
+                            ),
+                          ),
+                        ),
                       )
                     : ListView.separated(
                         padding:

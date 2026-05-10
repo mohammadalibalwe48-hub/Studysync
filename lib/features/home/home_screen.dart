@@ -387,7 +387,8 @@ class _GreetingHeader extends StatelessWidget {
 }
 
 /// Big orange "AI Recommendation" hero — sparkle icon, two-line copy,
-/// pill-style "Study Now" button.
+/// pill-style "Study Now" button. Mirrors the orange hero card in the
+/// reference image directly.
 class _AiHeroCard extends StatelessWidget {
   const _AiHeroCard({required this.onStudyNow});
 
@@ -400,7 +401,7 @@ class _AiHeroCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
       decoration: BoxDecoration(
         gradient: palette.goldGradient,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AppRadii.xl),
         boxShadow: palette.goldGlow,
       ),
       child: Row(
