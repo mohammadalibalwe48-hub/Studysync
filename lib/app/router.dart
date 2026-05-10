@@ -26,6 +26,10 @@ import 'package:studysync_syria/features/profile/profile_screen.dart';
 import 'package:studysync_syria/features/progress/progress_screen.dart';
 import 'package:studysync_syria/features/quiz/quick_quiz_screen.dart';
 import 'package:studysync_syria/features/search/search_screen.dart';
+import 'package:studysync_syria/features/settings/notifications_settings_screen.dart';
+import 'package:studysync_syria/features/solver/equation_solver_screen.dart';
+import 'package:studysync_syria/features/study_room/study_room_lobby_screen.dart';
+import 'package:studysync_syria/features/study_room/study_room_screen.dart';
 import 'package:studysync_syria/features/subjects/topic_list_screen.dart';
 import 'package:studysync_syria/features/topics/topic_detail_screen.dart';
 
@@ -191,6 +195,40 @@ GoRouter buildRouter() {
         path: '/my-classes',
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _slidePage(state, const MyClassesScreen()),
+      ),
+      GoRoute(
+        path: '/notifications',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const NotificationsSettingsScreen()),
+      ),
+      GoRoute(
+        path: '/solver',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const EquationSolverScreen()),
+      ),
+      GoRoute(
+        path: '/study-rooms',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const StudyRoomLobbyScreen()),
+      ),
+      GoRoute(
+        path: '/study-rooms/:roomId',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final String roomId = state.pathParameters['roomId'] ?? '';
+          final Map<String, dynamic>? extra =
+              state.extra as Map<String, dynamic>?;
+          final String displayName =
+              (extra?['displayName'] as String?) ?? 'طالب';
+          final bool isHost = (extra?['isHost'] as bool?) ?? false;
+          return _slidePage(
+            state,
+            StudyRoomScreen(
+              roomId: roomId,
+              displayName: displayName,
+              isHost: isHost,
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/classes/:classId/chat',

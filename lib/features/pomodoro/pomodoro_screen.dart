@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:studysync_syria/app/theme.dart';
+import 'package:studysync_syria/core/services/notifications_service.dart';
 import 'package:studysync_syria/core/services/study_goal_service.dart';
+import 'package:studysync_syria/core/services/study_pattern_service.dart';
 import 'package:studysync_syria/core/widgets/ambient_background.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/section_header.dart';
@@ -52,6 +54,11 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
       return;
     }
     setState(() => _running = true);
+    // Record the start time so the smart-notification service can
+    // learn the user's usual study hour.
+    unawaited(
+      StudyPatternService.instance.recordStudyStart(),
+    );
     _ticker = Timer.periodic(const Duration(seconds: 1), (Timer t) {
       if (!mounted) return;
       setState(() {
@@ -75,6 +82,9 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     _ticker?.cancel();
     setState(() => _running = false);
     await StudyGoalService.instance.logMinutes(_durationMinutes);
+    // Re-evaluate smart-notification schedules now that we have a
+    // fresh data point.
+    unawaited(NotificationsService.instance.refreshSchedules());
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

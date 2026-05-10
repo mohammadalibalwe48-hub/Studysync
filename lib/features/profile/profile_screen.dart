@@ -178,14 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: 'الإشعارات',
               subtitle: 'إدارة التذكيرات وتنبيهات الدراسة',
               tone: scheme.primary,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    content: Text('إعدادات الإشعارات قريباً'),
-                  ),
-                );
-              },
+              onTap: () => context.push('/notifications'),
             ),
           ),
           const SizedBox(height: 12),
