@@ -3,11 +3,17 @@
 #
 # Patches applied on top of `flutter create`:
 #
-#   1. INTERNET permission. `flutter create` only adds
+#   1. Runtime permissions. `flutter create` only adds
 #      `android.permission.INTERNET` to the debug/profile manifests, not the
 #      main one. Release APKs use the main manifest only, so without this
 #      patch a release build cannot make any network calls (Supabase, etc.)
 #      and fails with "Failed host lookup: ... errno = 7".
+#
+#      We also declare `RECORD_AUDIO`, `CAMERA`, and `MODIFY_AUDIO_SETTINGS`
+#      so the WebRTC-backed study rooms can request mic/camera at runtime.
+#      Without these, `permission_handler` returns `denied` instantly and
+#      `getUserMedia()` throws `NotAllowedError` before the OS prompt is
+#      ever shown.
 #
 #   2. Release signing config. The generated build.gradle re-uses the debug
 #      signing config for release, which means release APKs are signed with
@@ -45,11 +51,20 @@ flutter create \
   .
 
 manifest="android/app/src/main/AndroidManifest.xml"
-if ! grep -q 'android.permission.INTERNET' "$manifest"; then
-  # Insert the <uses-permission> as the first child of <manifest>.
-  sed -i 's|<manifest \(.*\)>|<manifest \1>\n    <uses-permission android:name="android.permission.INTERNET"/>|' "$manifest"
-  echo "Added INTERNET permission to $manifest"
-fi
+add_permission() {
+  local perm="$1"
+  if ! grep -q "android.permission.${perm}" "$manifest"; then
+    # Insert the <uses-permission> as the first child of <manifest>.
+    sed -i "s|<manifest \(.*\)>|<manifest \1>\n    <uses-permission android:name=\"android.permission.${perm}\"/>|" "$manifest"
+    echo "Added ${perm} permission to $manifest"
+  fi
+}
+add_permission INTERNET
+# WebRTC study rooms (flutter_webrtc + permission_handler).
+add_permission RECORD_AUDIO
+add_permission CAMERA
+add_permission MODIFY_AUDIO_SETTINGS
+add_permission BLUETOOTH_CONNECT
 
 # Replace the default `android:label="studysync_syria"` with the public app
 # name. Using `|` as the sed delimiter so spaces in $APP_LABEL are fine.
