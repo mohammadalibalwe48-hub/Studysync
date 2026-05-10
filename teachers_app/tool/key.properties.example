@@ -1,0 +1,25 @@
+# Copy this file to `teachers_app/android/key.properties` (NOT committed)
+# after running `bash teachers_app/tool/setup_android.sh`, then fill in the
+# real values for your upload keystore. `teachers_app/android/key.properties`
+# is read by `teachers_app/android/app/build.gradle.kts` (patched by
+# `tool/patch_android_signing.py`) to sign release APKs/AABs.
+#
+# You can reuse the same keystore as the student app — the two apps have
+# different applicationIds (`com.studysync.studysync_syria` vs
+# `com.studysync.studysync_syria_teachers`), so Play Store treats them as
+# separate listings, but signing them with the same upload key keeps your
+# release ops simple.
+#
+# Generate the keystore once with:
+#
+#   keytool -genkey -v -keystore ~/upload-keystore.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+# Back up the .jks file and these passwords somewhere safe (e.g. a password
+# manager). Losing them means you can never publish updates to the same app
+# on Play Store again.
+
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=upload
+storeFile=/absolute/path/to/upload-keystore.jks

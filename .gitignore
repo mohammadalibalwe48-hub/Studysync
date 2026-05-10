@@ -49,6 +49,8 @@ app.*.map.json
 !.env.example
 
 # Android signing — never commit the keystore or its passwords.
-android/key.properties
+# `**/android/key.properties` covers both the student app (root) and the
+# teachers app (teachers_app/android/key.properties).
+**/android/key.properties
 **/*.jks
 **/*.keystore

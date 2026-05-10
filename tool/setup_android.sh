@@ -16,12 +16,20 @@
 #      `android/key.properties` (gitignored) and use a real release keystore.
 #      See README.md for how to create the keystore and `key.properties`.
 #
-#   3. App display name. `flutter create` sets `android:label` to the
+#   3. Core library desugaring. `flutter_local_notifications` (and other
+#      modern plugins) require Android core library desugaring on the host
+#      app, otherwise `flutter build apk --release` fails with
+#      "Dependency ':flutter_local_notifications' requires core library
+#      desugaring to be enabled for :app.". `tool/patch_android_desugaring.py`
+#      enables `isCoreLibraryDesugaringEnabled` and adds the
+#      `desugar_jdk_libs` dependency.
+#
+#   4. App display name. `flutter create` sets `android:label` to the
 #      project name (`studysync_syria`), which is the internal package name
 #      and not user-facing. Replace it with the public app name so the
 #      home-screen icon caption is correct.
 #
-#   4. Launcher icon. `flutter_launcher_icons` generates the mipmap PNGs
+#   5. Launcher icon. `flutter_launcher_icons` generates the mipmap PNGs
 #      from `assets/icon/app_icon.png` so the home-screen icon matches the
 #      brand instead of the default Flutter icon.
 set -euo pipefail
@@ -51,6 +59,7 @@ if grep -q 'android:label="studysync_syria"' "$manifest"; then
 fi
 
 python3 tool/patch_android_signing.py
+python3 tool/patch_android_desugaring.py
 
 # Generate launcher icons from assets/icon/app_icon.png. Requires
 # `flutter_launcher_icons` to be in dev_dependencies (see pubspec.yaml).

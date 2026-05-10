@@ -36,11 +36,25 @@ cp .env.example .env
 ```bash
 cd teachers_app
 flutter pub get
-flutter create --platforms=android --project-name studysync_syria_teachers --org com.studysync .
+bash tool/setup_android.sh
 flutter run
 ```
 
-The first `flutter create` generates the Android platform folder. After that you can iterate normally with `flutter run`.
+`tool/setup_android.sh` is the teachers-app counterpart of the student app's
+`tool/setup_android.sh`. It runs `flutter create --platforms=android` to
+generate the Android platform folder, adds the INTERNET permission to the
+release manifest, sets the `android:label` to "Educational Steps Teachers",
+and patches `android/app/build.gradle.kts` to sign release builds with the
+keystore configured in `android/key.properties` (gitignored — see
+[`tool/key.properties.example`](tool/key.properties.example)). After it has
+run once you can iterate normally with `flutter run`.
+
+To produce a release APK once `android/key.properties` is filled in:
+
+```bash
+cd teachers_app
+flutter build apk --release
+```
 
 ## Architecture notes
 
