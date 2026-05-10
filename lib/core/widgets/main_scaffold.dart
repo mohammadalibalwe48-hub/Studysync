@@ -122,9 +122,10 @@ class MainScaffold extends StatelessWidget {
   }
 }
 
-/// Center-docked indigo FAB used for "quick action" — currently
+/// Center-docked sunset-orange FAB used for "quick action" — currently
 /// launches the quick quiz flow. Mirrors the floating `+` button from
-/// the reference design.
+/// the reference design directly: a vivid orange disc punching through
+/// the white floating bottom-nav rail.
 class _CenterFab extends StatelessWidget {
   const _CenterFab({required this.onTap});
 
@@ -142,8 +143,8 @@ class _CenterFab extends StatelessWidget {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: palette.primaryGradient,
-            boxShadow: palette.indigoGlow,
+            gradient: palette.goldGradient,
+            boxShadow: palette.goldGlow,
             border: Border.all(
               color: Theme.of(context).colorScheme.surface,
               width: 4,

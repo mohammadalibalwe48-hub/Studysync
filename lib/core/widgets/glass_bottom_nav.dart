@@ -16,10 +16,12 @@ class GlassNavItem {
   final String label;
 }
 
-/// Modern flat bottom navigation used by the main shell.
+/// Floating bottom navigation used by the main shell.
 ///
-/// Solid surface, hairline top border, animated indigo dot under the
-/// active label. Drops the previous backdrop-blur "glass" treatment.
+/// White card surface with generously rounded top corners and a soft
+/// indigo-tinted shadow lifting it above the canvas — mirrors the
+/// reference's "premium floating rail" feel. Animated indigo dot sits
+/// under the active label.
 class GlassBottomNav extends StatelessWidget {
   const GlassBottomNav({
     super.key,
@@ -35,16 +37,27 @@ class GlassBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
+    final bool isLight = scheme.brightness == Brightness.light;
     final double bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Container(
       decoration: BoxDecoration(
-        color: scheme.surface,
-        border: Border(
-          top: BorderSide(color: scheme.outlineVariant, width: 1),
+        color: scheme.surfaceContainerLowest,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(AppRadii.xl),
+          topRight: Radius.circular(AppRadii.xl),
         ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: isLight
+                ? const Color(0x1A1A1633) // indigo @ 10%
+                : const Color(0xCC000000),
+            blurRadius: 28,
+            offset: const Offset(0, -8),
+          ),
+        ],
       ),
-      padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomInset * 0.4),
+      padding: EdgeInsets.fromLTRB(10, 10, 10, 10 + bottomInset * 0.4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List<Widget>.generate(items.length, (int i) {

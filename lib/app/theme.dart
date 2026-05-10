@@ -564,3 +564,76 @@ class AppPalette {
     );
   }
 }
+
+/// Centralised radius tokens for the design system.
+///
+/// Every rounded corner in the app should pick from this small,
+/// curated ladder so the whole product feels like one polished
+/// surface family. Mirrors the reference image's soft, generous
+/// rounding.
+class AppRadii {
+  AppRadii._();
+
+  /// Pill / chip rounding (≥ 999 = fully rounded stadium).
+  static const double pill = 999;
+
+  /// Tight tag / badge corners.
+  static const double xs = 10;
+
+  /// Default tile / chip corners (icon tiles, small cards).
+  static const double sm = 14;
+
+  /// Standard card / button corners.
+  static const double md = 18;
+
+  /// Rich card corners (stat cards, AI hero, action tiles).
+  static const double lg = 22;
+
+  /// Hero / subject card corners.
+  static const double xl = 28;
+
+  /// Full-screen sheet / modal top-corner rounding.
+  static const double sheet = 32;
+}
+
+/// Centralised spacing scale. Pulled from the reference image's
+/// 4-pt rhythm so vertical and horizontal gutters always belong to
+/// the same family.
+class AppSpacing {
+  AppSpacing._();
+
+  static const double xxs = 4;
+  static const double xs = 8;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 20;
+  static const double xl = 24;
+  static const double xxl = 32;
+
+  /// Default horizontal screen gutter.
+  static const double screenH = 20;
+}
+
+/// Centralised motion tokens. Every animation in the app should pick
+/// from this small ladder so the product breathes at one tempo.
+class AppMotion {
+  AppMotion._();
+
+  /// Microinteractions — press scales, ripple-style feedback.
+  static const Duration micro = Duration(milliseconds: 160);
+
+  /// Standard fades and short transitions.
+  static const Duration short = Duration(milliseconds: 220);
+
+  /// Page-level transitions, AnimatedContainer reflow.
+  static const Duration medium = Duration(milliseconds: 360);
+
+  /// Hero / list-stagger entrances.
+  static const Duration long = Duration(milliseconds: 520);
+
+  /// Standard easing for smooth, premium feel.
+  static const Curve standard = Curves.easeOutCubic;
+
+  /// Emphasised easing for hero entrances.
+  static const Curve emphasised = Curves.easeOutQuint;
+}

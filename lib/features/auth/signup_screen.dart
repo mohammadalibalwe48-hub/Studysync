@@ -207,11 +207,13 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 22),
                   FadeSlideIn(
                     delay: const Duration(milliseconds: 340),
-                    child: AppButton(
+                    child: OrangePillButton(
                       label: 'إنشاء حساب',
                       icon: Icons.arrow_back_rounded,
                       isLoading: _isLoading,
                       onPressed: _handleSignup,
+                      height: 52,
+                      expand: true,
                     ),
                   ),
                   const SizedBox(height: 14),

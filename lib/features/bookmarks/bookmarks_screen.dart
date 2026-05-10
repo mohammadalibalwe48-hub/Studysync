@@ -9,6 +9,7 @@ import 'package:studysync_syria/core/models/topic.dart';
 import 'package:studysync_syria/core/services/bookmarks_service.dart';
 import 'package:studysync_syria/core/widgets/ambient_background.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
+import 'package:studysync_syria/core/widgets/app_button.dart';
 import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/section_header.dart';
 
@@ -71,12 +72,23 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
               ),
               Expanded(
                 child: entries.isEmpty
-                    ? EmptyState(
-                        icon: Icons.bookmark_border_rounded,
-                        title: 'لا توجد محفوظات بعد',
-                        description:
-                            'اضغط أيقونة الإشارة المرجعية على أي سؤال لحفظه '
-                            'هنا والعودة إليه لاحقاً.',
+                    ? Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                        child: Center(
+                          child: EmptyState(
+                            card: true,
+                            icon: Icons.bookmark_border_rounded,
+                            title: 'لا توجد محفوظات بعد',
+                            description:
+                                'اضغط أيقونة الإشارة المرجعية على أي سؤال '
+                                'لحفظه هنا والعودة إليه لاحقاً.',
+                            action: DashedActionButton(
+                              label: 'استعرض الأسئلة',
+                              icon: Icons.menu_book_rounded,
+                              onPressed: () => context.go('/exam-questions'),
+                            ),
+                          ),
+                        ),
                       )
                     : ListView.separated(
                         padding:
