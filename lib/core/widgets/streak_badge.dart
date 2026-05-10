@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Small chip-style badge that shows the student's current daily streak.
+import 'package:studysync_syria/app/theme.dart';
+
+/// Compact pill that shows the student's daily streak.
+///
+/// The flame is the only place in the app that uses amber — a deliberate
+/// signal so streak status pops out of the indigo-dominant palette.
 class StreakBadge extends StatelessWidget {
   const StreakBadge({super.key, required this.days});
 
@@ -8,27 +13,28 @@ class StreakBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = AppPalette.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF1E0),
+        color: palette.warm.withOpacity(0.12),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFFFD8A8)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const Icon(
+          Icon(
             Icons.local_fire_department_rounded,
-            color: Color(0xFFEA8A1F),
-            size: 18,
+            color: palette.warm,
+            size: 16,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 5),
           Text(
-            '$days day streak',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF8A4B12),
+            '$days يوم',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: palette.warm,
             ),
           ),
         ],

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import 'package:studysync_syria/app/theme.dart';
@@ -18,12 +16,10 @@ class GlassNavItem {
   final String label;
 }
 
-/// Floating frosted-glass bottom navigation used by the main shell.
+/// Modern flat bottom navigation used by the main shell.
 ///
-/// The active tab uses an animated gold indicator pill, scales up
-/// subtly, and the icon swaps to its filled variant. The whole bar
-/// floats above the content with a top border-radius and a soft amber
-/// upward glow.
+/// Solid surface, hairline top border, animated indigo dot under the
+/// active label. Drops the previous backdrop-blur "glass" treatment.
 class GlassBottomNav extends StatelessWidget {
   const GlassBottomNav({
     super.key,
@@ -38,43 +34,28 @@ class GlassBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     final double bottomInset = MediaQuery.of(context).padding.bottom;
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.82),
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(32)),
-            border: const Border(
-              top: BorderSide(color: Color(0x55FFFFFF), width: 0.6),
-            ),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: palette.accent.withOpacity(0.10),
-                blurRadius: 30,
-                offset: const Offset(0, -10),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.fromLTRB(12, 10, 12, 10 + bottomInset * 0.6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List<Widget>.generate(items.length, (int i) {
-              return Expanded(
-                child: _NavCell(
-                  item: items[i],
-                  active: i == currentIndex,
-                  onTap: () => onTap(i),
-                ),
-              );
-            }),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(
+          top: BorderSide(color: scheme.outlineVariant, width: 1),
         ),
+      ),
+      padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomInset * 0.4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List<Widget>.generate(items.length, (int i) {
+          return Expanded(
+            child: _NavCell(
+              item: items[i],
+              active: i == currentIndex,
+              onTap: () => onTap(i),
+            ),
+          );
+        }),
       ),
     );
   }
@@ -99,32 +80,9 @@ class _NavCell extends StatelessWidget {
 
     return PressableScale(
       onTap: onTap,
-      pressedScale: 0.92,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOutCubic,
-        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          gradient: active
-              ? LinearGradient(
-                  colors: <Color>[
-                    activeColor.withOpacity(0.18),
-                    palette.warm.withOpacity(0.10),
-                  ],
-                )
-              : null,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: active
-              ? <BoxShadow>[
-                  BoxShadow(
-                    color: activeColor.withOpacity(0.20),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : const <BoxShadow>[],
-        ),
+      pressedScale: 0.94,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -139,16 +97,26 @@ class _NavCell extends StatelessWidget {
                 color: active ? activeColor : inactiveColor,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 220),
               style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: active ? FontWeight.w800 : FontWeight.w600,
-                letterSpacing: 0.6,
+                fontSize: 11,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                 color: active ? activeColor : inactiveColor,
               ),
-              child: Text(item.label.toUpperCase()),
+              child: Text(item.label),
+            ),
+            const SizedBox(height: 4),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              height: 3,
+              width: active ? 18 : 0,
+              decoration: BoxDecoration(
+                color: activeColor,
+                borderRadius: BorderRadius.circular(999),
+              ),
             ),
           ],
         ),

@@ -3,61 +3,71 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Centralised theming for the Educational Steps Platform app.
 ///
-/// The look-and-feel follows the "Radiant Achievement" design system:
-/// a soft champagne canvas, warm radiant-gold primary, rich amber
-/// secondary, subtle blue functional accent for data visualisation,
-/// and a tactile-luxury aesthetic with high-diffusion shadows and
-/// glassmorphism layers.
+/// The look-and-feel follows the "Focus & Flow" design system, inspired
+/// by Notion, Quizlet, Linear and Things 3:
+///
+/// - Calm slate background (almost pure white in light mode, deep
+///   charcoal in dark mode).
+/// - Indigo brand primary (premium, trustworthy, knowledge-coded).
+/// - Vivid violet for highlight gradients.
+/// - Emerald success accent for streaks, progress and "completed".
+/// - Amber accent reserved for the streak flame only.
+/// - No glassmorphism. Solid surfaces, hairline borders, very soft
+///   single-layer shadows. Generous spacing.
 class AppTheme {
   AppTheme._();
 
   // ────────────────────────── Brand colours ──────────────────────────
 
-  /// Brand primary — deep gold (used for text-on-light, primary actions
-  /// background fills behind text, and key iconography).
-  static const Color primary = Color(0xFF7B5800);
+  /// Brand primary — deep indigo. The single colour everything else
+  /// is calibrated against.
+  static const Color primary = Color(0xFF4F46E5); // indigo-600
 
-  /// Top stop of the radiant-gold gradient (used on CTAs / hero).
-  static const Color goldStart = Color(0xFFEBB12F);
+  /// Top stop of the primary gradient (vivid indigo).
+  static const Color goldStart = Color(0xFF6366F1); // indigo-500
 
-  /// Bottom stop of the radiant-gold gradient (rich amber).
-  static const Color goldEnd = Color(0xFFFF8927);
+  /// Bottom stop of the primary gradient (vivid violet).
+  static const Color goldEnd = Color(0xFF8B5CF6); // violet-500
 
-  /// Soft fixed gold (chips, hero glow, badge fill).
-  static const Color primaryFixed = Color(0xFFFFDEA4);
+  /// Soft fixed indigo (chips, hero glow, badge fill).
+  static const Color primaryFixed = Color(0xFFE0E7FF); // indigo-100
 
-  /// Brighter radiant gold used for highlights and badges.
-  static const Color primaryFixedDim = Color(0xFFF8BD3B);
+  /// Brighter brand tone used for highlights.
+  static const Color primaryFixedDim = Color(0xFFA5B4FC); // indigo-300
 
-  /// Secondary accent — rich amber.
-  static const Color secondary = Color(0xFF964900);
+  /// Secondary accent — emerald (used for success, streaks, progress).
+  static const Color secondary = Color(0xFF059669); // emerald-600
 
-  /// Subtle blue used for data visualisation / analytics only.
-  static const Color tertiary = Color(0xFF0060AC);
+  /// Warm streak amber (reserved for the flame icon only).
+  static const Color streakAmber = Color(0xFFF59E0B); // amber-500
 
-  static const Color tertiaryContainer = Color(0xFF8DBDFF);
+  /// Tertiary — sky blue used for analytics / data viz only.
+  static const Color tertiary = Color(0xFF0284C7); // sky-600
 
-  /// Champagne background.
-  static const Color background = Color(0xFFFFF8F3);
+  static const Color tertiaryContainer = Color(0xFFBAE6FD); // sky-200
 
-  /// Pure off-white surface for cards / inputs.
+  /// App background — soft slate (off-white that's calmer than pure
+  /// white on OLED screens).
+  static const Color background = Color(0xFFF8FAFC); // slate-50
+
+  /// Pure white card surface.
   static const Color surfaceCardLowest = Color(0xFFFFFFFF);
-  static const Color surfaceContainerLow = Color(0xFFFDF2E3);
-  static const Color surfaceContainer = Color(0xFFF8ECDE);
-  static const Color surfaceContainerHigh = Color(0xFFF2E7D8);
+  static const Color surfaceContainerLow = Color(0xFFF1F5F9); // slate-100
+  static const Color surfaceContainer = Color(0xFFE2E8F0); // slate-200
+  static const Color surfaceContainerHigh = Color(0xFFCBD5E1); // slate-300
 
-  /// Deep charcoal text on the soft champagne background.
-  static const Color onBackground = Color(0xFF201B12);
+  /// Primary text on light surfaces (slate-900).
+  static const Color onBackground = Color(0xFF0F172A);
 
-  /// Muted on-surface variant (secondary text, label-caps overlines).
-  static const Color onSurfaceVariant = Color(0xFF4F4534);
+  /// Muted on-surface variant (slate-500).
+  static const Color onSurfaceVariant = Color(0xFF64748B);
 
   /// Hairline outline used around cards and inputs.
-  static const Color outline = Color(0xFF827562);
-  static const Color outlineVariant = Color(0xFFD3C5AE);
+  static const Color outline = Color(0xFFCBD5E1); // slate-300
+  static const Color outlineVariant = Color(0xFFE2E8F0); // slate-200
 
-  static const Color error = Color(0xFFBA1A1A);
-  static const Color errorContainer = Color(0xFFFFDAD6);
+  static const Color error = Color(0xFFDC2626); // red-600
+  static const Color errorContainer = Color(0xFFFEE2E2); // red-100
 
   // ────────────────────────── Theme builders ─────────────────────────
 
@@ -66,76 +76,103 @@ class AppTheme {
       brightness: Brightness.light,
       primary: primary,
       onPrimary: Colors.white,
-      primaryContainer: primaryFixedDim,
-      onPrimaryContainer: Color(0xFF624600),
+      primaryContainer: primaryFixed,
+      onPrimaryContainer: Color(0xFF312E81),
       secondary: secondary,
       onSecondary: Colors.white,
-      secondaryContainer: Color(0xFFFFDCC6),
-      onSecondaryContainer: Color(0xFF311400),
+      secondaryContainer: Color(0xFFD1FAE5),
+      onSecondaryContainer: Color(0xFF064E3B),
       tertiary: tertiary,
       onTertiary: Colors.white,
       tertiaryContainer: tertiaryContainer,
-      onTertiaryContainer: Color(0xFF004B89),
+      onTertiaryContainer: Color(0xFF075985),
       error: error,
       onError: Colors.white,
       errorContainer: errorContainer,
-      onErrorContainer: Color(0xFF93000A),
+      onErrorContainer: Color(0xFF7F1D1D),
       surface: background,
       onSurface: onBackground,
       surfaceContainerLowest: surfaceCardLowest,
       surfaceContainerLow: surfaceContainerLow,
       surfaceContainer: surfaceContainer,
       surfaceContainerHigh: surfaceContainerHigh,
-      surfaceContainerHighest: Color(0xFFECE1D3),
+      surfaceContainerHighest: Color(0xFFB6C2D1),
       onSurfaceVariant: onSurfaceVariant,
       outline: outline,
       outlineVariant: outlineVariant,
-      shadow: Color(0xFF1A1A1A),
-      scrim: Color(0xFF1A1A1A),
-      inverseSurface: Color(0xFF353026),
-      onInverseSurface: Color(0xFFFAEFE1),
+      shadow: Color(0xFF0F172A),
+      scrim: Color(0xFF0F172A),
+      inverseSurface: Color(0xFF1E293B),
+      onInverseSurface: Color(0xFFF8FAFC),
       inversePrimary: primaryFixedDim,
       surfaceTint: primary,
     );
     return _buildTheme(scheme: scheme);
   }
 
-  /// Dark mode reuses the same gold accent system over a deep charcoal
-  /// canvas so the brand stays consistent.
+  /// Dark mode reuses the same indigo accent system over a deep slate
+  /// canvas so the brand stays consistent without feeling oppressive.
   static ThemeData get dark {
-    final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: primaryFixedDim,
+    const ColorScheme scheme = ColorScheme(
       brightness: Brightness.dark,
+      primary: Color(0xFF818CF8), // indigo-400 (lighter for contrast)
+      onPrimary: Color(0xFF1E1B4B),
+      primaryContainer: Color(0xFF3730A3),
+      onPrimaryContainer: Color(0xFFE0E7FF),
+      secondary: Color(0xFF34D399), // emerald-400
+      onSecondary: Color(0xFF064E3B),
+      secondaryContainer: Color(0xFF065F46),
+      onSecondaryContainer: Color(0xFFD1FAE5),
+      tertiary: Color(0xFF38BDF8),
+      onTertiary: Color(0xFF075985),
+      tertiaryContainer: Color(0xFF0369A1),
+      onTertiaryContainer: Color(0xFFBAE6FD),
+      error: Color(0xFFF87171),
+      onError: Color(0xFF7F1D1D),
+      errorContainer: Color(0xFF991B1B),
+      onErrorContainer: Color(0xFFFECACA),
+      surface: Color(0xFF0B1220), // very deep slate
+      onSurface: Color(0xFFE2E8F0),
+      surfaceContainerLowest: Color(0xFF050810),
+      surfaceContainerLow: Color(0xFF111827),
+      surfaceContainer: Color(0xFF1E293B),
+      surfaceContainerHigh: Color(0xFF334155),
+      surfaceContainerHighest: Color(0xFF475569),
+      onSurfaceVariant: Color(0xFF94A3B8),
+      outline: Color(0xFF334155),
+      outlineVariant: Color(0xFF1E293B),
+      shadow: Color(0xFF000000),
+      scrim: Color(0xFF000000),
+      inverseSurface: Color(0xFFF1F5F9),
+      onInverseSurface: Color(0xFF0F172A),
+      inversePrimary: primary,
+      surfaceTint: Color(0xFF818CF8),
     );
     return _buildTheme(scheme: scheme);
   }
 
   static ThemeData _buildTheme({required ColorScheme scheme}) {
     final bool isLight = scheme.brightness == Brightness.light;
-    final Color card = isLight
-        ? surfaceCardLowest
-        : Color.lerp(scheme.surface, Colors.white, 0.04) ?? scheme.surface;
+    final Color card = scheme.surfaceContainerLowest;
     final Color hairline = isLight
-        ? outlineVariant
-        : Color.lerp(scheme.surface, Colors.white, 0.10) ?? scheme.outline;
-    final Color muted = isLight
-        ? onSurfaceVariant
-        : scheme.onSurface.withOpacity(0.70);
+        ? const Color(0xFFE2E8F0) // slate-200
+        : const Color(0xFF1E293B);
+    final Color muted = scheme.onSurfaceVariant;
     final Color appBg = scheme.surface;
 
     final TextTheme baseText =
         ThemeData(brightness: scheme.brightness).textTheme;
-    // Use Cairo as the body/display font so Arabic glyphs render
+    // Cairo is the body/display font so Arabic glyphs render
     // beautifully across the entire app while keeping Latin numerals
-    // readable in question labels.
-    final TextTheme manrope = GoogleFonts.cairoTextTheme(baseText)
+    // crisp inside maths and option labels.
+    final TextTheme cairo = GoogleFonts.cairoTextTheme(baseText)
         .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface)
         .copyWith(
           displayLarge: GoogleFonts.cairo(
-            fontSize: 36,
-            height: 44 / 36,
+            fontSize: 34,
+            height: 42 / 34,
             fontWeight: FontWeight.w800,
-            letterSpacing: -0.72,
+            letterSpacing: -0.6,
             color: scheme.onSurface,
           ),
           displayMedium: GoogleFonts.cairo(
@@ -146,41 +183,41 @@ class AppTheme {
             color: scheme.onSurface,
           ),
           headlineLarge: GoogleFonts.cairo(
-            fontSize: 30,
-            height: 38 / 30,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
+            fontSize: 26,
+            height: 34 / 26,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.3,
             color: scheme.onSurface,
           ),
           headlineMedium: GoogleFonts.cairo(
-            fontSize: 24,
-            height: 32 / 24,
+            fontSize: 22,
+            height: 30 / 22,
             fontWeight: FontWeight.w700,
-            letterSpacing: -0.24,
+            letterSpacing: -0.2,
             color: scheme.onSurface,
           ),
           headlineSmall: GoogleFonts.cairo(
-            fontSize: 20,
-            height: 28 / 20,
+            fontSize: 19,
+            height: 26 / 19,
             fontWeight: FontWeight.w700,
             color: scheme.onSurface,
           ),
           titleLarge: GoogleFonts.cairo(
-            fontSize: 18,
-            height: 24 / 18,
+            fontSize: 17,
+            height: 24 / 17,
             fontWeight: FontWeight.w700,
             color: scheme.onSurface,
           ),
           titleMedium: GoogleFonts.cairo(
-            fontSize: 16,
-            height: 22 / 16,
-            fontWeight: FontWeight.w700,
+            fontSize: 15,
+            height: 22 / 15,
+            fontWeight: FontWeight.w600,
             color: scheme.onSurface,
           ),
           titleSmall: GoogleFonts.cairo(
-            fontSize: 14,
-            height: 20 / 14,
-            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            height: 18 / 13,
+            fontWeight: FontWeight.w600,
             color: scheme.onSurface,
           ),
           bodyLarge: GoogleFonts.cairo(
@@ -201,250 +238,257 @@ class AppTheme {
           labelLarge: GoogleFonts.cairo(
             fontSize: 14,
             height: 20 / 14,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: scheme.onSurface,
           ),
-          labelSmall: GoogleFonts.cairo(
+          labelMedium: GoogleFonts.cairo(
             fontSize: 12,
             height: 16 / 12,
+            fontWeight: FontWeight.w600,
+            color: muted,
+          ),
+          labelSmall: GoogleFonts.cairo(
+            fontSize: 11,
+            height: 14 / 11,
             fontWeight: FontWeight.w700,
-            letterSpacing: 0.6,
+            letterSpacing: 0.4,
             color: muted,
           ),
         );
 
     return ThemeData(
       useMaterial3: true,
+      brightness: scheme.brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: appBg,
-      textTheme: manrope,
-      splashFactory: InkSparkle.splashFactory,
+      canvasColor: appBg,
+      textTheme: cairo,
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
+        backgroundColor: appBg,
         foregroundColor: scheme.onSurface,
-        surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.cairo(
-          color: scheme.onSurface,
-          fontSize: 18,
-          fontWeight: FontWeight.w800,
-          letterSpacing: -0.2,
-        ),
+        titleTextStyle: cairo.titleLarge,
       ),
       cardTheme: CardThemeData(
         color: card,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: hairline, width: isLight ? 0.6 : 1),
+          side: BorderSide(color: hairline, width: 1),
+          borderRadius: BorderRadius.circular(16),
         ),
         margin: EdgeInsets.zero,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: card,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        hintStyle: TextStyle(
+          color: muted,
+          fontWeight: FontWeight.w400,
+        ),
+        prefixIconColor: muted,
+        suffixIconColor: muted,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: hairline, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: hairline, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.primary, width: 1.6),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.error, width: 1.6),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: scheme.primary,
           foregroundColor: scheme.onPrimary,
-          minimumSize: const Size.fromHeight(56),
+          minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.cairo(
-            fontSize: 16,
+          textStyle: cairo.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            letterSpacing: 0.1,
+            fontSize: 15,
           ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: scheme.primary,
-          textStyle: GoogleFonts.cairo(
+          textStyle: cairo.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            fontSize: 14,
           ),
         ),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: card,
-        hintStyle: GoogleFonts.cairo(color: muted),
-        labelStyle: GoogleFonts.cairo(
-          color: muted,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-          letterSpacing: 0.6,
-        ),
-        floatingLabelStyle: GoogleFonts.cairo(
-          color: scheme.primary,
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
-          letterSpacing: 0.6,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: hairline),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: hairline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: scheme.primary, width: 1.6),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: scheme.error),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: scheme.error, width: 1.6),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 18,
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: scheme.primary,
+          minimumSize: const Size(double.infinity, 52),
+          side: BorderSide(color: hairline, width: 1.2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: cairo.labelLarge,
         ),
       ),
-      navigationBarTheme: NavigationBarThemeData(
+      dividerTheme: DividerThemeData(
+        color: hairline,
+        thickness: 1,
+        space: 1,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: card,
         surfaceTintColor: Colors.transparent,
-        indicatorColor: scheme.primary.withOpacity(0.14),
-        height: 70,
         elevation: 0,
-        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((states) {
-          final bool selected = states.contains(WidgetState.selected);
-          return GoogleFonts.cairo(
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected ? scheme.primary : muted,
-            fontSize: 11,
-            letterSpacing: 0.6,
-          );
-        }),
-        iconTheme: WidgetStateProperty.resolveWith<IconThemeData>((states) {
-          final bool selected = states.contains(WidgetState.selected);
-          return IconThemeData(
-            color: selected ? scheme.primary : muted,
-            size: 24,
-          );
-        }),
-      ),
-      dividerTheme: DividerThemeData(color: hairline, thickness: 1),
-      iconTheme: IconThemeData(color: scheme.onSurface),
-      extensions: <ThemeExtension<dynamic>>[
-        AppPalette(
-          muted: muted,
-          outline: hairline,
-          card: card,
-          accent: goldStart,
-          warm: goldEnd,
-          gold: primaryFixedDim,
-          champagne: surfaceContainerLow,
-          info: tertiary,
+        shape: const RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(24)),
         ),
-      ],
+        showDragHandle: true,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: card,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: scheme.inverseSurface,
+        contentTextStyle: cairo.bodyMedium?.copyWith(
+          color: scheme.onInverseSurface,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: scheme.surfaceContainerLow,
+        side: BorderSide(color: hairline, width: 1),
+        labelStyle: cairo.labelMedium,
+        padding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(999),
+        ),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: scheme.primary,
+        linearTrackColor: scheme.surfaceContainer,
+        circularTrackColor: scheme.surfaceContainer,
+      ),
     );
   }
 }
 
-/// Custom palette tokens shared across screens (muted text, hairline
-/// outlines, accent colour etc.) without re-deriving them everywhere.
-class AppPalette extends ThemeExtension<AppPalette> {
+/// Convenience accessor that maps the active [ThemeData] / [ColorScheme]
+/// onto a small named palette of design-system tokens used throughout
+/// the app.
+///
+/// Pulling these from the theme (instead of the static [AppTheme]
+/// constants) means the palette automatically inverts in dark mode.
+class AppPalette {
   const AppPalette({
+    required this.gold,
+    required this.warm,
+    required this.accent,
     required this.muted,
     required this.outline,
     required this.card,
-    required this.accent,
-    required this.warm,
-    required this.gold,
     required this.champagne,
+    required this.cardShadow,
+    required this.goldGradient,
     required this.info,
+    required this.goldGlow,
+    required this.success,
   });
+
+  /// Primary brand colour (indigo). Named `gold` for backwards-compat.
+  final Color gold;
+
+  /// Streak amber — used for the flame icon only.
+  final Color warm;
+
+  /// Action / focus tone (matches [primary]).
+  final Color accent;
 
   final Color muted;
   final Color outline;
   final Color card;
-  final Color accent;
-  final Color warm;
-  final Color gold;
+
+  /// Soft surface colour used for chips and inert pill backgrounds.
+  /// Named `champagne` for backwards-compat.
   final Color champagne;
+
+  final List<BoxShadow> cardShadow;
+
+  /// Indigo → violet brand gradient used on hero CTAs.
+  /// Named `goldGradient` for backwards-compat.
+  final LinearGradient goldGradient;
+
+  /// Sky blue used for analytics / informational chips.
   final Color info;
 
-  /// Default radiant-gold gradient (top-left → bottom-right).
-  LinearGradient get goldGradient => LinearGradient(
+  /// Soft glow shadow used behind hero CTAs and ring stats.
+  final List<BoxShadow> goldGlow;
+
+  /// Emerald success tone (streak / completed / right answer).
+  final Color success;
+
+  /// Build a palette from the active theme. Prefer this in widgets so
+  /// dark/light mode flips automatically.
+  static AppPalette of(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final bool isLight = scheme.brightness == Brightness.light;
+    return AppPalette(
+      gold: scheme.primary,
+      warm: AppTheme.streakAmber,
+      accent: scheme.primary,
+      muted: scheme.onSurfaceVariant,
+      outline: scheme.outline,
+      card: scheme.surfaceContainerLowest,
+      champagne: scheme.surfaceContainerLow,
+      info: scheme.tertiary,
+      success: scheme.secondary,
+      cardShadow: <BoxShadow>[
+        BoxShadow(
+          color: isLight
+              ? const Color(0x0A0F172A) // slate-900 @ 4%
+              : const Color(0x99000000),
+          blurRadius: 16,
+          offset: const Offset(0, 4),
+        ),
+      ],
+      goldGlow: <BoxShadow>[
+        BoxShadow(
+          color: scheme.primary.withOpacity(0.22),
+          blurRadius: 28,
+          offset: const Offset(0, 12),
+        ),
+      ],
+      goldGradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: <Color>[accent, warm],
-      );
-
-  /// Soft amber glow used under elevated CTAs and hero pieces.
-  List<BoxShadow> get goldGlow => <BoxShadow>[
-        BoxShadow(
-          color: accent.withOpacity(0.25),
-          blurRadius: 30,
-          offset: const Offset(0, 10),
-        ),
-      ];
-
-  /// Soft, high-diffusion card shadow (Level 1 elevation).
-  List<BoxShadow> get cardShadow => const <BoxShadow>[
-        BoxShadow(
-          color: Color(0x0A1A1A1A),
-          blurRadius: 20,
-          offset: Offset(0, 4),
-        ),
-      ];
-
-  @override
-  AppPalette copyWith({
-    Color? muted,
-    Color? outline,
-    Color? card,
-    Color? accent,
-    Color? warm,
-    Color? gold,
-    Color? champagne,
-    Color? info,
-  }) {
-    return AppPalette(
-      muted: muted ?? this.muted,
-      outline: outline ?? this.outline,
-      card: card ?? this.card,
-      accent: accent ?? this.accent,
-      warm: warm ?? this.warm,
-      gold: gold ?? this.gold,
-      champagne: champagne ?? this.champagne,
-      info: info ?? this.info,
+        colors: <Color>[AppTheme.goldStart, AppTheme.goldEnd],
+      ),
     );
-  }
-
-  @override
-  AppPalette lerp(ThemeExtension<AppPalette>? other, double t) {
-    if (other is! AppPalette) return this;
-    return AppPalette(
-      muted: Color.lerp(muted, other.muted, t) ?? muted,
-      outline: Color.lerp(outline, other.outline, t) ?? outline,
-      card: Color.lerp(card, other.card, t) ?? card,
-      accent: Color.lerp(accent, other.accent, t) ?? accent,
-      warm: Color.lerp(warm, other.warm, t) ?? warm,
-      gold: Color.lerp(gold, other.gold, t) ?? gold,
-      champagne: Color.lerp(champagne, other.champagne, t) ?? champagne,
-      info: Color.lerp(info, other.info, t) ?? info,
-    );
-  }
-
-  static AppPalette of(BuildContext context) {
-    return Theme.of(context).extension<AppPalette>() ??
-        const AppPalette(
-          muted: AppTheme.onSurfaceVariant,
-          outline: AppTheme.outlineVariant,
-          card: AppTheme.surfaceCardLowest,
-          accent: AppTheme.goldStart,
-          warm: AppTheme.goldEnd,
-          gold: AppTheme.primaryFixedDim,
-          champagne: AppTheme.surfaceContainerLow,
-          info: AppTheme.tertiary,
-        );
   }
 }

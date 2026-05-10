@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
 
-/// A primary gradient-gold call-to-action button used across the app.
+/// Primary call-to-action button used across the app.
 ///
-/// The button has:
-/// - Radiant gold → rich amber linear gradient.
-/// - Deep charcoal label for premium legibility.
-/// - Soft amber glow shadow that grows on press.
-/// - Press-scale haptic-feel via [PressableScale].
-/// - Built-in loading state.
+/// In the redesign this is a solid indigo button (no gradient, no
+/// glow) — the cleanest, most "study-app-native" treatment. Shadows
+/// stay extremely subtle.
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
@@ -18,8 +14,8 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.icon,
-    this.height = 56,
-    this.borderRadius = 14,
+    this.height = 52,
+    this.borderRadius = 12,
   });
 
   final String label;
@@ -31,75 +27,72 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     final bool disabled = isLoading || onPressed == null;
     final VoidCallback? handler = isLoading ? null : onPressed;
-    final Color labelColor =
-        disabled ? AppTheme.onBackground.withOpacity(0.5) : AppTheme.onBackground;
+    final Color background =
+        disabled ? scheme.primary.withOpacity(0.50) : scheme.primary;
 
     return PressableScale(
       onTap: handler,
       pressedScale: 0.97,
-      child: AnimatedOpacity(
+      child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        opacity: disabled ? 0.55 : 1.0,
-        child: Container(
-          width: double.infinity,
-          height: height,
-          decoration: BoxDecoration(
-            gradient: palette.goldGradient,
-            borderRadius: BorderRadius.circular(borderRadius),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: palette.accent.withOpacity(disabled ? 0.10 : 0.30),
-                blurRadius: 28,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            child: isLoading
-                ? const SizedBox(
-                    key: ValueKey<String>('loading'),
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.4,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppTheme.onBackground,
+        width: double.infinity,
+        height: height,
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: disabled
+              ? const <BoxShadow>[]
+              : <BoxShadow>[
+                  BoxShadow(
+                    color: scheme.primary.withOpacity(0.20),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+        ),
+        alignment: Alignment.center,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          child: isLoading
+              ? const SizedBox(
+                  key: ValueKey<String>('loading'),
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Row(
+                  key: const ValueKey<String>('label'),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    if (icon != null) ...<Widget>[
+                      Icon(icon, size: 18, color: scheme.onPrimary),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onPrimary,
+                        letterSpacing: 0.1,
                       ),
                     ),
-                  )
-                : Row(
-                    key: const ValueKey<String>('label'),
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: labelColor,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      if (icon != null) ...<Widget>[
-                        const SizedBox(width: 8),
-                        Icon(icon, size: 20, color: labelColor),
-                      ],
-                    ],
-                  ),
-          ),
+                  ],
+                ),
         ),
       ),
     );
   }
 }
 
-/// Ghost / secondary button style — soft champagne fill with a hairline
-/// gold-tone border, gold label.
+/// Ghost / secondary button — soft surface fill with hairline border.
 class GhostButton extends StatelessWidget {
   const GhostButton({
     super.key,
@@ -114,32 +107,32 @@ class GhostButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     return PressableScale(
       onTap: onPressed,
       pressedScale: 0.97,
       child: Container(
         width: double.infinity,
-        height: 52,
+        height: 48,
         decoration: BoxDecoration(
-          color: palette.champagne,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: palette.gold.withOpacity(0.55), width: 1.2),
+          color: scheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: scheme.outlineVariant, width: 1),
         ),
         alignment: Alignment.center,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             if (icon != null) ...<Widget>[
-              Icon(icon, size: 18, color: palette.accent),
+              Icon(icon, size: 18, color: scheme.onSurface),
               const SizedBox(width: 8),
             ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: palette.accent,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurface,
               ),
             ),
           ],
