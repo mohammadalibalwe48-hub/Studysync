@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:studysync_syria/core/services/bookmarks_service.dart';
+import 'package:studysync_syria/core/services/notes_service.dart';
+import 'package:studysync_syria/core/services/study_goal_service.dart';
 import 'package:studysync_syria/core/supabase/supabase_client.dart';
 
 /// Auth service backed by Supabase Auth.
@@ -30,8 +33,18 @@ class AuthService extends ChangeNotifier {
 
   StreamSubscription<AuthState>? _subscription;
 
-  void _handleAuthChange(AuthState _) {
+  void _handleAuthChange(AuthState state) {
     notifyListeners();
+    // Hydrate the local-cached, Supabase-backed services so the user
+    // sees their bookmarks / notes / goal as soon as the home screen
+    // paints after sign-in (instead of waiting for a manual refresh).
+    if (state.event == AuthChangeEvent.signedIn ||
+        state.event == AuthChangeEvent.tokenRefreshed ||
+        state.event == AuthChangeEvent.userUpdated) {
+      unawaited(BookmarksService.instance.refresh());
+      unawaited(NotesService.instance.refresh());
+      unawaited(StudyGoalService.instance.refresh());
+    }
   }
 
   /// The currently signed-in Supabase user, or null.

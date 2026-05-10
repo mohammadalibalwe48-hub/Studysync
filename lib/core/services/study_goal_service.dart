@@ -1,15 +1,26 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:studysync_syria/core/supabase/queries.dart';
+import 'package:studysync_syria/core/supabase/supabase_client.dart';
+
 /// Tracks daily study minutes and the user's chosen daily goal.
 ///
 /// Each completed Pomodoro session (or any other "you studied X
 /// minutes" event) calls [logMinutes]; the home-screen [DailyGoalRing]
 /// then renders today's progress against [goalMinutes].
 ///
-/// Persistence is intentionally simple — a single key per day stored in
-/// [SharedPreferences] — so the data is durable across launches but
-/// requires no schema or remote sync.
+/// Persistence:
+///
+///  • [goalMinutes] (the preference) syncs to `student_preferences` in
+///    Supabase so it follows the user across devices. We mirror the
+///    value to [SharedPreferences] so the first paint after a cold
+///    start is instant.
+///  • [todayMinutes] / per-day buckets stay in [SharedPreferences]
+///    only — the canonical record of "what did the user study today" is
+///    the `study_sessions` table on Supabase, which the progress
+///    dashboard already reads. The local buckets are used solely to
+///    render the home-screen ring before that fetch finishes.
 class StudyGoalService extends ChangeNotifier {
   StudyGoalService._();
 
@@ -43,7 +54,33 @@ class StudyGoalService extends ChangeNotifier {
       _loaded = true;
       notifyListeners();
     }
+    // After paint, reconcile the goal with whatever Supabase has.
+    await _refreshGoalFromRemote();
   }
+
+  Future<void> _refreshGoalFromRemote() async {
+    if (SupabaseService.auth.currentUser == null) return;
+    try {
+      final Map<String, dynamic>? prefs =
+          await StudySyncQueries.fetchStudentPreferences();
+      if (prefs == null) return;
+      final int remote = (prefs['daily_goal_minutes'] as int?) ??
+          defaultGoalMinutes;
+      if (remote != _goalMinutes) {
+        _goalMinutes = remote;
+        notifyListeners();
+        try {
+          final SharedPreferences sp = await SharedPreferences.getInstance();
+          await sp.setInt(_goalKey, remote);
+        } catch (_) {}
+      }
+    } catch (_) {
+      // Offline / first time / etc.: stick with the local value.
+    }
+  }
+
+  /// Public hook for the auth flow to refresh the goal after sign-in.
+  Future<void> refresh() => _refreshGoalFromRemote();
 
   Future<void> setGoal(int minutes) async {
     final int clamped = minutes.clamp(15, 480);
@@ -54,6 +91,13 @@ class StudyGoalService extends ChangeNotifier {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_goalKey, clamped);
     } catch (_) {}
+    if (SupabaseService.auth.currentUser != null) {
+      try {
+        await StudySyncQueries.setDailyGoalMinutes(clamped);
+      } catch (_) {
+        // Best-effort: the local value remains; next refresh reconciles.
+      }
+    }
   }
 
   Future<void> logMinutes(int minutes) async {
