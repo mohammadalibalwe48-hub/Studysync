@@ -6,8 +6,8 @@ import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/features/subjects/topic_list_screen.dart'
     show TopicStatus;
 
-/// بطاقة درس داخل قائمة دروس مادة معينة. تعرض عنوان الدرس، وصفه، عدد
-/// الأسئلة المتاحة فيه، وحالته الدراسية.
+/// Single topic row inside a subject's lesson list. Modern flat
+/// presentation with an index badge, status pill, and a question count.
 class TopicCard extends StatelessWidget {
   const TopicCard({
     super.key,
@@ -22,14 +22,15 @@ class TopicCard extends StatelessWidget {
   final Color accentColor;
   final VoidCallback onTap;
 
-  /// رقم ترتيبي اختياري (بدءاً من 1) يُعرض كميدالية مرافقة للأيقونة.
+  /// Optional 1-indexed ordinal that becomes a numeric badge.
   final int? index;
 
-  /// حالة الدرس الدراسية الحالية: لم يبدأ / قيد الدراسة / مكتمل.
+  /// Current study state for this topic.
   final TopicStatus status;
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     final AppPalette palette = AppPalette.of(context);
     final int qCount = topic.questions.length;
     return PressableScale(
@@ -37,31 +38,22 @@ class TopicCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: palette.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: palette.outline, width: 0.6),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: palette.outline, width: 1),
           boxShadow: palette.cardShadow,
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Row(
               children: <Widget>[
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: <Color>[
-                        accentColor.withOpacity(0.20),
-                        accentColor.withOpacity(0.05),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: accentColor.withOpacity(0.20),
-                      width: 0.6,
-                    ),
+                    color: accentColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
                   child: index != null
@@ -69,30 +61,31 @@ class TopicCard extends StatelessWidget {
                           '$index',
                           style: TextStyle(
                             color: accentColor,
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w800,
                           ),
                         )
                       : Icon(
                           Icons.menu_book_outlined,
                           color: accentColor,
-                          size: 22,
+                          size: 20,
                         ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
                         topic.title,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
                           letterSpacing: -0.1,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
                         topic.description,
                         maxLines: 2,
@@ -106,23 +99,23 @@ class TopicCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                // RTL: استخدم سهم اليمين للتعبير عن "الانتقال إلى التفاصيل".
+                const SizedBox(width: 6),
+                // RTL: chevron_left points "forward" in the UI flow.
                 Icon(
                   Icons.chevron_left_rounded,
-                  size: 22,
+                  size: 20,
                   color: palette.muted,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Row(
               children: <Widget>[
                 _Pill(
-                  icon: Icons.quiz_outlined,
+                  icon: Icons.help_outline_rounded,
                   label: '$qCount أسئلة',
                   tone: palette.muted,
-                  background: palette.champagne,
+                  background: scheme.surfaceContainerLow,
                 ),
                 const SizedBox(width: 8),
                 _StatusPill(status: status, accent: accentColor),
@@ -151,7 +144,7 @@ class _Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(999),
@@ -159,15 +152,14 @@ class _Pill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 14, color: tone),
-          const SizedBox(width: 6),
+          Icon(icon, size: 13, color: tone),
+          const SizedBox(width: 5),
           Text(
             label,
             style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
               color: tone,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.2,
             ),
           ),
         ],
@@ -184,42 +176,44 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ({String label, Color tone, IconData icon}) v = switch (status) {
-      TopicStatus.notStarted => (
-          label: 'لم يبدأ',
-          tone: Theme.of(context).colorScheme.onSurfaceVariant,
-          icon: Icons.lock_clock_outlined,
-        ),
-      TopicStatus.inProgress => (
-          label: 'قيد الدراسة',
-          tone: accent,
-          icon: Icons.hourglass_bottom_rounded,
-        ),
-      TopicStatus.completed => (
-          label: 'مكتمل',
-          tone: const Color(0xFF34A853),
-          icon: Icons.check_circle_rounded,
-        ),
-    };
+    final AppPalette palette = AppPalette.of(context);
+    final Color tone;
+    final IconData icon;
+    final String label;
+    switch (status) {
+      case TopicStatus.completed:
+        tone = palette.success;
+        icon = Icons.check_circle_rounded;
+        label = 'مكتمل';
+        break;
+      case TopicStatus.inProgress:
+        tone = accent;
+        icon = Icons.timelapse_rounded;
+        label = 'قيد الدراسة';
+        break;
+      case TopicStatus.notStarted:
+        tone = palette.muted;
+        icon = Icons.circle_outlined;
+        label = 'لم يبدأ';
+        break;
+    }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: v.tone.withOpacity(0.10),
+        color: tone.withOpacity(0.10),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: v.tone.withOpacity(0.25), width: 0.6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(v.icon, size: 14, color: v.tone),
-          const SizedBox(width: 6),
+          Icon(icon, size: 13, color: tone),
+          const SizedBox(width: 5),
           Text(
-            v.label,
+            label,
             style: TextStyle(
-              color: v.tone,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.2,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: tone,
             ),
           ),
         ],

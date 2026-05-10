@@ -1,36 +1,27 @@
 import 'package:flutter/material.dart';
 
-import 'package:studysync_syria/app/theme.dart';
-
 /// Labelled horizontal progress bar with a percentage on the right.
 ///
-/// The fill animates from 0 → [value] on first build and whenever the
-/// value changes. The filled portion uses a gradient with a soft outer
-/// glow in [color] — the design system's "Glow Track" treatment.
+/// In the redesign the bar is a flat single-tone fill with rounded
+/// caps. No glow, no gradient — keeps the focus on the data.
 class LabeledProgressBar extends StatelessWidget {
   const LabeledProgressBar({
     super.key,
     required this.label,
     required this.value,
     required this.color,
-    this.duration = const Duration(milliseconds: 900),
+    this.duration = const Duration(milliseconds: 720),
   });
 
-  /// Description shown above the bar.
   final String label;
-
-  /// Value between 0.0 and 1.0.
   final double value;
-
   final Color color;
-
-  /// How long the fill animation should take.
   final Duration duration;
 
   @override
   Widget build(BuildContext context) {
     final double clamped = value.clamp(0.0, 1.0);
-    final AppPalette palette = AppPalette.of(context);
+    final ColorScheme scheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,9 +31,10 @@ class LabeledProgressBar extends StatelessWidget {
           children: <Widget>[
             Text(
               label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: scheme.onSurface,
               ),
             ),
             TweenAnimationBuilder<double>(
@@ -54,7 +46,7 @@ class LabeledProgressBar extends StatelessWidget {
                   '${(t * 100).round()}%',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    fontSize: 13,
+                    fontSize: 12,
                     color: color,
                   ),
                 );
@@ -62,16 +54,16 @@ class LabeledProgressBar extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(999),
           child: SizedBox(
-            height: 10,
+            height: 8,
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints c) {
                 return Stack(
                   children: <Widget>[
-                    Container(color: palette.champagne),
+                    Container(color: scheme.surfaceContainer),
                     TweenAnimationBuilder<double>(
                       tween: Tween<double>(begin: 0, end: clamped),
                       duration: duration,
@@ -80,20 +72,8 @@ class LabeledProgressBar extends StatelessWidget {
                         return Container(
                           width: c.maxWidth * t,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: <Color>[
-                                color.withOpacity(0.85),
-                                color,
-                              ],
-                            ),
-                            boxShadow: <BoxShadow>[
-                              BoxShadow(
-                                color: color.withOpacity(0.45),
-                                blurRadius: 10,
-                                spreadRadius: 0,
-                                offset: const Offset(0, 0),
-                              ),
-                            ],
+                            color: color,
+                            borderRadius: BorderRadius.circular(999),
                           ),
                         );
                       },

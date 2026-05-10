@@ -520,7 +520,7 @@ class _ResultView extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'انتهى الاختبار 🎉',
+                  'انتهى الاختبار',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,

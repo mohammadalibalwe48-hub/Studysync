@@ -8,13 +8,18 @@ import 'package:studysync_syria/features/assignments/take_assignment_screen.dart
 import 'package:studysync_syria/features/auth/auth_service.dart';
 import 'package:studysync_syria/features/auth/login_screen.dart';
 import 'package:studysync_syria/features/auth/signup_screen.dart';
+import 'package:studysync_syria/features/bookmarks/bookmarks_screen.dart';
 import 'package:studysync_syria/features/curriculum/custom_lesson_models.dart';
 import 'package:studysync_syria/features/curriculum/custom_topic_detail_screen.dart';
 import 'package:studysync_syria/features/exams/exam_questions_screen.dart';
+import 'package:studysync_syria/features/flashcards/flashcards_screen.dart';
 import 'package:studysync_syria/features/home/home_screen.dart';
+import 'package:studysync_syria/features/library/library_screen.dart';
+import 'package:studysync_syria/features/pomodoro/pomodoro_screen.dart';
 import 'package:studysync_syria/features/profile/profile_screen.dart';
 import 'package:studysync_syria/features/progress/progress_screen.dart';
 import 'package:studysync_syria/features/quiz/quick_quiz_screen.dart';
+import 'package:studysync_syria/features/search/search_screen.dart';
 import 'package:studysync_syria/features/subjects/topic_list_screen.dart';
 import 'package:studysync_syria/features/topics/topic_detail_screen.dart';
 
@@ -122,6 +127,11 @@ GoRouter buildRouter() {
         },
       ),
       GoRoute(
+        path: '/library',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fadePage(state, const LibraryScreen()),
+      ),
+      GoRoute(
         path: '/progress',
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _fadePage(state, const ProgressScreen()),
@@ -130,6 +140,26 @@ GoRouter buildRouter() {
         path: '/profile',
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _fadePage(state, const ProfileScreen()),
+      ),
+      GoRoute(
+        path: '/pomodoro',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const PomodoroScreen()),
+      ),
+      GoRoute(
+        path: '/flashcards',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const FlashcardsScreen()),
+      ),
+      GoRoute(
+        path: '/bookmarks',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const BookmarksScreen()),
+      ),
+      GoRoute(
+        path: '/search',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const SearchScreen()),
       ),
     ],
   );

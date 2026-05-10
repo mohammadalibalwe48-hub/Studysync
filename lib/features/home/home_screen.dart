@@ -4,15 +4,30 @@ import 'package:go_router/go_router.dart';
 import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/constants/curriculum.dart';
 import 'package:studysync_syria/core/models/subject.dart';
+import 'package:studysync_syria/core/services/study_goal_service.dart';
 import 'package:studysync_syria/core/supabase/queries.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
-import 'package:studysync_syria/core/widgets/empty_state.dart';
+import 'package:studysync_syria/core/widgets/daily_goal_ring.dart';
 import 'package:studysync_syria/core/widgets/main_scaffold.dart';
+import 'package:studysync_syria/core/widgets/section_header.dart';
+import 'package:studysync_syria/core/widgets/stat_card.dart';
+import 'package:studysync_syria/core/widgets/streak_badge.dart';
 import 'package:studysync_syria/core/widgets/subject_card.dart';
 import 'package:studysync_syria/features/announcements/announcement_queries.dart';
 import 'package:studysync_syria/features/auth/auth_service.dart';
 import 'package:studysync_syria/features/classes/join_class_dialog.dart';
 
+/// Modern home dashboard.
+///
+/// Layout (top → bottom):
+///  1. Greeting block with the student's first name and today's date.
+///  2. "Today" hero with the daily-goal ring and headline streak +
+///     accuracy stats.
+///  3. Continue-learning quick action.
+///  4. Subjects grid (Physics / Chemistry).
+///  5. Practice quick actions (quick quiz, exam questions, flashcards,
+///     focus timer).
+///  6. Class actions (join class, assignments, announcements).
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -21,7 +36,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int? _streakDays;
   ProgressSummary? _summary;
   int _unreadAnnouncements = 0;
 
@@ -30,6 +44,17 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadProgress();
     _loadUnread();
+    StudyGoalService.instance.addListener(_onGoalChanged);
+  }
+
+  @override
+  void dispose() {
+    StudyGoalService.instance.removeListener(_onGoalChanged);
+    super.dispose();
+  }
+
+  void _onGoalChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadProgress() async {
@@ -37,16 +62,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final ProgressSummary summary =
           await StudySyncQueries.fetchProgressSummary();
       if (!mounted) return;
-      setState(() {
-        _summary = summary;
-        _streakDays = summary.streakDays;
-      });
+      setState(() => _summary = summary);
     } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _summary = ProgressSummary.empty;
-        _streakDays = 0;
-      });
+      setState(() => _summary = ProgressSummary.empty);
     }
   }
 
@@ -65,101 +84,142 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final AppPalette palette = AppPalette.of(context);
     final String? rawEmail = AuthService.instance.currentUserEmail;
     final String? displayName = _displayNameFor(rawEmail);
     const List<Subject> subjects = Curriculum.subjects;
     final ProgressSummary summary = _summary ?? ProgressSummary.empty;
+    final StudyGoalService goal = StudyGoalService.instance;
+    final int accuracy =
+        (summary.correctAnswerRate * 100).clamp(0, 100).round();
 
     return MainScaffold(
       tab: MainTab.home,
       child: RefreshIndicator(
+        color: scheme.primary,
         onRefresh: _refreshAll,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
           children: <Widget>[
             FadeSlideIn(
-              child: _HeroCard(
+              child: _GreetingHeader(
                 name: displayName,
-                streakDays: _streakDays ?? 0,
+                streakDays: summary.streakDays,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             FadeSlideIn(
               delay: const Duration(milliseconds: 60),
-              child: _ContinueCard(
+              child: _TodayCard(
+                progress: goal.todayProgress,
+                minutes: goal.todayMinutes,
+                goalMinutes: goal.goalMinutes,
+                streakDays: summary.streakDays,
+                accuracyPercent: accuracy,
+                onTap: () => context.push('/pomodoro'),
+              ),
+            ),
+            const SizedBox(height: 18),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 100),
+              child: _ContinueLearningCard(
                 onTap: () => context.go('/quick-quiz'),
               ),
             ),
             const SizedBox(height: 22),
             FadeSlideIn(
-              delay: const Duration(milliseconds: 100),
-              child: const _SectionHeader(
+              delay: const Duration(milliseconds: 140),
+              child: SectionHeader(
                 title: 'المواد',
                 subtitle: 'اختر المادة لمتابعة الدراسة.',
+                actionLabel: 'الكل',
+                onAction: () => context.go('/library'),
               ),
             ),
-            const SizedBox(height: 14),
-            if (subjects.isEmpty)
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 140),
-                child: _SubjectsEmptyState(onRefresh: _loadProgress),
-              )
-            else
-              ...List<Widget>.generate(subjects.length, (int i) {
-                final Subject s = subjects[i];
-                final double progress =
-                    summary.completionBySubject[s.id] ?? 0;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: FadeSlideIn(
-                    delay: Duration(milliseconds: 140 + i * 80),
-                    child: SubjectCard(
-                      subject: s,
-                      progress: progress,
-                      onTap: () => context.go('/subjects/${s.id}'),
-                    ),
+            const SizedBox(height: 12),
+            ...List<Widget>.generate(subjects.length, (int i) {
+              final Subject s = subjects[i];
+              final double progress =
+                  summary.completionBySubject[s.id] ?? 0;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: FadeSlideIn(
+                  delay: Duration(milliseconds: 180 + i * 80),
+                  child: SubjectCard(
+                    subject: s,
+                    progress: progress,
+                    onTap: () => context.go('/subjects/${s.id}'),
                   ),
-                );
-              }),
-            const SizedBox(height: 22),
-            FadeSlideIn(
-              delay: const Duration(milliseconds: 220),
-              child: const _SectionHeader(
-                title: 'أدوات سريعة',
-                subtitle: 'تمرّن أو راجع أسئلة الدورات السابقة.',
-              ),
-            ),
+                ),
+              );
+            }),
             const SizedBox(height: 14),
             FadeSlideIn(
-              delay: const Duration(milliseconds: 260),
-              child: Row(
+              delay: const Duration(milliseconds: 280),
+              child: const SectionHeader(
+                title: 'تدريب',
+                subtitle: 'مارس واختبر نفسك بأساليب مختلفة.',
+              ),
+            ),
+            const SizedBox(height: 12),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 320),
+              child: GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 1.05,
                 children: <Widget>[
-                  Expanded(
-                    child: _ActionTile(
-                      title: 'اختبار سريع',
-                      subtitle: 'حتى 10 أسئلة مختلطة',
-                      icon: Icons.flash_on_rounded,
-                      tone: const Color(0xFFFF8927),
-                      onTap: () => context.go('/quick-quiz'),
-                    ),
+                  _SquareTile(
+                    title: 'اختبار سريع',
+                    subtitle: '10 أسئلة مختلطة',
+                    icon: Icons.flash_on_rounded,
+                    tone: scheme.primary,
+                    onTap: () => context.go('/quick-quiz'),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _ActionTile(
-                      title: 'أسئلة الدورات',
-                      subtitle: 'نماذج بكالوريا سابقة',
-                      icon: Icons.menu_book_rounded,
-                      tone: const Color(0xFF1E73E8),
-                      onTap: () => context.go('/exam-questions'),
-                    ),
+                  _SquareTile(
+                    title: 'أسئلة الدورات',
+                    subtitle: 'بكالوريا سابقة',
+                    icon: Icons.menu_book_rounded,
+                    tone: AppTheme.tertiary,
+                    onTap: () => context.go('/exam-questions'),
+                  ),
+                  _SquareTile(
+                    title: 'بطاقات تذكيرية',
+                    subtitle: 'راجع المفاهيم بسرعة',
+                    icon: Icons.style_rounded,
+                    tone: const Color(0xFF8B5CF6),
+                    onTap: () => context.push('/flashcards'),
+                  ),
+                  _SquareTile(
+                    title: 'مؤقّت التركيز',
+                    subtitle: 'بومودورو 25 دقيقة',
+                    icon: Icons.timer_outlined,
+                    tone: palette.success,
+                    onTap: () => context.push('/pomodoro'),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 22),
             FadeSlideIn(
-              delay: const Duration(milliseconds: 320),
-              child: _JoinClassTile(
+              delay: const Duration(milliseconds: 380),
+              child: const SectionHeader(
+                title: 'صفّي ومهامي',
+                subtitle: 'انضم لصفّك وتابع الواجبات والإعلانات.',
+              ),
+            ),
+            const SizedBox(height: 12),
+            FadeSlideIn(
+              delay: const Duration(milliseconds: 420),
+              child: ActionTile(
+                title: 'الانضمام إلى صفّ',
+                subtitle: 'أدخل رمز الدعوة من معلّمك',
+                icon: Icons.group_add_outlined,
+                tone: scheme.primary,
                 onTap: () async {
                   final String? joined = await showDialog<String>(
                     context: context,
@@ -172,23 +232,50 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             FadeSlideIn(
-              delay: const Duration(milliseconds: 360),
-              child: _AssignmentsTile(
+              delay: const Duration(milliseconds: 460),
+              child: ActionTile(
+                title: 'الواجبات',
+                subtitle: 'تابع واجباتك المستحقّة',
+                icon: Icons.assignment_outlined,
+                tone: AppTheme.tertiary,
                 onTap: () => context.push('/assignments'),
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             FadeSlideIn(
-              delay: const Duration(milliseconds: 420),
-              child: _AnnouncementsTile(
-                unreadCount: _unreadAnnouncements,
+              delay: const Duration(milliseconds: 500),
+              child: ActionTile(
+                title: 'الإعلانات',
+                subtitle: 'آخر إعلانات معلّميك',
+                icon: Icons.campaign_outlined,
+                tone: palette.warm,
                 onTap: () async {
                   await context.push('/announcements');
                   if (!mounted) return;
                   await _loadUnread();
                 },
+                trailing: _unreadAnnouncements == 0
+                    ? null
+                    : Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: scheme.error,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          '$_unreadAnnouncements',
+                          style: TextStyle(
+                            color: scheme.onError,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
               ),
             ),
           ],
@@ -206,8 +293,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.name, required this.streakDays});
+class _GreetingHeader extends StatelessWidget {
+  const _GreetingHeader({required this.name, required this.streakDays});
 
   final String? name;
   final int streakDays;
@@ -215,145 +302,194 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppPalette palette = AppPalette.of(context);
-    final String greetingLine =
-        name == null ? 'أهلاً بك 👋' : 'أهلاً $name 👋';
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        color: AppTheme.surfaceContainerHigh,
-        border: Border.all(color: Colors.white.withOpacity(0.6), width: 0.6),
-        boxShadow: palette.cardShadow,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: Stack(
-          children: <Widget>[
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: <Color>[
-                      palette.gold.withOpacity(0.22),
-                      Colors.transparent,
-                    ],
-                  ),
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final String greeting = _greetingText(DateTime.now());
+    final String dateLine = _formatArabicDate(DateTime.now());
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                dateLine,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
+                  color: palette.muted,
                 ),
               ),
-            ),
-            Positioned(
-              right: -40,
-              top: -40,
-              child: IgnorePointer(
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: <Color>[
-                        palette.warm.withOpacity(0.30),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
+              const SizedBox(height: 4),
+              Text(
+                name == null ? greeting : '$greeting، $name',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: scheme.onSurface,
+                  letterSpacing: -0.4,
+                  height: 1.2,
                 ),
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'فيزياء وكيمياء — بكالوريا سوريا',
-                  style: TextStyle(
-                    color: palette.muted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.4,
-                  ),
+              const SizedBox(height: 4),
+              Text(
+                'هيا نواصل التقدم خطوة بخطوة.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: palette.muted,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  greetingLine,
-                  style: const TextStyle(
-                    color: AppTheme.onBackground,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.4,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'هيا نتابع رحلتك مع الفيزياء والكيمياء.',
-                  style: TextStyle(
-                    color: AppTheme.onBackground.withOpacity(0.74),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                Row(
-                  children: <Widget>[
-                    _StreakHeroPill(days: streakDays),
-                    const SizedBox(width: 10),
-                    const _KeepGoingHeroPill(),
-                  ],
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
-      ),
+        if (streakDays > 0) ...<Widget>[
+          const SizedBox(width: 8),
+          StreakBadge(days: streakDays),
+        ],
+      ],
     );
+  }
+
+  static String _greetingText(DateTime now) {
+    final int h = now.hour;
+    if (h < 12) return 'صباح الخير';
+    if (h < 17) return 'مساء النور';
+    return 'مساء الخير';
+  }
+
+  static String _formatArabicDate(DateTime d) {
+    const List<String> weekdays = <String>[
+      'الإثنين',
+      'الثلاثاء',
+      'الأربعاء',
+      'الخميس',
+      'الجمعة',
+      'السبت',
+      'الأحد',
+    ];
+    const List<String> months = <String>[
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
+    ];
+    final String wd = weekdays[(d.weekday - 1) % 7];
+    final String mo = months[(d.month - 1) % 12];
+    return '$wd، ${d.day} $mo';
   }
 }
 
-class _StreakHeroPill extends StatelessWidget {
-  const _StreakHeroPill({required this.days});
+class _TodayCard extends StatelessWidget {
+  const _TodayCard({
+    required this.progress,
+    required this.minutes,
+    required this.goalMinutes,
+    required this.streakDays,
+    required this.accuracyPercent,
+    required this.onTap,
+  });
 
-  final int days;
+  final double progress;
+  final int minutes;
+  final int goalMinutes;
+  final int streakDays;
+  final int accuracyPercent;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     final AppPalette palette = AppPalette.of(context);
-    return GlowPulse(
-      color: palette.accent,
-      minOpacity: 0.10,
-      maxOpacity: 0.26,
+    return PressableScale(
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.65),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: Colors.white.withOpacity(0.7), width: 0.6),
+          color: palette.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: palette.outline, width: 1),
+          boxShadow: palette.cardShadow,
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Icon(
-              Icons.local_fire_department_rounded,
-              size: 16,
-              color: palette.warm,
+            DailyGoalRing(
+              progress: progress,
+              minutes: minutes,
+              goalMinutes: goalMinutes,
+              size: 132,
+              strokeWidth: 11,
             ),
-            const SizedBox(width: 6),
-            CountUp(
-              value: days,
-              builder: (BuildContext context, int v) {
-                return Text(
-                  '$v أيام دراسة',
-                  style: const TextStyle(
-                    color: AppTheme.onBackground,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.4,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'هدف اليوم',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                      color: palette.muted,
+                    ),
                   ),
-                );
-              },
+                  const SizedBox(height: 6),
+                  Text(
+                    progress >= 1
+                        ? 'أحسنت! حقّقت هدف اليوم.'
+                        : 'ادرس قليلاً للحفاظ على وتيرتك.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _InlineStat(
+                    icon: Icons.local_fire_department_rounded,
+                    label: 'سلسلة',
+                    value: '$streakDays يوم',
+                    tone: palette.warm,
+                  ),
+                  const SizedBox(height: 6),
+                  _InlineStat(
+                    icon: Icons.verified_rounded,
+                    label: 'الدقة',
+                    value: '$accuracyPercent%',
+                    tone: palette.success,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: <Widget>[
+                      Icon(
+                        Icons.play_circle_rounded,
+                        size: 18,
+                        color: scheme.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'ابدأ جلسة تركيز',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -362,46 +498,49 @@ class _StreakHeroPill extends StatelessWidget {
   }
 }
 
-class _KeepGoingHeroPill extends StatelessWidget {
-  const _KeepGoingHeroPill();
+class _InlineStat extends StatelessWidget {
+  const _InlineStat({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.tone,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color tone;
 
   @override
   Widget build(BuildContext context) {
     final AppPalette palette = AppPalette.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: <Color>[
-            palette.gold.withOpacity(0.30),
-            palette.warm.withOpacity(0.20),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.6), width: 0.6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(Icons.auto_awesome_rounded, size: 16, color: palette.accent),
-          const SizedBox(width: 6),
-          Text(
-            'استمرّ',
-            style: TextStyle(
-              color: palette.accent,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-            ),
+    return Row(
+      children: <Widget>[
+        Icon(icon, size: 16, color: tone),
+        const SizedBox(width: 6),
+        Text(
+          '$label  ',
+          style: TextStyle(
+            fontSize: 12,
+            color: palette.muted,
+            fontWeight: FontWeight.w500,
           ),
-        ],
-      ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            color: tone,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _ContinueCard extends StatelessWidget {
-  const _ContinueCard({required this.onTap});
+class _ContinueLearningCard extends StatelessWidget {
+  const _ContinueLearningCard({required this.onTap});
 
   final VoidCallback onTap;
 
@@ -411,12 +550,11 @@ class _ContinueCard extends StatelessWidget {
     return PressableScale(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: palette.card,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: palette.outline, width: 0.6),
-          boxShadow: palette.cardShadow,
+          gradient: palette.goldGradient,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: palette.goldGlow,
         ),
         child: Row(
           children: <Widget>[
@@ -424,15 +562,8 @@ class _ContinueCard extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                gradient: palette.goldGradient,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: palette.accent.withOpacity(0.28),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+                color: Colors.white.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(14),
               ),
               alignment: Alignment.center,
               child: const Icon(
@@ -442,33 +573,36 @@ class _ContinueCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            Expanded(
+            const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'تابع من حيث توقفت',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'ابدأ رحلتك مع الفيزياء والكيمياء',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    'تابع التعلّم',
                     style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'ابدأ اختباراً سريعاً مكوّناً من 10 أسئلة.',
+                    style: TextStyle(
+                      color: Colors.white,
                       fontSize: 12.5,
-                      color: palette.muted,
                       height: 1.4,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            Icon(
+            const SizedBox(width: 6),
+            const Icon(
               Icons.chevron_left_rounded,
-              size: 26,
-              color: palette.muted,
+              color: Colors.white,
+              size: 22,
             ),
           ],
         ),
@@ -477,8 +611,8 @@ class _ContinueCard extends StatelessWidget {
   }
 }
 
-class _ActionTile extends StatelessWidget {
-  const _ActionTile({
+class _SquareTile extends StatelessWidget {
+  const _SquareTile({
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -494,42 +628,39 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     final AppPalette palette = AppPalette.of(context);
     return PressableScale(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: palette.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: palette.outline, width: 0.6),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: palette.outline, width: 1),
           boxShadow: palette.cardShadow,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Container(
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: <Color>[
-                    tone.withOpacity(0.20),
-                    tone.withOpacity(0.06),
-                  ],
-                ),
+                color: tone.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
               child: Icon(icon, color: tone, size: 22),
             ),
-            const SizedBox(height: 12),
+            const Spacer(),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.1,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
               ),
             ),
             const SizedBox(height: 2),
@@ -538,278 +669,12 @@ class _ActionTile extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 12,
-                color: palette.muted,
+                fontSize: 11.5,
                 height: 1.4,
+                color: palette.muted,
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _JoinClassTile extends StatelessWidget {
-  const _JoinClassTile({required this.onTap});
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return PressableScale(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: palette.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: palette.outline, width: 0.6),
-          boxShadow: palette.cardShadow,
-        ),
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: palette.goldGradient,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: const Icon(Icons.vpn_key_rounded,
-                  color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    'الانضمام إلى صف معلّم',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  Text(
-                    'أدخل رمز الانضمام لمتابعة معلّمك لتقدّمك.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: palette.muted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_left_rounded, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AssignmentsTile extends StatelessWidget {
-  const _AssignmentsTile({required this.onTap});
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return PressableScale(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: palette.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: palette.outline, width: 0.6),
-          boxShadow: palette.cardShadow,
-        ),
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: palette.goldGradient,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: const Icon(Icons.assignment_outlined,
-                  color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    'الواجبات',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  Text(
-                    'الواجبات التي أنشأها معلّمك للصف.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: palette.muted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_left_rounded, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AnnouncementsTile extends StatelessWidget {
-  const _AnnouncementsTile({
-    required this.unreadCount,
-    required this.onTap,
-  });
-
-  final int unreadCount;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-    return PressableScale(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: palette.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: palette.outline, width: 0.6),
-          boxShadow: palette.cardShadow,
-        ),
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: scheme.primary.withOpacity(0.18),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.campaign_outlined,
-                color: scheme.primary,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    'الإعلانات',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  Text(
-                    'إعلانات معلّميك لكل الصفوف.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: palette.muted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (unreadCount > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: scheme.primary,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  '$unreadCount جديد',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              )
-            else
-              const Icon(Icons.chevron_left_rounded, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: TextStyle(fontSize: 13, color: palette.muted, height: 1.5),
-        ),
-      ],
-    );
-  }
-}
-
-class _SubjectsEmptyState extends StatelessWidget {
-  const _SubjectsEmptyState({required this.onRefresh});
-
-  final Future<void> Function() onRefresh;
-
-  @override
-  Widget build(BuildContext context) {
-    final AppPalette palette = AppPalette.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-      decoration: BoxDecoration(
-        color: palette.card,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: palette.outline, width: 0.6),
-        boxShadow: palette.cardShadow,
-      ),
-      child: EmptyState(
-        compact: true,
-        icon: Icons.menu_book_outlined,
-        title: 'لا توجد مواد بعد',
-        description:
-            'سيظهر هنا مساراك في الفيزياء والكيمياء لتبدأ رحلة الدراسة.',
-        action: TextButton.icon(
-          onPressed: () => onRefresh(),
-          icon: const Icon(Icons.refresh_rounded, size: 18),
-          label: const Text('تحديث'),
         ),
       ),
     );
