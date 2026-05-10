@@ -405,4 +405,214 @@ class StudySyncQueries {
       '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
+
+  // ---------------------------------------------------------------------------
+  // bookmarked_questions
+  // ---------------------------------------------------------------------------
+
+  /// Fetches all bookmarked question IDs for the current user.
+  static Future<List<String>> fetchBookmarkedQuestions() async {
+    final String userId = _requireUserId();
+    try {
+      final List<Map<String, dynamic>> rows = await _db
+          .from('bookmarked_questions')
+          .select('question_id')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      return rows
+          .map((Map<String, dynamic> r) => r['question_id'] as String)
+          .toList(growable: false);
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to load bookmarks: ${e.message}');
+    }
+  }
+
+  /// Adds a bookmark for the current user. Idempotent.
+  static Future<void> addBookmark(String questionId) async {
+    final String userId = _requireUserId();
+    try {
+      await _db.from('bookmarked_questions').upsert(
+        <String, dynamic>{'user_id': userId, 'question_id': questionId},
+        onConflict: 'user_id,question_id',
+      );
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to bookmark question: ${e.message}');
+    }
+  }
+
+  /// Removes a bookmark for the current user. Idempotent.
+  static Future<void> removeBookmark(String questionId) async {
+    final String userId = _requireUserId();
+    try {
+      await _db
+          .from('bookmarked_questions')
+          .delete()
+          .eq('user_id', userId)
+          .eq('question_id', questionId);
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to remove bookmark: ${e.message}');
+    }
+  }
+
+  /// Removes every bookmark for the current user.
+  static Future<void> clearBookmarks() async {
+    final String userId = _requireUserId();
+    try {
+      await _db.from('bookmarked_questions').delete().eq('user_id', userId);
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to clear bookmarks: ${e.message}');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // study_notes
+  // ---------------------------------------------------------------------------
+
+  /// Fetches every study note for the current user, newest first.
+  static Future<List<Map<String, dynamic>>> fetchStudyNotes() async {
+    final String userId = _requireUserId();
+    try {
+      final List<Map<String, dynamic>> rows = await _db
+          .from('study_notes')
+          .select('id, topic_id, title, body, updated_at')
+          .eq('user_id', userId)
+          .order('updated_at', ascending: false);
+      return rows;
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to load notes: ${e.message}');
+    }
+  }
+
+  /// Inserts or updates a study note. When [id] is null a new row is
+  /// created; otherwise the matching row (scoped to the current user) is
+  /// updated. Returns the canonical row from the server.
+  static Future<Map<String, dynamic>> upsertStudyNote({
+    String? id,
+    required String topicId,
+    required String title,
+    required String body,
+  }) async {
+    final String userId = _requireUserId();
+    final Map<String, dynamic> payload = <String, dynamic>{
+      'user_id': userId,
+      'topic_id': topicId,
+      'title': title,
+      'body': body,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+      if (id != null) 'id': id,
+    };
+    try {
+      final Map<String, dynamic> row = await _db
+          .from('study_notes')
+          .upsert(payload)
+          .select('id, topic_id, title, body, updated_at')
+          .single();
+      return row;
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to save note: ${e.message}');
+    }
+  }
+
+  /// Deletes a study note owned by the current user.
+  static Future<void> deleteStudyNote(String id) async {
+    final String userId = _requireUserId();
+    try {
+      await _db
+          .from('study_notes')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', userId);
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to delete note: ${e.message}');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // student_preferences
+  // ---------------------------------------------------------------------------
+
+  /// Fetches the preferences row for the current user. Returns null when
+  /// no row has been written yet (treat that as "use defaults").
+  static Future<Map<String, dynamic>?> fetchStudentPreferences() async {
+    final String userId = _requireUserId();
+    try {
+      return await _db
+          .from('student_preferences')
+          .select('daily_goal_minutes, theme_mode, notification_prefs')
+          .eq('user_id', userId)
+          .maybeSingle();
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to load preferences: ${e.message}');
+    }
+  }
+
+  /// Updates the daily-goal preference for the current user. Inserts
+  /// the row if it doesn't exist yet.
+  static Future<void> setDailyGoalMinutes(int minutes) async {
+    final String userId = _requireUserId();
+    try {
+      await _db.from('student_preferences').upsert(
+        <String, dynamic>{
+          'user_id': userId,
+          'daily_goal_minutes': minutes,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        },
+        onConflict: 'user_id',
+      );
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to save daily goal: ${e.message}');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // leaderboard
+  // ---------------------------------------------------------------------------
+
+  /// Fetches the top [limit] users by study minutes over the last 7
+  /// days. Backed by the `leaderboard_top` SECURITY DEFINER RPC so this
+  /// works even though students can only read their own rows in
+  /// `study_sessions`.
+  static Future<List<LeaderboardEntry>> fetchLeaderboard({
+    int limit = 20,
+  }) async {
+    _requireUserId();
+    try {
+      final List<dynamic> rows = await _db.rpc(
+        'leaderboard_top',
+        params: <String, dynamic>{'_limit': limit},
+      ) as List<dynamic>;
+      return rows
+          .whereType<Map<String, dynamic>>()
+          .map(LeaderboardEntry.fromMap)
+          .toList(growable: false);
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to load leaderboard: ${e.message}');
+    }
+  }
+}
+
+/// One row of the weekly leaderboard.
+class LeaderboardEntry {
+  const LeaderboardEntry({
+    required this.userId,
+    required this.displayName,
+    required this.studyMinutes,
+    required this.isSelf,
+  });
+
+  factory LeaderboardEntry.fromMap(Map<String, dynamic> map) {
+    return LeaderboardEntry(
+      userId: map['user_id'] as String,
+      displayName: (map['display_name'] as String?)?.trim().isNotEmpty == true
+          ? map['display_name'] as String
+          : 'طالب',
+      studyMinutes: (map['study_minutes'] as int?) ?? 0,
+      isSelf: (map['is_self'] as bool?) ?? false,
+    );
+  }
+
+  final String userId;
+  final String displayName;
+  final int studyMinutes;
+  final bool isSelf;
 }

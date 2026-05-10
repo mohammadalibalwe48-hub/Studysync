@@ -2,111 +2,68 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:studysync_syria/app/theme.dart';
-import 'package:studysync_syria/features/auth/auth_service.dart';
+import 'package:studysync_syria/core/supabase/queries.dart';
 import 'package:studysync_syria/core/widgets/ambient_background.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
+import 'package:studysync_syria/core/widgets/empty_state.dart';
 import 'package:studysync_syria/core/widgets/section_header.dart';
 
-/// One row in the (mock) leaderboard.
-class _LeaderEntry {
-  const _LeaderEntry({
-    required this.name,
-    required this.studyMinutes,
-    required this.streak,
-    required this.accuracy,
-    required this.color,
-  });
-
-  final String name;
-  final int studyMinutes;
-  final int streak;
-  final double accuracy;
-  final Color color;
-}
-
-class LeaderboardScreen extends StatelessWidget {
+/// Weekly leaderboard backed by `leaderboard_top` RPC on Supabase.
+class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
 
-  static String? _displayNameFor(String? email) {
-    if (email == null || email.isEmpty) return null;
-    final String local = email.split('@').first;
-    if (local.isEmpty) return null;
-    return local[0].toUpperCase() + local.substring(1);
+  @override
+  State<LeaderboardScreen> createState() => _LeaderboardScreenState();
+}
+
+class _LeaderboardScreenState extends State<LeaderboardScreen> {
+  static const List<Color> _avatarTones = <Color>[
+    Color(0xFFFF9500),
+    Color(0xFFE25A0D),
+    Color(0xFFFFB347),
+    Color(0xFF6B3F1A),
+    Color(0xFFFFD000),
+    Color(0xFFFF7A1F),
+    Color(0xFFA0683C),
+    Color(0xFFB87A2A),
+  ];
+
+  bool _loading = true;
+  String? _error;
+  List<LeaderboardEntry> _rows = const <LeaderboardEntry>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
   }
 
-  static const List<_LeaderEntry> _mock = <_LeaderEntry>[
-    _LeaderEntry(
-      name: 'سامر شاهين',
-      studyMinutes: 412,
-      streak: 14,
-      accuracy: 0.92,
-      color: Color(0xFFE2862F),
-    ),
-    _LeaderEntry(
-      name: 'ليلى قاسم',
-      studyMinutes: 388,
-      streak: 11,
-      accuracy: 0.89,
-      color: Color(0xFFC9602B),
-    ),
-    _LeaderEntry(
-      name: 'محمد بلوي',
-      studyMinutes: 354,
-      streak: 9,
-      accuracy: 0.86,
-      color: Color(0xFFD68A1A),
-    ),
-    _LeaderEntry(
-      name: 'عبد الرحمن',
-      studyMinutes: 311,
-      streak: 7,
-      accuracy: 0.81,
-      color: Color(0xFFB8732A),
-    ),
-    _LeaderEntry(
-      name: 'هدى الزين',
-      studyMinutes: 289,
-      streak: 6,
-      accuracy: 0.78,
-      color: Color(0xFF8C5A38),
-    ),
-    _LeaderEntry(
-      name: 'كريم الحسيني',
-      studyMinutes: 254,
-      streak: 5,
-      accuracy: 0.74,
-      color: Color(0xFFA0683C),
-    ),
-    _LeaderEntry(
-      name: 'دانيا أيوب',
-      studyMinutes: 220,
-      streak: 4,
-      accuracy: 0.71,
-      color: Color(0xFFB87A2A),
-    ),
-  ];
+  Future<void> _load() async {
+    try {
+      final List<LeaderboardEntry> rows =
+          await StudySyncQueries.fetchLeaderboard(limit: 25);
+      if (!mounted) return;
+      setState(() {
+        _rows = rows;
+        _loading = false;
+        _error = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'تعذّر تحميل لوحة المتصدرين.';
+        _loading = false;
+      });
+    }
+  }
+
+  Color _toneFor(int rank) =>
+      _avatarTones[(rank - 1) % _avatarTones.length];
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final AppPalette palette = AppPalette.of(context);
-    final String? me = _displayNameFor(AuthService.instance.currentUserEmail);
-
-    // Insert "me" at a plausible position.
-    final List<_LeaderEntry> rows = List<_LeaderEntry>.from(_mock);
-    if (me != null && me.isNotEmpty) {
-      rows.insert(
-        3,
-        _LeaderEntry(
-          name: me,
-          studyMinutes: 298,
-          streak: 6,
-          accuracy: 0.83,
-          color: scheme.primary,
-        ),
-      );
-    }
-    rows.sort((a, b) => b.studyMinutes.compareTo(a.studyMinutes));
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -116,85 +73,119 @@ class LeaderboardScreen extends StatelessWidget {
             children: <Widget>[
               BackBar(
                 title: 'لوحة المتصدرين',
-                subtitle: 'تنافسوا بأسبوع دراسي مكثّف',
+                subtitle: 'الترتيب يعتمد على دقائق الدراسة آخر 7 أيام',
                 onBack: () => context.go('/library'),
               ),
               Expanded(
-                child: ListView(
-                  padding:
-                      const EdgeInsets.fromLTRB(16, 14, 16, 28),
-                  children: <Widget>[
-                    FadeSlideIn(
-                      child: _Podium(
-                        first: rows[0],
-                        second: rows.length > 1 ? rows[1] : null,
-                        third: rows.length > 2 ? rows[2] : null,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    FadeSlideIn(
-                      delay: const Duration(milliseconds: 80),
-                      child: const SectionHeader(
-                        title: 'الترتيب الكامل',
-                        subtitle: 'بناءً على دقائق الدراسة هذا الأسبوع',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    ...List<Widget>.generate(rows.length, (int i) {
-                      final _LeaderEntry e = rows[i];
-                      final bool isMe =
-                          me != null && me.isNotEmpty && e.name == me;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: FadeSlideIn(
-                          delay: Duration(milliseconds: 120 + i * 60),
-                          child: _LeaderRow(
-                            rank: i + 1,
-                            entry: e,
-                            highlighted: isMe,
-                          ),
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: 14),
-                    FadeSlideIn(
-                      delay:
-                          Duration(milliseconds: 120 + rows.length * 60 + 60),
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: scheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                              color: palette.outline, width: 1),
-                        ),
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.emoji_events_rounded,
-                                color: scheme.onPrimaryContainer),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                'استمر بدراستك اليومية لرفع رتبتك. '
-                                'تحديث اللوحة يحصل تلقائيًا في منتصف الليل.',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  height: 1.5,
-                                  color: scheme.onPrimaryContainer,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                child: RefreshIndicator(
+                  onRefresh: _load,
+                  child: _buildBody(scheme, palette),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBody(ColorScheme scheme, AppPalette palette) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: <Widget>[
+          const SizedBox(height: 80),
+          EmptyState(
+            icon: Icons.cloud_off_rounded,
+            title: 'تعذّر تحميل اللوحة',
+            description: _error!,
+          ),
+        ],
+      );
+    }
+    if (_rows.isEmpty) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const <Widget>[
+          SizedBox(height: 80),
+          EmptyState(
+            icon: Icons.emoji_events_outlined,
+            title: 'لا متصدّرون بعد هذا الأسبوع',
+            description:
+                'ابدأ جلسة دراسة لتسجيل أوّل دقائقك وستظهر على لوحة المتصدّرين.',
+          ),
+        ],
+      );
+    }
+
+    final LeaderboardEntry first = _rows[0];
+    final LeaderboardEntry? second = _rows.length > 1 ? _rows[1] : null;
+    final LeaderboardEntry? third = _rows.length > 2 ? _rows[2] : null;
+
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
+      children: <Widget>[
+        FadeSlideIn(
+          child: _Podium(first: first, second: second, third: third),
+        ),
+        const SizedBox(height: 16),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 80),
+          child: const SectionHeader(
+            title: 'الترتيب الكامل',
+            subtitle: 'بناءً على دقائق الدراسة هذا الأسبوع',
+          ),
+        ),
+        const SizedBox(height: 10),
+        ...List<Widget>.generate(_rows.length, (int i) {
+          final LeaderboardEntry e = _rows[i];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: FadeSlideIn(
+              delay: Duration(milliseconds: 120 + i * 60),
+              child: _LeaderRow(
+                rank: i + 1,
+                entry: e,
+                tone: _toneFor(i + 1),
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 14),
+        FadeSlideIn(
+          delay: Duration(milliseconds: 120 + _rows.length * 60 + 60),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: palette.outline, width: 1),
+            ),
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.emoji_events_rounded,
+                    color: scheme.onPrimaryContainer),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'استمر بدراستك اليومية لرفع رتبتك. '
+                    'تحديث اللوحة تلقائيّ على مدار الأسبوع.',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      height: 1.5,
+                      color: scheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -206,9 +197,9 @@ class _Podium extends StatelessWidget {
     required this.third,
   });
 
-  final _LeaderEntry first;
-  final _LeaderEntry? second;
-  final _LeaderEntry? third;
+  final LeaderboardEntry first;
+  final LeaderboardEntry? second;
+  final LeaderboardEntry? third;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +210,7 @@ class _Podium extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: <Color>[Color(0xFFFFF6E6), Color(0xFFF1DFC9)],
+          colors: <Color>[Color(0xFFFFF6E6), Color(0xFFFCE5C0)],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: palette.outline, width: 1),
@@ -232,7 +223,7 @@ class _Podium extends StatelessWidget {
             child: _PodiumPlace(
               entry: second,
               rank: 2,
-              tone: const Color(0xFFC9602B),
+              tone: const Color(0xFFE25A0D),
               barHeight: 60,
             ),
           ),
@@ -241,7 +232,7 @@ class _Podium extends StatelessWidget {
             child: _PodiumPlace(
               entry: first,
               rank: 1,
-              tone: const Color(0xFFE2862F),
+              tone: const Color(0xFFFF9500),
               barHeight: 88,
             ),
           ),
@@ -250,7 +241,7 @@ class _Podium extends StatelessWidget {
             child: _PodiumPlace(
               entry: third,
               rank: 3,
-              tone: const Color(0xFF8C5A38),
+              tone: const Color(0xFF6B3F1A),
               barHeight: 44,
             ),
           ),
@@ -268,7 +259,7 @@ class _PodiumPlace extends StatelessWidget {
     required this.barHeight,
   });
 
-  final _LeaderEntry? entry;
+  final LeaderboardEntry? entry;
   final int rank;
   final Color tone;
   final double barHeight;
@@ -276,7 +267,7 @@ class _PodiumPlace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
-    final String name = entry?.name ?? '—';
+    final String name = entry?.displayName ?? '—';
     final String initials = name.trim().isNotEmpty
         ? name.trim().split(' ').take(2).map((String p) => p.characters.first).join()
         : '—';
@@ -287,7 +278,7 @@ class _PodiumPlace extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(bottom: 4),
             child: Icon(Icons.emoji_events_rounded,
-                color: Color(0xFFE2862F), size: 22),
+                color: Color(0xFFFF9500), size: 22),
           ),
         Container(
           width: 56,
@@ -362,31 +353,28 @@ class _LeaderRow extends StatelessWidget {
   const _LeaderRow({
     required this.rank,
     required this.entry,
-    required this.highlighted,
+    required this.tone,
   });
 
   final int rank;
-  final _LeaderEntry entry;
-  final bool highlighted;
+  final LeaderboardEntry entry;
+  final Color tone;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final AppPalette palette = AppPalette.of(context);
-    final Color bg = highlighted
-        ? scheme.primaryContainer
-        : palette.card;
-    final Color borderColor = highlighted
-        ? scheme.primary
-        : palette.outline;
+    final Color bg = entry.isSelf ? scheme.primaryContainer : palette.card;
+    final Color borderColor =
+        entry.isSelf ? scheme.primary : palette.outline;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: borderColor, width: highlighted ? 1.4 : 1),
-        boxShadow: highlighted ? palette.goldGlow : palette.cardShadow,
+            color: borderColor, width: entry.isSelf ? 1.4 : 1),
+        boxShadow: entry.isSelf ? palette.goldGlow : palette.cardShadow,
       ),
       child: Row(
         children: <Widget>[
@@ -396,7 +384,7 @@ class _LeaderRow extends StatelessWidget {
               '#$rank',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: highlighted
+                color: entry.isSelf
                     ? scheme.onPrimaryContainer
                     : scheme.onSurfaceVariant,
               ),
@@ -407,11 +395,13 @@ class _LeaderRow extends StatelessWidget {
             height: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: entry.color,
+              color: tone,
             ),
             alignment: Alignment.center,
             child: Text(
-              entry.name.characters.first,
+              entry.displayName.characters.isNotEmpty
+                  ? entry.displayName.characters.first
+                  : '?',
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
@@ -425,21 +415,20 @@ class _LeaderRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  entry.name,
+                  entry.isSelf ? '${entry.displayName} (أنت)' : entry.displayName,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: highlighted
+                    color: entry.isSelf
                         ? scheme.onPrimaryContainer
                         : scheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${entry.studyMinutes} دقيقة · سلسلة ${entry.streak} يوم · '
-                  '${(entry.accuracy * 100).round()}٪ دقة',
+                  '${entry.studyMinutes} دقيقة هذا الأسبوع',
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: highlighted
+                    color: entry.isSelf
                         ? scheme.onPrimaryContainer.withOpacity(0.85)
                         : palette.muted,
                   ),
@@ -454,7 +443,7 @@ class _LeaderRow extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            '${entry.streak}',
+            '${(entry.studyMinutes / 60).toStringAsFixed(1)}h',
             style: TextStyle(
               fontWeight: FontWeight.w800,
               color: scheme.onSurface,

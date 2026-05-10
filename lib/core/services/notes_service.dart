@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:studysync_syria/core/supabase/queries.dart';
+import 'package:studysync_syria/core/supabase/supabase_client.dart';
+
 /// A single markdown-backed study note attached to a topic.
 @immutable
 class StudyNote {
@@ -50,13 +53,28 @@ class StudyNote {
             DateTime.tryParse(j['updatedAt'] as String? ?? '') ??
                 DateTime.now(),
       );
+
+  static StudyNote fromSupabaseRow(Map<String, dynamic> row) => StudyNote(
+        id: row['id'] as String,
+        topicId: row['topic_id'] as String,
+        title: (row['title'] as String?) ?? '',
+        body: (row['body'] as String?) ?? '',
+        updatedAt:
+            DateTime.tryParse(row['updated_at']?.toString() ?? '') ??
+                DateTime.now(),
+      );
 }
 
-/// Local-only notes service backed by shared_preferences.
+/// Notes service backed by Supabase, with a local cache for offline.
 ///
 /// Markdown is stored as raw text so it survives a re-render cycle.
 /// Highlights are encoded inside the markdown using the convention
 /// `==text==`, which the editor renders as a yellow highlight pill.
+///
+/// The cache persists notes between launches and lets us paint
+/// instantly while the remote read is in flight; on every successful
+/// remote read the cache is overwritten with the canonical set so
+/// stale entries from a previous device can't linger.
 class NotesService extends ChangeNotifier {
   NotesService._();
   static final NotesService instance = NotesService._();
@@ -78,7 +96,15 @@ class NotesService extends ChangeNotifier {
   int get count => _notes.length;
 
   Future<void> load() async {
-    if (_loaded) return;
+    if (!_loaded) {
+      await _loadFromCache();
+      _loaded = true;
+      notifyListeners();
+    }
+    await _refreshFromRemote();
+  }
+
+  Future<void> _loadFromCache() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? raw = prefs.getString(_key);
     if (raw != null && raw.isNotEmpty) {
@@ -93,9 +119,26 @@ class NotesService extends ChangeNotifier {
         // Corrupt cache — start fresh.
       }
     }
-    _loaded = true;
-    notifyListeners();
   }
+
+  Future<void> _refreshFromRemote() async {
+    if (SupabaseService.auth.currentUser == null) return;
+    try {
+      final List<Map<String, dynamic>> rows =
+          await StudySyncQueries.fetchStudyNotes();
+      _notes
+        ..clear()
+        ..addAll(rows.map(StudyNote.fromSupabaseRow));
+      notifyListeners();
+      await _persist();
+    } catch (_) {
+      // Offline / RLS / etc.: keep cached state.
+    }
+  }
+
+  /// Public hook so the auth flow can pull notes immediately after
+  /// sign-in.
+  Future<void> refresh() => _refreshFromRemote();
 
   Future<void> _persist() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -110,15 +153,41 @@ class NotesService extends ChangeNotifier {
     required String title,
     required String body,
   }) async {
-    final StudyNote n = StudyNote(
+    final String trimmedTitle = title.trim().isEmpty ? 'ملاحظة' : title.trim();
+    StudyNote n = StudyNote(
+      // Used as the optimistic id until the server returns the canonical
+      // UUID. We replace the in-memory entry with the server row below.
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       topicId: topicId,
-      title: title.trim().isEmpty ? 'ملاحظة' : title.trim(),
+      title: trimmedTitle,
       body: body,
       updatedAt: DateTime.now(),
     );
     _notes.add(n);
     notifyListeners();
+
+    if (SupabaseService.auth.currentUser != null) {
+      try {
+        final Map<String, dynamic> row = await StudySyncQueries.upsertStudyNote(
+          topicId: topicId,
+          title: trimmedTitle,
+          body: body,
+        );
+        final StudyNote canonical = StudyNote.fromSupabaseRow(row);
+        final int idx = _notes.indexWhere((StudyNote x) => x.id == n.id);
+        if (idx != -1) {
+          _notes[idx] = canonical;
+        } else {
+          _notes.add(canonical);
+        }
+        n = canonical;
+        notifyListeners();
+      } catch (_) {
+        // Keep the optimistic entry locally; the next refresh will
+        // reconcile.
+      }
+    }
+
     await _persist();
     return n;
   }
@@ -136,12 +205,44 @@ class NotesService extends ChangeNotifier {
       updatedAt: DateTime.now(),
     );
     notifyListeners();
+
+    if (SupabaseService.auth.currentUser != null) {
+      try {
+        final StudyNote n = _notes[i];
+        // Only push to Supabase when the id is a server-issued UUID.
+        // Optimistic ids (created while signed out) are migrated by the
+        // next refresh.
+        final bool looksLikeServerId =
+            n.id.contains('-') && n.id.length >= 32;
+        if (looksLikeServerId) {
+          final Map<String, dynamic> row =
+              await StudySyncQueries.upsertStudyNote(
+            id: n.id,
+            topicId: n.topicId,
+            title: n.title,
+            body: n.body,
+          );
+          _notes[i] = StudyNote.fromSupabaseRow(row);
+          notifyListeners();
+        }
+      } catch (_) {}
+    }
+
     await _persist();
   }
 
   Future<void> remove(String id) async {
     _notes.removeWhere((StudyNote n) => n.id == id);
     notifyListeners();
+    if (SupabaseService.auth.currentUser != null) {
+      try {
+        // Same UUID heuristic as above — optimistic ids never made it
+        // to the server, so there's nothing to delete remotely.
+        if (id.contains('-') && id.length >= 32) {
+          await StudySyncQueries.deleteStudyNote(id);
+        }
+      } catch (_) {}
+    }
     await _persist();
   }
 }

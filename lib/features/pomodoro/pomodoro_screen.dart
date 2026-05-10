@@ -8,6 +8,7 @@ import 'package:studysync_syria/app/theme.dart';
 import 'package:studysync_syria/core/services/notifications_service.dart';
 import 'package:studysync_syria/core/services/study_goal_service.dart';
 import 'package:studysync_syria/core/services/study_pattern_service.dart';
+import 'package:studysync_syria/core/supabase/queries.dart';
 import 'package:studysync_syria/core/widgets/ambient_background.dart';
 import 'package:studysync_syria/core/widgets/animations.dart';
 import 'package:studysync_syria/core/widgets/section_header.dart';
@@ -82,6 +83,18 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     _ticker?.cancel();
     setState(() => _running = false);
     await StudyGoalService.instance.logMinutes(_durationMinutes);
+    // Sync the completed session to Supabase so it shows up on the
+    // progress dashboard, the streak counter and the leaderboard.
+    // Best-effort: failing to record never blocks the celebration UI.
+    unawaited(
+      Future<void>(() async {
+        try {
+          await StudySyncQueries.createStudySession(
+            durationMinutes: _durationMinutes,
+          );
+        } catch (_) {}
+      }),
+    );
     // Re-evaluate smart-notification schedules now that we have a
     // fresh data point.
     unawaited(NotificationsService.instance.refreshSchedules());
