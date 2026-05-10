@@ -9,6 +9,8 @@ import 'package:studysync_syria/features/auth/auth_service.dart';
 import 'package:studysync_syria/features/auth/login_screen.dart';
 import 'package:studysync_syria/features/auth/signup_screen.dart';
 import 'package:studysync_syria/features/bookmarks/bookmarks_screen.dart';
+import 'package:studysync_syria/features/class_chat/class_chat_screen.dart';
+import 'package:studysync_syria/features/class_chat/my_classes_screen.dart';
 import 'package:studysync_syria/features/curriculum/custom_lesson_models.dart';
 import 'package:studysync_syria/features/curriculum/custom_topic_detail_screen.dart';
 import 'package:studysync_syria/features/exams/exam_questions_screen.dart';
@@ -184,6 +186,32 @@ GoRouter buildRouter() {
         path: '/periodic-table',
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _slidePage(state, const PeriodicTableScreen()),
+      ),
+      GoRoute(
+        path: '/my-classes',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _slidePage(state, const MyClassesScreen()),
+      ),
+      GoRoute(
+        path: '/classes/:classId/chat',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final String classId = state.pathParameters['classId'] ?? '';
+          final Map<String, dynamic>? extra =
+              state.extra as Map<String, dynamic>?;
+          final String name =
+              (extra?['name'] as String?) ?? 'الصف';
+          final String? teacherName = extra?['teacherName'] as String?;
+          final String? teacherId = extra?['teacherId'] as String?;
+          return _slidePage(
+            state,
+            ClassChatScreen(
+              classId: classId,
+              className: name,
+              teacherName: teacherName,
+              teacherId: teacherId,
+            ),
+          );
+        },
       ),
     ],
   );

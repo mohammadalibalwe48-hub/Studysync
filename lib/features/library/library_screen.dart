@@ -221,6 +221,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
               onTap: () => context.push('/announcements'),
             ),
           ),
+          const SizedBox(height: 12),
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 480),
+            child: ActionTile(
+              title: 'الدردشة المباشرة للصف',
+              subtitle: 'تواصل مع معلّمك وزملائك في الوقت نفسه',
+              icon: Icons.forum_rounded,
+              tone: scheme.primary,
+              onTap: () => context.push('/my-classes'),
+            ),
+          ),
         ],
       ),
     );
