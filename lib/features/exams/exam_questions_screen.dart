@@ -206,7 +206,10 @@ class _ExamQuestionsScreenState extends State<ExamQuestionsScreen> {
                           return FadeSlideIn(
                             delay:
                                 Duration(milliseconds: 60 + i * 50),
-                            child: _ExamCard(question: q),
+                            child: _ExamCard(
+                              key: ValueKey<String>(q.id),
+                              question: q,
+                            ),
                           );
                         },
                       ),
@@ -302,7 +305,7 @@ class _FilterChip extends StatelessWidget {
 }
 
 class _ExamCard extends StatefulWidget {
-  const _ExamCard({required this.question});
+  const _ExamCard({super.key, required this.question});
 
   final ExamQuestion question;
 
